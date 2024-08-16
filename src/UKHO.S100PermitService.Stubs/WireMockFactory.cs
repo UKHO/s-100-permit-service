@@ -1,4 +1,5 @@
-﻿using WireMock.Server;
+﻿using UKHO.S100PermitService.Stubs.Service;
+using WireMock.Server;
 using WireMock.Settings;
 namespace UKHO.S100PermitService.Stubs
 {
@@ -24,14 +25,14 @@ namespace UKHO.S100PermitService.Stubs
 
         private static void ConfigurePKSStub(WireMockServer server)
         {
-            IStubService pksStub = new PKSStub();
-            pksStub.ConfigureStub(server);
+            IStubConfiguration pksService = new PKSService();
+            pksService.ConfigureStub(server);
         }
 
         private static void ConfigureShopFacadeStub(WireMockServer server)
         {
-            IStubService shopFacadeStub = new ShopFacadeStub();
-            shopFacadeStub.ConfigureStub(server);
+            IStubConfiguration shopFacadeService = new ShopFacadeService();
+            shopFacadeService.ConfigureStub(server);
 
         }
     }

@@ -5,9 +5,9 @@ using WireMock.Server;
 using WireMock.Types;
 using WireMock.Util;
 
-namespace UKHO.S100PermitService.Stubs
+namespace UKHO.S100PermitService.Stubs.Service
 {
-    public class ShopFacadeStub : IStubService
+    public class ShopFacadeService : IStubConfiguration
     {
         public const string ShopFacadeUrl = "/shop-facade/upns";
         public const string ContentType = "Content-Type";

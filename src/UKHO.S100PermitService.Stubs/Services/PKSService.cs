@@ -2,9 +2,9 @@
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace UKHO.S100PermitService.Stubs
+namespace UKHO.S100PermitService.Stubs.Service
 {
-    public class PKSStub : IStubService
+    public class PKSService : IStubConfiguration
     {
         public const string PksUrl = "/keys/ENC-S63";
         public const string ContentType = "Content-Type";
@@ -16,6 +16,6 @@ namespace UKHO.S100PermitService.Stubs
                   .RespondWith(Response.Create().WithStatusCode(200).WithBody("Response for PKS"));
         }
 
-            
+
     }
 }

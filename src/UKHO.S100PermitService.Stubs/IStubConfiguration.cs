@@ -2,7 +2,7 @@
 
 namespace UKHO.S100PermitService.Stubs
 {
-    interface IStubService
+    interface IStubConfiguration
     {
         void ConfigureStub(WireMockServer server);
     }
