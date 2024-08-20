@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.API.UnitTests
 {
