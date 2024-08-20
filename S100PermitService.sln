@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.UnitTests", "test\UKHO.S100PermitService.API.UnitTests\UKHO.S100PermitService.API.UnitTests.csproj", "{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.Stubs", "src\UKHO.S100PermitService.Stubs\UKHO.S100PermitService.Stubs.csproj", "{4D96041E-A762-4C09-9E1E-1319CE667323}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.Stubs", "src\UKHO.S100PermitService.Stubs\UKHO.S100PermitService.Stubs.csproj", "{4D96041E-A762-4C09-9E1E-1319CE667323}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
