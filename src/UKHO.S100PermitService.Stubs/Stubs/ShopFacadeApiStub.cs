@@ -1,4 +1,5 @@
-﻿using UKHO.S100PermitService.Stubs.Configuration;
+﻿using System.Net;
+using UKHO.S100PermitService.Stubs.Configuration;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -19,7 +20,7 @@ namespace UKHO.S100PermitService.Stubs.Stubs
             server
                 .Given(Request.Create().WithPath(_shopFacadeApi.Url).UsingGet())
                 .RespondWith(Response.Create()
-                    .WithStatusCode(200)
+                    .WithStatusCode(HttpStatusCode.OK)
                     .WithHeader("Content-Type" , "application/json")
                     .WithBody("{ \"message\": \"ShopFacade API Stub response\" }"));
         }

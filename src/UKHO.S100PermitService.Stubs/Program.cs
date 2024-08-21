@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.Stubs
 {
     class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")
@@ -21,10 +21,7 @@ namespace UKHO.S100PermitService.Stubs
             services.Configure<ProductKeyServiceApi>(configuration.GetSection("ProductKeyServiceApi"));
             var serviceProvider = services.BuildServiceProvider();
 
-            var stubConfig = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
-
-            //var shopFacadeApi = configuration.GetSection("ShopFacadeApi");
-            //var productKeyServiceApi = configuration.GetSection("ProductKeyServiceApi");
+            var stubConfig = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;            
             var shopFacadeApi = serviceProvider.GetService<IOptions<ShopFacadeApi>>()?.Value;
             var productKeyServiceApi = serviceProvider.GetService<IOptions<ProductKeyServiceApi>>()?.Value;
 

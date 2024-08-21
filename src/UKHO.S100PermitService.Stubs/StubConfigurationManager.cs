@@ -4,8 +4,7 @@ namespace UKHO.S100PermitService.Stubs
 {
     public class StubConfigurationManager
     {
-        private readonly ApiStubFactory _apiStubFactory
-            ;
+        private readonly ApiStubFactory _apiStubFactory;
         private readonly WireMockServer _server;
 
         public StubConfigurationManager(ApiStubFactory apiStubFactory , WireMockServer server)
