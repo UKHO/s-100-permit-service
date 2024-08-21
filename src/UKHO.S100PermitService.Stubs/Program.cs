@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Stubs.Configuration;
 using WireMock.Server;
 using WireMock.Settings;
 
 namespace UKHO.S100PermitService.Stubs
 {
-    [ExcludeFromCodeCoverage]
     class Program
     {
         static void Main()
