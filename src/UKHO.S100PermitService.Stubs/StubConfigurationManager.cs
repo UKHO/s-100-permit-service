@@ -2,13 +2,13 @@
 
 namespace UKHO.S100PermitService.Stubs
 {
-    public class StubRegistrar
+    public class StubConfigurationManager
     {
         private readonly ApiStubFactory _apiStubFactory
             ;
         private readonly WireMockServer _server;
 
-        public StubRegistrar(ApiStubFactory apiStubFactory , WireMockServer server)
+        public StubConfigurationManager(ApiStubFactory apiStubFactory , WireMockServer server)
         {
             _apiStubFactory = apiStubFactory;
             _server = server;
@@ -19,8 +19,8 @@ namespace UKHO.S100PermitService.Stubs
             var shopFacadeApiStub = _apiStubFactory.CreateShopFacadeApiStub();
             var productKeyServiceApiStub = _apiStubFactory.CreateProductKeyServiceApiStub();
 
-            shopFacadeApiStub.Register(_server);
-            productKeyServiceApiStub.Register(_server);
+            shopFacadeApiStub.ConfigureStub(_server);
+            productKeyServiceApiStub.ConfigureStub(_server);
         }
     }
 

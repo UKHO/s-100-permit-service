@@ -10,7 +10,6 @@ namespace UKHO.S100PermitService.Stubs
 
         public ApiStubFactory(ShopFacadeApi shopFacadeApi , ProductKeyServiceApi productKeyServiceApi)
         {
-
             _shopFacadeApi = shopFacadeApi;
             _productKeyServiceApi = productKeyServiceApi;
         }

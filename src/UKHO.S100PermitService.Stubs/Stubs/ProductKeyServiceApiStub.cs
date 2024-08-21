@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Stubs.Stubs
             _productKeyServiceApi = productKeyServiceApi;
         }
 
-        public void Register(WireMockServer server)
+        public void ConfigureStub(WireMockServer server)
         {
             server
                 .Given(Request.Create().WithPath(_productKeyServiceApi.Url).UsingGet())
