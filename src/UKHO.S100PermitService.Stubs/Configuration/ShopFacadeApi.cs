@@ -2,6 +2,6 @@
 {
     public class ShopFacadeApi
     {
-        public string? Url { get; set; }
+        public required string Url { get; set; }
     }
 }
