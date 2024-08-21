@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
@@ -16,9 +16,11 @@
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
    file name: Handlebars.Net.Helpers.dll
    ]]>
-		</notes>
+		</notes>System.Security.Cryptography.X509Certificates:4.3.0
 		<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>
 		<cve>CVE-2022-21195</cve>
+		<cve>CVE-2017-11770</cve>
+		<cve>CVE-2019-0820</cve>
 	</suppress>
 	<suppress>
 		<notes>
@@ -223,5 +225,5 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
+	</suppress>-->
 </suppressions>

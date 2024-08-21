@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.Stubs
             services.Configure<ProductKeyServiceApi>(configuration.GetSection("ProductKeyServiceApi"));
             var serviceProvider = services.BuildServiceProvider();
 
-            var stubConfig = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;            
+            var stubConfig = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
             var shopFacadeApi = serviceProvider.GetService<IOptions<ShopFacadeApi>>()?.Value;
             var productKeyServiceApi = serviceProvider.GetService<IOptions<ProductKeyServiceApi>>()?.Value;
 
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Stubs
             Console.WriteLine($"WireMock server is running at https://localhost:{stubConfig?.Port}");
 
             var factory = new ApiStubFactory(shopFacadeApi!, productKeyServiceApi!);
-            var stubConfigurationManager = new StubConfigurationManager(factory , server);
+            var stubConfigurationManager = new StubConfigurationManager(factory, server);
             stubConfigurationManager.RegisterStubs();
 
             // Keep the server running
