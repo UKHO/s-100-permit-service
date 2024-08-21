@@ -7,7 +7,6 @@ namespace UKHO.PermitService.API.FunctionalTests.FunctionalTests.PermitService
         [Test]
         public async Task DummyTest()
         {
-
         }
     }
 }

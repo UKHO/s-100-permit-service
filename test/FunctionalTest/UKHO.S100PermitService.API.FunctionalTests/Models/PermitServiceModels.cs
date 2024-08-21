@@ -1,5 +1,4 @@
-﻿
-namespace UKHO.PermitService.API.FunctionalTests.Models
+﻿namespace UKHO.PermitService.API.FunctionalTests.Models
 {
     public class PermitServiceModel
     {
