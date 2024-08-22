@@ -275,7 +275,7 @@
    <packageUrl regex="true">^pkg:generic/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
    <cve>CVE-2014-9152</cve>
 </suppress>-->
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: System.Threading.Tasks.Extensions:4.3.0
@@ -284,7 +284,7 @@
 		<packageUrl regex="true">^pkg:nuget/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
 		<cve>CVE-2020-22475</cve>
 		<cve>CVE-2022-39349</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -331,7 +331,7 @@
    file name: System.Reflection.Emit.Lightweight:4.3.0
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:nuget/System\.Reflection\.Emit\.Lightweight@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:nuget/System\.Reflection\.Emit\.Lightweight@.*$</packageUrl>-->
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
 	</suppress>
@@ -352,5 +352,14 @@
 		</notes>
 		<packageUrl regex="true">^pkg:nuget/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
 		<cpe>cpe:/a:microsoft:services</cpe>
+	</suppress>-->
+	<!--<suppress>
+		<notes>
+			<![CDATA[
+   file name: runtime.native.System:4.3.0
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:nuget/runtime\.native\.System@.*$</packageUrl>
+		<cve>CVE-2022-41064</cve>
 	</suppress>-->
 </suppressions>
