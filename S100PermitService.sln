@@ -7,11 +7,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B768CB28-710
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API", "src\UKHO.S100PermitService.API\UKHO.S100PermitService.API.csproj", "{48AD4025-1AD7-4C9B-ACA2-29282103450F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{1C199056-0D47-4E8A-A5E5-6D13F446D897}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C199056-0D47-4E8A-A5E5-6D13F446D897}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FunctionalTest", "FunctionalTest", "{05C66E98-E0E0-406F-81CA-76B0A90D612A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.API.FunctionalTests", "test\FunctionalTest\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj", "{0FCBC1DD-0943-4AAF-B496-8FC20FB8C95A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.FunctionalTests", "tests\FunctionalTest\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj", "{0FCBC1DD-0943-4AAF-B496-8FC20FB8C95A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
