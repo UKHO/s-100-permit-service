@@ -1,4 +1,4 @@
-﻿namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests.PermitService
+﻿namespace UKHO.S100PermitService.API.FunctionalTests.TestFiles
 {
     public class PermitServiceTests
     {

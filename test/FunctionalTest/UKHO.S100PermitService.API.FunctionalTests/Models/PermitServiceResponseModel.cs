@@ -1,6 +1,6 @@
 ﻿namespace UKHO.S100PermitService.API.FunctionalTests.Models
 {
-    public class PermitServiceModel
+    public class PermitServiceResponseModel
     {
         public class PermitServiceApiConfiguration
         {
