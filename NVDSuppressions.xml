@@ -53,7 +53,7 @@
    file name: NJsonSchema.Extensions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/NJsonSchema\.Extensions@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/NJsonSchema\.Extensions@.*$</packageUrl>-->
 		<cve>CVE-2021-3918</cve>
 	</suppress>
 	<suppress>
@@ -68,14 +68,14 @@
 		<cve>CVE-2013-6370</cve>
 		<cve>CVE-2013-6371</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    False positive, vulnerability is for package "wire" not wire mock
    file name: WireMock.Net.Abstractions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>
+		--><!--<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>--><!--
 		<cve>CVE-2020-27853</cve>
 		<cve>CVE-2021-41093</cve>
 		<cve>CVE-2020-15258</cve>
@@ -112,15 +112,15 @@
 		<cve>CVE-2021-32755</cve>
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>		
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
    False positive, vulnerability is for package "wire" not wire mock
-   file name: WireMock.Net.dll
+   file name: WireMock.Net.dll,WireMock.Org.Abstractions.dll,WireMock.Org.Abstractions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>-->
 		<cve>CVE-2020-27853</cve>
 		<cve>CVE-2021-41093</cve>
 		<cve>CVE-2021-41100</cve>
@@ -139,18 +139,18 @@
 		<cve>CVE-2021-21301</cve>
 		<cve>CVE-2021-32755</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    Vulnerability not applicable as we run wire mock locally
    file name: WireMock.Net.dll
    ]]>
 		</notes>
-		<!--<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>-->
+		--><!--<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>--><!--
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
+	</suppress>-->
 	<!--<suppress>
 		<notes>
 			<![CDATA[
@@ -201,7 +201,7 @@
    file name: WireMock.Org.Abstractions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/WireMock\.Org\.Abstractions@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/WireMock\.Org\.Abstractions@.*$</packageUrl>-->
 		<cve>CVE-2020-27853</cve>
 		<cve>CVE-2021-41093</cve>
 		<cve>CVE-2020-15258</cve>
@@ -266,7 +266,7 @@
    file name: GraphQL.NewtonsoftJson.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/GraphQL\.NewtonsoftJson@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/GraphQL\.NewtonsoftJson@.*$</packageUrl>-->
 		<cve>CVE-2024-21907</cve>
 	</suppress>
 	<!--<suppress>
@@ -276,16 +276,16 @@
    <packageUrl regex="true">^pkg:generic/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
    <cve>CVE-2014-9152</cve>
 </suppress>-->	
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: Microsoft.CodeAnalysis.Analyzers:3.3.4
    ]]>
 		</notes>
-		<!--<packageUrl regex="true">^pkg:nuget/Microsoft\.CodeAnalysis\.Analyzers@.*$</packageUrl>-->
+		--><!--<packageUrl regex="true">^pkg:nuget/Microsoft\.CodeAnalysis\.Analyzers@.*$</packageUrl>--><!--
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
-	</suppress>
+	</suppress>-->
 	<!--<suppress>
 		<notes>
 			<![CDATA[
@@ -316,16 +316,16 @@
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
 	</suppress>-->
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: System.Reflection.Emit.Lightweight:4.3.0
    ]]>
 		</notes>
-		<!--<packageUrl regex="true">^pkg:nuget/System\.Reflection\.Emit\.Lightweight@.*$</packageUrl>-->
+		--><!--<packageUrl regex="true">^pkg:nuget/System\.Reflection\.Emit\.Lightweight@.*$</packageUrl>--><!--
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
-	</suppress>
+	</suppress>-->
 	<!--<suppress>
 		<notes>
 			<![CDATA[
