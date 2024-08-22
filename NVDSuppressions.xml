@@ -65,7 +65,7 @@
 		<cve>CVE-2021-21301</cve>
 		<cve>CVE-2021-32755</cve>
 	</suppress>
-	<!--<suppress>
+	<suppress>
 		<notes>
 			<![CDATA[
    False positive, vulnerability is for package "wire" not wire mock
@@ -75,7 +75,7 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>-->
+	</suppress>
 	<suppress>
 		<notes>
 			<![CDATA[
