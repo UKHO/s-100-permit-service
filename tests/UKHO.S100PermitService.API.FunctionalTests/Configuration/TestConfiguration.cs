@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 
-namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
+namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
 {
     public class TestConfiguration
     {
