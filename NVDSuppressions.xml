@@ -214,7 +214,9 @@
 		<cve>CVE-2022-43673</cve>
 		<cve>CVE-2021-21301</cve>
 		<cve>CVE-2021-32755</cve>
+		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
+		<cve>CVE-2018-9117</cve>
 	</suppress>
 	<!--<suppress>
 		<notes>
@@ -256,16 +258,7 @@
 		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.OpenSsl@.*$</packageUrl>
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>		
-	</suppress>
-	<!--<suppress>
-		<notes>
-			<![CDATA[
-   file name: YamlDotNet.dll
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:generic/YamlDotNet@.*$</packageUrl>
-		<cve>CVE-2018-1000210</cve>
-	</suppress>-->
+	</suppress>	
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -341,5 +334,23 @@
 		<packageUrl regex="true">^pkg:nuget/System\.Reflection\.Emit\.Lightweight@.*$</packageUrl>
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
-	</suppress>	
+	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: System.Security.Cryptography.X509Certificates:4.3.0
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.X509Certificates@.*$</packageUrl>
+		<cve>CVE-2017-11770</cve>
+	</suppress>
+	<!--<suppress>
+		<notes>
+			<![CDATA[
+   file name: System.Runtime.CompilerServices.Unsafe:6.0.0
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:nuget/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
+		<cpe>cpe:/a:microsoft:services</cpe>
+	</suppress>-->
 </suppressions>
