@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
@@ -9,7 +9,6 @@
 		</notes>
 		<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>
 		<cve>CVE-2020-7661</cve>
-		<cve>CVE-2022-21195</cve>
 	</suppress>
 	<suppress>
 		<notes>
@@ -149,7 +148,6 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-		
 	</suppress>
 	<suppress>
 		<notes>
@@ -227,53 +225,5 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: GraphQL.NewtonsoftJson.dll
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:generic/GraphQL\.NewtonsoftJson@.*$</packageUrl>
-		<cve>CVE-2024-21907</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Text.RegularExpressions:4.3.0
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:nuget/System\.Text\.RegularExpressions@.*$</packageUrl>
-		<vulnerabilityName>CVE-2019-0820</vulnerabilityName>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Threading.Tasks.Extensions.dll
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:generic/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
-		<cve>CVE-2020-22475</cve>
-		<cve>CVE-2022-39349</cve>
-		<cve>CVE-2020-22475</cve>
-		<cve>CVE-2022-39349</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: YamlDotNet.dll
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:generic/YamlDotNet@.*$</packageUrl>
-		<cve>CVE-2018-1000210</cve>
-	</suppress>
-	<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Runtime.CompilerServices.Unsafe.dll
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:generic/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
-		<cve>CVE-2014-9152</cve>		
-	</suppress>
+	</suppress>-->
 </suppressions>
