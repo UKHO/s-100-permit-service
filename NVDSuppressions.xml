@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-	<!--<suppress>
+	<suppress>
 		<notes>
 			<![CDATA[
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
@@ -16,7 +16,7 @@
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
    file name: Handlebars.Net.Helpers.dll
    ]]>
-		</notes>System.Security.Cryptography.X509Certificates:4.3.0
+		</notes>
 		<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>
 		<cve>CVE-2022-21195</cve>
 		<cve>CVE-2017-11770</cve>
@@ -81,8 +81,7 @@
 		<cve>CVE-2018-8909</cve>
 		<cve>CVE-2021-32665</cve>
 		<cve>CVE-2021-32666</cve>
-		<cve>CVE-2022-23625</cve>
-		<cve>CVE-2022-23625</cve>
+		<cve>CVE-2022-23625</cve>		
 		<cve>CVE-2022-31009</cve>
 		<cve>CVE-2023-22737</cve>
 		<cve>CVE-2022-43673</cve>
@@ -110,6 +109,8 @@
 		<cve>CVE-2022-43673</cve>
 		<cve>CVE-2021-21301</cve>
 		<cve>CVE-2021-32755</cve>
+		<cve>CVE-2018-9116</cve>
+		<cve>CVE-2023-41329</cve>		
 	</suppress>
 	<suppress>
 		<notes>
@@ -225,5 +226,34 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>-->
+	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: Microsoft.CSharp:4.3.0
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:nuget/Microsoft\.CSharp@.*$</packageUrl>
+		<cve>CVE-2022-41064</cve>
+		<cve>CVE-2022-30184</cve>
+	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: System.Runtime.InteropServices.dll
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:generic/System\.Runtime\.InteropServices@.*$</packageUrl>
+		<cve>CVE-2014-9152</cve>
+	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: System.Security.Cryptography.OpenSsl:4.3.0
+   ]]>
+		</notes>
+		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.OpenSsl@.*$</packageUrl>
+		<cve>CVE-2022-41064</cve>
+		<cve>CVE-2022-30184</cve>		
+	</suppress>
 </suppressions>
