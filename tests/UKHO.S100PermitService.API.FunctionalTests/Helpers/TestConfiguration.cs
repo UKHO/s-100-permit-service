@@ -5,7 +5,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
     public class TestConfiguration
     {
         protected IConfigurationRoot _configurationRoot;
-        public PermitServiceApiConfiguration permitServiceConfig = new();
+        public PermitServiceApiConfiguration PermitServiceConfig { get; private set; }
 
         public class PermitServiceApiConfiguration
         {
@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
             _configurationRoot = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", false)
                 .Build();
-            _configurationRoot.Bind("PermitServiceApiConfiguration", permitServiceConfig);
+            _configurationRoot.Bind("PermitServiceApiConfiguration", PermitServiceConfig);
         }
     }
 }
