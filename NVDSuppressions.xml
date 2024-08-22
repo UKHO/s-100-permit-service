@@ -7,7 +7,7 @@
    file name: Handlebars.Net.Helpers.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>-->
 		<cve>CVE-2020-7661</cve>
 	</suppress>
 	<suppress>
@@ -15,20 +15,21 @@
 			<![CDATA[
    As this vulnerability is due to string input and this service will be run locally with no outside requests, this vulnerability is not applicable
    file name: Handlebars.Net.Helpers.dll
+   file name: System.Security.Cryptography.X509Certificates:4.3.0
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/Handlebars\.Net\.Helpers@.*$</packageUrl>-->
 		<cve>CVE-2022-21195</cve>
 		<cve>CVE-2017-11770</cve>
 		<cve>CVE-2019-0820</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: JsonConverter.Abstractions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/JsonConverter\.Abstractions@.*$</packageUrl>
+		--><!--<packageUrl regex="true">^pkg:generic/JsonConverter\.Abstractions@.*$</packageUrl>--><!--
 		<cve>CVE-2020-12762</cve>
 		<cve>CVE-2013-6370</cve>
 		<cve>CVE-2013-6371</cve>
@@ -40,11 +41,11 @@
    file name: JsonConverter.Newtonsoft.Json.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/JsonConverter\.Newtonsoft\.Json@.*$</packageUrl>
+		--><!--<packageUrl regex="true">^pkg:generic/JsonConverter\.Newtonsoft\.Json@.*$</packageUrl>--><!--
 		<cve>CVE-2020-12762</cve>
 		<cve>CVE-2013-6370</cve>
 		<cve>CVE-2013-6371</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -62,7 +63,7 @@
    file name: ProtoBufJsonConverter.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/ProtoBufJsonConverter@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/ProtoBufJsonConverter@.*$</packageUrl>-->
 		<cve>CVE-2020-12762</cve>
 		<cve>CVE-2013-6370</cve>
 		<cve>CVE-2013-6371</cve>
@@ -145,12 +146,12 @@
    file name: WireMock.Net.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/WireMock\.Net@.*$</packageUrl>-->
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    Vulnerability not applicable as we run wire mock locally
@@ -161,8 +162,8 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
-	<suppress>
+	</suppress>-->
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    Vulnerability not applicable as we run wire mock locally
@@ -172,8 +173,8 @@
 		<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
-	<suppress>
+	</suppress>-->
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    Vulnerability for java version of wire mock
@@ -182,7 +183,7 @@
 		</notes>
 		<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>
 		<cve>CVE-2023-41329</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -190,7 +191,7 @@
    file name: WireMock.Net.Abstractions.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/WireMock\.Net\.Abstractions@.*$</packageUrl>-->
 		<cve>CVE-2022-31009</cve>
 	</suppress>
 	<suppress>
@@ -325,7 +326,7 @@
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: System.Security.Cryptography.X509Certificates:4.3.0
@@ -333,7 +334,7 @@
 		</notes>
 		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.X509Certificates@.*$</packageUrl>
 		<cve>CVE-2017-11770</cve>
-	</suppress>	
+	</suppress>-->	
 	<suppress>
 		<notes>
 			<![CDATA[
