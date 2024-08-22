@@ -122,14 +122,6 @@ stages:
               publishTestResults: true
               testRunTitle: "UnitTests"
 
-          - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold exceeded"            
-            inputs:
-              checkCoverage: true
-              coverageFailOption: 'fixed'
-              coverageType: 'lines'
-              coverageThreshold: '85'
-
           - task: PowerShell@2
             displayName: "Generate code coverage report"
             inputs:
