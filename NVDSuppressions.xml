@@ -214,8 +214,9 @@
 		<cve>CVE-2022-43673</cve>
 		<cve>CVE-2021-21301</cve>
 		<cve>CVE-2021-32755</cve>
+		<cve>CVE-2023-41329</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    Vulnerability not applicable as we run wire mock locally
@@ -226,7 +227,7 @@
 		<cve>CVE-2018-9116</cve>
 		<cve>CVE-2023-41329</cve>
 		<cve>CVE-2018-9117</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -256,7 +257,7 @@
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>		
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: YamlDotNet.dll
@@ -264,7 +265,7 @@
 		</notes>
 		<packageUrl regex="true">^pkg:generic/YamlDotNet@.*$</packageUrl>
 		<cve>CVE-2018-1000210</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -274,13 +275,13 @@
 		<packageUrl regex="true">^pkg:generic/GraphQL\.NewtonsoftJson@.*$</packageUrl>
 		<cve>CVE-2024-21907</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
    <notes><![CDATA[
    file name: System.Runtime.CompilerServices.Unsafe.dll
    ]]></notes>
    <packageUrl regex="true">^pkg:generic/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
    <cve>CVE-2014-9152</cve>
-</suppress>
+</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
