@@ -5,11 +5,11 @@ VisualStudioVersion = 17.9.34616.47
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B768CB28-7109-49B6-980D-FE2F110A236B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{99FD46A1-B742-4110-B63D-1B560C0E1CC0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API", "src\UKHO.S100PermitService.API\UKHO.S100PermitService.API.csproj", "{48AD4025-1AD7-4C9B-ACA2-29282103450F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.Tests", "test\UKHO.S100PermitService.API.Tests\UKHO.S100PermitService.API.Tests.csproj", "{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C199056-0D47-4E8A-A5E5-6D13F446D897}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.API.FunctionalTests", "tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj", "{91B71F54-1740-4F89-8FB9-853CF0A494CC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,17 +21,17 @@ Global
 		{48AD4025-1AD7-4C9B-ACA2-29282103450F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48AD4025-1AD7-4C9B-ACA2-29282103450F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48AD4025-1AD7-4C9B-ACA2-29282103450F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91B71F54-1740-4F89-8FB9-853CF0A494CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91B71F54-1740-4F89-8FB9-853CF0A494CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91B71F54-1740-4F89-8FB9-853CF0A494CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91B71F54-1740-4F89-8FB9-853CF0A494CC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{48AD4025-1AD7-4C9B-ACA2-29282103450F} = {B768CB28-7109-49B6-980D-FE2F110A236B}
-		{25E3BF7E-CD0B-4A2A-9EF2-2E112DE1BD88} = {99FD46A1-B742-4110-B63D-1B560C0E1CC0}
+		{91B71F54-1740-4F89-8FB9-853CF0A494CC} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A236686-85EA-4703-A715-FCBAA6461AAE}
