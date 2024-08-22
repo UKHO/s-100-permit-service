@@ -236,7 +236,7 @@
    file name: Microsoft.CSharp:4.3.0
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:nuget/Microsoft\.CSharp@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:nuget/Microsoft\.CSharp@.*$</packageUrl>-->
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
 	</suppress>
@@ -246,19 +246,19 @@
    file name: System.Runtime.InteropServices.dll
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:generic/System\.Runtime\.InteropServices@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:generic/System\.Runtime\.InteropServices@.*$</packageUrl>-->
 		<cve>CVE-2014-9152</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: System.Security.Cryptography.OpenSsl:4.3.0
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.OpenSsl@.*$</packageUrl>
+		--><!--<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.OpenSsl@.*$</packageUrl>--><!--
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>		
-	</suppress>	
+	</suppress>-->	
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -274,28 +274,18 @@
    ]]></notes>
    <packageUrl regex="true">^pkg:generic/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
    <cve>CVE-2014-9152</cve>
-</suppress>-->
-	<!--<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Threading.Tasks.Extensions:4.3.0
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:nuget/System\.Threading\.Tasks\.Extensions@.*$</packageUrl>
-		<cve>CVE-2020-22475</cve>
-		<cve>CVE-2022-39349</cve>
-	</suppress>-->
+</suppress>-->	
 	<suppress>
 		<notes>
 			<![CDATA[
    file name: Microsoft.CodeAnalysis.Analyzers:3.3.4
    ]]>
 		</notes>
-		<packageUrl regex="true">^pkg:nuget/Microsoft\.CodeAnalysis\.Analyzers@.*$</packageUrl>
+		<!--<packageUrl regex="true">^pkg:nuget/Microsoft\.CodeAnalysis\.Analyzers@.*$</packageUrl>-->
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
 	</suppress>
-	<suppress>
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: Microsoft.NETCore.Platforms:1.1.0
@@ -314,8 +304,8 @@
 		<packageUrl regex="true">^pkg:nuget/Microsoft\.NETCore\.Targets@.*$</packageUrl>
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
-	</suppress>
-	<suppress>
+	</suppress>-->
+	<!--<suppress>
 		<notes>
 			<![CDATA[
    file name: System.Buffers:4.5.1
@@ -324,7 +314,7 @@
 		<packageUrl regex="true">^pkg:nuget/System\.Buffers@.*$</packageUrl>
 		<cve>CVE-2022-41064</cve>
 		<cve>CVE-2022-30184</cve>
-	</suppress>
+	</suppress>-->
 	<suppress>
 		<notes>
 			<![CDATA[
@@ -343,23 +333,15 @@
 		</notes>
 		<packageUrl regex="true">^pkg:nuget/System\.Security\.Cryptography\.X509Certificates@.*$</packageUrl>
 		<cve>CVE-2017-11770</cve>
+	</suppress>	
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: System.Threading.Tasks.Extensions.dll
+   Vunerability due to permissions on VoiceCommandActivity application component, no applicable.
+   ]]>
+		</notes>
+		<cve>CVE-2020-22475</cve>
+		<cve>CVE-2022-39349</cve>
 	</suppress>
-	<!--<suppress>
-		<notes>
-			<![CDATA[
-   file name: System.Runtime.CompilerServices.Unsafe:6.0.0
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:nuget/System\.Runtime\.CompilerServices\.Unsafe@.*$</packageUrl>
-		<cpe>cpe:/a:microsoft:services</cpe>
-	</suppress>-->
-	<!--<suppress>
-		<notes>
-			<![CDATA[
-   file name: runtime.native.System:4.3.0
-   ]]>
-		</notes>
-		<packageUrl regex="true">^pkg:nuget/runtime\.native\.System@.*$</packageUrl>
-		<cve>CVE-2022-41064</cve>
-	</suppress>-->
 </suppressions>
