@@ -7,9 +7,9 @@ using WireMock.Settings;
 
 namespace UKHO.S100PermitService.Stubs
 {
-    class Program
+    internal class Program
     {
-        static void Main()
+        private static void Main()
         {
             var configuration = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json")

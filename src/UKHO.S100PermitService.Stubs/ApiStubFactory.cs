@@ -8,7 +8,7 @@ namespace UKHO.S100PermitService.Stubs
         private readonly ShopFacadeApi _shopFacadeApi;
         private readonly ProductKeyServiceApi _productKeyServiceApi;
 
-        public ApiStubFactory(ShopFacadeApi shopFacadeApi , ProductKeyServiceApi productKeyServiceApi)
+        public ApiStubFactory(ShopFacadeApi shopFacadeApi, ProductKeyServiceApi productKeyServiceApi)
         {
             _shopFacadeApi = shopFacadeApi;
             _productKeyServiceApi = productKeyServiceApi;

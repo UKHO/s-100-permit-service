@@ -22,5 +22,4 @@ namespace UKHO.S100PermitService.Stubs
             productKeyServiceApiStub.ConfigureStub(_server);
         }
     }
-
 }
