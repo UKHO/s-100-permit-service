@@ -24,6 +24,5 @@ namespace UKHO.S100PermitService.Stubs.Stubs
                     .WithHeader("Content-Type" , "application/json")
                     .WithBody("{ \"message\": \"PKS API Stub response\" }"));
         }
-
     }
 }

@@ -24,5 +24,4 @@ namespace UKHO.S100PermitService.Stubs
             return new ProductKeyServiceApiStub(_productKeyServiceApi);
         }
     }
-
 }
