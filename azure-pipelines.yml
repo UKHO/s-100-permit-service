@@ -258,3 +258,45 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubs'
               ArtifactName: UKHOS100PermitServiceStubs
               
+      - job: PublishFunctionalTests
+        workspace:
+          clean: all
+        displayName: "Publish FunctionalTests"
+        steps:
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: '$(Build.SourcesDirectory)\src'
+              
+          - task: DotNetCoreCLI@2
+            displayName: ".Net Core - NuGet restore for non test projects only"
+            inputs:
+              command: "restore"
+              projects: |
+                **/*.csproj
+                **/UKHO.S100PermitService.Stubs.csproj                
+              feedsToUse: config
+              noCache: true
+              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+              workingDirectory: '$(Build.SourcesDirectory)\src'
+              packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
+
+          - task: DotNetCoreCLI@2
+            displayName: "Publish Functional Test Code "
+            inputs:
+              command: "publish"
+              publishWebProjects: false
+              projects: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj'
+              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
+              workingDirectory: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests'
+              zipAfterPublish: false
+              modifyOutputPath: true
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Functional test Artifact"
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
+              ArtifactName: functionaltests
