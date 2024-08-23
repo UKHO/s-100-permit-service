@@ -1,13 +1,13 @@
 ﻿using WireMock.Server;
 
-namespace UKHO.S100PermitService.Stubs
+namespace UKHO.S100PermitService.Stubs.Configuration
 {
-    public class StubConfigurationManager
+    public class ApiStubConfigurationManager
     {
         private readonly ApiStubFactory _apiStubFactory;
         private readonly WireMockServer _server;
 
-        public StubConfigurationManager(ApiStubFactory apiStubFactory, WireMockServer server)
+        public ApiStubConfigurationManager(ApiStubFactory apiStubFactory, WireMockServer server)
         {
             _apiStubFactory = apiStubFactory;
             _server = server;

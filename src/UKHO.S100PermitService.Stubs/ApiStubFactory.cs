@@ -1,5 +1,5 @@
 ﻿using UKHO.S100PermitService.Stubs.Configuration;
-using UKHO.S100PermitService.Stubs.Stubs;
+using UKHO.S100PermitService.Stubs.ApiStubs;
 
 namespace UKHO.S100PermitService.Stubs
 {

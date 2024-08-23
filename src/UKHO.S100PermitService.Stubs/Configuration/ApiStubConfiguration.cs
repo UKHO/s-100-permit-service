@@ -1,6 +1,6 @@
 ﻿namespace UKHO.S100PermitService.Stubs.Configuration
 {
-    public class StubConfiguration
+    public class ApiStubConfiguration
     {
         public int? Port { get; set; }
     }

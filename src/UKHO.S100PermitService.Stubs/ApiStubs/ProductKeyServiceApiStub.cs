@@ -4,7 +4,7 @@ using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace UKHO.S100PermitService.Stubs.Stubs
+namespace UKHO.S100PermitService.Stubs.ApiStubs
 {
     public class ProductKeyServiceApiStub : IApiStub
     {
