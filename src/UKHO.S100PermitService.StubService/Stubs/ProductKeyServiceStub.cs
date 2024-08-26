@@ -1,16 +1,16 @@
 ﻿using System.Net;
-using UKHO.S100PermitService.Stubs.Configuration;
+using UKHO.S100PermitService.StubService.Configuration;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
 
-namespace UKHO.S100PermitService.Stubs.ApiStubs
+namespace UKHO.S100PermitService.StubService.Stubs
 {
-    public class ProductKeyServiceApiStub : IApiStub
+    public class ProductKeyServiceStub : IStub
     {
-        private readonly ProductKeyServiceApi _productKeyServiceApi;
+        private readonly ProductKeyServiceConfiguration _productKeyServiceApi;
 
-        public ProductKeyServiceApiStub(ProductKeyServiceApi productKeyServiceApi)
+        public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceApi)
         {
             _productKeyServiceApi = productKeyServiceApi;
         }
@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.Stubs.ApiStubs
                 .Given(Request.Create().WithPath(_productKeyServiceApi.Url).UsingGet())
                 .RespondWith(Response.Create()
                     .WithStatusCode(HttpStatusCode.OK)
-                    .WithHeader("Content-Type" , "application/json")
+                    .WithHeader("Content-Type", "application/json")
                     .WithBody("{ \"message\": \"PKS API Stub response\" }"));
         }
     }
