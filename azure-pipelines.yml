@@ -1,6 +1,12 @@
 name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd).$(BuildCounter)
 
 parameters:
+
+  - name: ContinueEvenIfResourcesAreGettingDestroyed
+    displayName: "Continue even if resources are getting destroyed"
+    type: boolean
+    default: false
+
   - name: DisableDependencyCheck
     displayName: "Disable OWASP Dependency Checking"
     type: boolean
@@ -33,7 +39,7 @@ variables:
   - name: WindowsPool
     value: "NautilusBuild"
   - name: Container
-    value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.7.2"
+    value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.9.2"
   - name: DeploymentPool
     value: "Mare Nectaris"
 
@@ -300,3 +306,142 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
               ArtifactName: functionaltests
+
+  - stage: Devdeploy
+    displayName: "Devdeploy (inc terraform, webapp deploy)"
+    variables:
+      - group: "S-100-PG-Dev"
+      - group: "S-100-PG-Dev-TF"
+      - group: "S-100-PG-Dev-KV"
+    jobs:
+      - deployment: DevDeployTerraform
+        displayName: "Dev - Deploy Terraform"
+        environment: "S100PG-DEV"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+
+      - deployment: DevDeployApp
+        dependsOn: DevDeployTerraform
+        displayName: "Dev - Deploy Dotnet App"
+        environment: "S100PG-DEV"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : MOCK_WEB_APP_NAME
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.mockWebApp'] ]
+          - name : ResourceGroup
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+
+  - stage: vNextIATDeploy
+    dependsOn:  Devdeploy
+    displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))    
+    variables:
+      - group: "S-100-PG-vNextIAT"
+      - group: "S-100-PG-vNextIAT-TF"
+      - group: "S-100-PG-vNextIAT-KV"
+    jobs:
+      - deployment: vNextIATDeployTerraform
+        displayName: "vNextIAT - Deploy Terraform"
+        environment: "S100PG-VNEXTIAT"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
+
+      - deployment: vNextIATDeployApp
+        dependsOn: vNextIATDeployTerraform
+        displayName: "vNextIAT - Deploy Dotnet App"
+        environment: "S100PG-VNEXTIAT"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : MOCK_WEB_APP_NAME
+            value : $[ dependencies.vNextIATDeployTerraform.outputs.outputs['vNextIATDeployTerraform.outputs.TerraformDeploy.mockWebApp'] ]
+          - name : ResourceGroup
+            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
+  
+  - stage: vNextE2EDeploy
+    dependsOn: vNextIATDeploy
+    displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))
+    variables:
+      - group: "S-100-PG-vNextE2E"
+      - group: "S-100-PG-vNextE2E-TF"
+      - group: "S-100-PG-vNextE2E-KV"
+    jobs:
+      - deployment: vNextE2EDeployTerraform
+        displayName: "vNextE2E - Deploy Terraform"
+        environment: "S100PG-VNEXTE2E"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+
+      - deployment: VnextE2EDeployApp
+        dependsOn: VnextE2EDeployTerraform
+        displayName: "VnextE2E - Deploy Dotnet App"
+        environment: "S100PG-VNEXTE2E"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : MOCK_WEB_APP_NAME
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.mockWebApp'] ]
+          - name : ResourceGroup
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
