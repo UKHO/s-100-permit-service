@@ -355,7 +355,7 @@ stages:
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))    
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))    
     variables:
       - group: "S-100-PG-vNextIAT"
       - group: "S-100-PG-vNextIAT-TF"
@@ -402,7 +402,7 @@ stages:
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))
     variables:
       - group: "S-100-PG-vNextE2E"
       - group: "S-100-PG-vNextE2E-TF"
@@ -424,9 +424,9 @@ stages:
                     ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
                     AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
 
-      - deployment: VnextE2EDeployApp
-        dependsOn: VnextE2EDeployTerraform
-        displayName: "VnextE2E - Deploy Dotnet App"
+      - deployment: vNextE2EDeployApp
+        dependsOn: vNextE2EDeployTerraform
+        displayName: "vNextE2E - Deploy Dotnet App"
         environment: "S100PG-VNEXTE2E"
         pool: $(DeploymentPool)
         variables:

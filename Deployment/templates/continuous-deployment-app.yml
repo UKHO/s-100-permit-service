@@ -4,14 +4,14 @@ parameters:
 
 steps:
   - task: FileTransform@1
-    displayName: "File Transform: Stubs Service Application Settings"
+    displayName: "File Transform: Stub Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/S100PermitServiceStubs/*.zip'
       fileType: 'json'
       targetFiles: '**/appsettings.json'
 
   - task: AzureWebApp@1
-    displayName: "Azure Stubs App Deploy"
+    displayName: "Azure Stub App Deploy"
     inputs:
       azureSubscription: "${{ parameters.AzureSubscription }}"
       appType: webApp
