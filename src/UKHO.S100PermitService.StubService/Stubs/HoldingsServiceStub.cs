@@ -6,19 +6,19 @@ using WireMock.Server;
 
 namespace UKHO.S100PermitService.StubService.Stubs
 {
-    public class ProductKeyServiceStub : IStub
+    public class HoldingsServiceStub : IStub
     {
-        private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
+        private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
 
-        public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceConfiguration)
+        public HoldingsServiceStub(HoldingsServiceConfiguration holdingsServiceConfiguration)
         {
-            _productKeyServiceConfiguration = productKeyServiceConfiguration;
+            _holdingsServiceConfiguration = holdingsServiceConfiguration;
         }
 
         public void ConfigureStub(WireMockServer server)
         {
             server
-                .Given(Request.Create().WithPath(_productKeyServiceConfiguration.Url).UsingGet())
+                .Given(Request.Create().WithPath(_holdingsServiceConfiguration.Url).UsingGet())
                 .RespondWith(Response.Create()
                     .WithStatusCode(HttpStatusCode.OK)
                     .WithHeader("Content-Type", "application/json")

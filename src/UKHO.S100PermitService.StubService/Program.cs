@@ -2,12 +2,13 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using UKHO.S100PermitService.StubService.Configuration;
+using UKHO.S100PermitService.StubService.StubSetup;
 using WireMock.Server;
 using WireMock.Settings;
 
 namespace UKHO.S100PermitService.StubService
 {
-    internal class Program
+    internal static class Program
     {
         private static void Main()
         {
@@ -17,25 +18,27 @@ namespace UKHO.S100PermitService.StubService
 
             var services = new ServiceCollection();
 
-            services.Configure<StubConfiguration>(configuration.GetSection("ApiStubConfiguration"));
-            services.Configure<ProductKeyServiceConfiguration>(configuration.GetSection("ProductKeyServiceApi"));
+            services.Configure<StubConfiguration>(configuration.GetSection("StubConfiguration"));
+            services.Configure<HoldingsServiceConfiguration>(configuration.GetSection("HoldingsServiceConfiguration"));
+            services.Configure<ProductKeyServiceConfiguration>(configuration.GetSection("ProductKeyServiceConfiguration"));
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var stubConfig = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
-            var productKeyServiceApi = serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
+            var stubConfiguration = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
+            var holdingsServiceConfiguration = serviceProvider.GetService<IOptions<HoldingsServiceConfiguration>>()?.Value;
+            var productKeyServiceConfiguration = serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
 
             var server = WireMockServer.Start(new WireMockServerSettings
             {
-                Port = stubConfig?.Port,
+                Port = stubConfiguration?.Port,
                 UseSSL = true
             });
 
-            Console.WriteLine($"WireMock server is running at https://localhost:{stubConfig?.Port}");
+            Console.WriteLine($"WireMock server is running at https://localhost:{stubConfiguration?.Port}");
 
-            var stubFactory = new StubFactory(productKeyServiceApi!);
-            var stubConfigurationManager = new StubConfigurationManager(stubFactory, server);
-            stubConfigurationManager.RegisterStubs();
+            var stubCreator = new StubCreator(holdingsServiceConfiguration!, productKeyServiceConfiguration!);
+            var stubManager = new StubManager(stubCreator, server);
+            stubManager.RegisterStubs();
 
             // Keep the server running
             Console.ReadLine();
