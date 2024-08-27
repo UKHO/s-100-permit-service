@@ -1,8 +1,8 @@
 ﻿using WireMock.Server;
 
-namespace UKHO.S100PermitService.Stubs
+namespace UKHO.S100PermitService.StubService.Stubs
 {
-    public interface IApiStub
+    public interface IStub
     {
         void ConfigureStub(WireMockServer server);
     }

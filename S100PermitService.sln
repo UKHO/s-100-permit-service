@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C199056-0D47-4E8A-A5E5-6D13F446D897}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.Stubs", "src\UKHO.S100PermitService.Stubs\UKHO.S100PermitService.Stubs.csproj", "{4D96041E-A762-4C09-9E1E-1319CE667323}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.StubService", "src\UKHO.S100PermitService.StubService\UKHO.S100PermitService.StubService.csproj", "{4D96041E-A762-4C09-9E1E-1319CE667323}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.FunctionalTests", "tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj", "{91B71F54-1740-4F89-8FB9-853CF0A494CC}"
 EndProject
