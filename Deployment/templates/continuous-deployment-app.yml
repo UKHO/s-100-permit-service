@@ -6,7 +6,7 @@ steps:
   - task: FileTransform@1
     displayName: "File Transform: Stub Service Application Settings"
     inputs:
-      folderPath: '$(Pipeline.Workspace)/S100PermitServiceStubs/*.zip'
+      folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/*.zip'
       fileType: 'json'
       targetFiles: '**/appsettings.json'
 
@@ -16,7 +16,7 @@ steps:
       azureSubscription: "${{ parameters.AzureSubscription }}"
       appType: webApp
       appName: "$(MOCK_WEB_APP_NAME)"
-      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubs/UKHO.S100PermitService.Stubs.zip"
+      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
 
   - task: FileTransform@1
     displayName: "File Transform: WebAppSettings"
