@@ -3,12 +3,12 @@ using UKHO.S100PermitService.StubService.Stubs;
 
 namespace UKHO.S100PermitService.StubService.StubSetup
 {
-    public class StubCreator
+    public class StubFactory
     {
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
-        public StubCreator(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration)
+        public StubFactory(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration)
         {
             _holdingsServiceConfiguration = holdingsServiceConfiguration;
             _productKeyServiceConfiguration = productKeyServiceConfiguration;

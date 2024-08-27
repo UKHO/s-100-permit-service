@@ -5,19 +5,19 @@ namespace UKHO.S100PermitService.StubService.StubSetup
 {
     public class StubManager
     {
-        private readonly StubCreator _stubCreator;
+        private readonly StubFactory _stubFactory;
         private readonly WireMockServer _wireMockServer;
 
-        public StubManager(StubCreator stubCreator, WireMockServer wireMockServer)
+        public StubManager(StubFactory stubFactory, WireMockServer wireMockServer)
         {
-            _stubCreator = stubCreator;
+            _stubFactory = stubFactory;
             _wireMockServer = wireMockServer;
         }
 
         public void RegisterStubs()
         {
-            RegisterStub(_stubCreator.CreateHoldingsServiceStub());
-            RegisterStub(_stubCreator.CreateProductKeyServiceStub());
+            RegisterStub(_stubFactory.CreateHoldingsServiceStub());
+            RegisterStub(_stubFactory.CreateProductKeyServiceStub());
         }
 
         private void RegisterStub<T>(T stub) where T : IStub

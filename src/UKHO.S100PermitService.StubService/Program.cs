@@ -36,8 +36,8 @@ namespace UKHO.S100PermitService.StubService
 
             Console.WriteLine($"WireMock server is running at https://localhost:{stubConfiguration?.Port}");
 
-            var stubCreator = new StubCreator(holdingsServiceConfiguration!, productKeyServiceConfiguration!);
-            var stubManager = new StubManager(stubCreator, server);
+            var stubFactory = new StubFactory(holdingsServiceConfiguration!, productKeyServiceConfiguration!);
+            var stubManager = new StubManager(stubFactory, server);
             stubManager.RegisterStubs();
 
             // Keep the server running
