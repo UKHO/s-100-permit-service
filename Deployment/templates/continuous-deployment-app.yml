@@ -21,7 +21,7 @@ steps:
   - task: FileTransform@1
     displayName: "File Transform: WebAppSettings"
     inputs:
-      folderPath: '$(Pipeline.Workspace)/UKHO.S100PermitService.API/*.zip'
+      folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
       fileType: 'json'
       targetFiles: '**/appsettings.json'
            
@@ -31,4 +31,4 @@ steps:
       azureSubscription: "${{ parameters.AzureSubscription }}"
       appType: webApp
       appName: "$(WEB_APP_NAME)"
-      package: "$(Pipeline.Workspace)/UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip"
+      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
