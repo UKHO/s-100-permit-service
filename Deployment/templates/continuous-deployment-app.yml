@@ -3,14 +3,20 @@ parameters:
     type: string
 
 steps:
-
-  - task: azurewebapp@1
-    displayName: "azure stub app deploy"
+  - task: FileTransform@1
+    displayName: "File Transform: Stub Service Application Settings"
     inputs:
-      azuresubscription: "${{ parameters.azuresubscription }}"
-      apptype: webapp
-      appname: "$(mock_web_app_name)"
-      package: "$(pipeline.workspace)/ukhos100permitservicestubservice/ukho.s100permitservice.stubservice.zip"
+      folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/*.zip'
+      fileType: 'json'
+      targetFiles: '**/appsettings.json'
+
+  - task: AzureWebApp@1
+    displayName: "Azure App Deploy: S100-Permit-StubService"
+    inputs:
+      azureSubscription: "${{ parameters.AzureSubscription }}"
+      appType: webApp
+      appName: "$(MOCK_WEB_APP_NAME)"
+      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
            
   - task: AzureWebApp@1
     displayName: "Azure Api App Deploy"
