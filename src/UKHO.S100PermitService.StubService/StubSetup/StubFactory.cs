@@ -7,11 +7,13 @@ namespace UKHO.S100PermitService.StubService.StubSetup
     {
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
+        private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
 
-        public StubFactory(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration)
+        public StubFactory(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration, UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
             _holdingsServiceConfiguration = holdingsServiceConfiguration;
             _productKeyServiceConfiguration = productKeyServiceConfiguration;
+            _userPermitsServiceConfiguration = userPermitsServiceConfiguration;
         }
 
         public IStub CreateHoldingsServiceStub()
@@ -22,6 +24,11 @@ namespace UKHO.S100PermitService.StubService.StubSetup
         public IStub CreateProductKeyServiceStub()
         {
             return new ProductKeyServiceStub(_productKeyServiceConfiguration);
+        }
+
+        public IStub CreateUserPermitsServiceStub()
+        {
+            return new UserPermitsServiceStub(_userPermitsServiceConfiguration);
         }
     }
 }
