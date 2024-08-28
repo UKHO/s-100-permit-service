@@ -264,10 +264,10 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
               ArtifactName: UKHOS100PermitServiceStubService
               
-      - job: PublishFunctionalTests
+      - job: PublishFunctionalTestsAndTerraform
         workspace:
           clean: all
-        displayName: "Publish FunctionalTests"
+        displayName: "Publish FunctionalTests and Terraform Artifact"
         steps:
 
           - task: UseDotNet@2
@@ -306,6 +306,12 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
               ArtifactName: functionaltests
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish terraform Artifacts"
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)\Deployment'
+              ArtifactName: terraformartifact
 
   - stage: Devdeploy
     displayName: "Devdeploy (inc terraform, webapp deploy)"
