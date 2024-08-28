@@ -4,14 +4,14 @@ parameters:
 
 steps:
   - task: filetransform@1
-    displayname: "file transform: stub service application settings"
+    displayName: "file transform: stub service application settings"
     inputs:
       folderpath: '$(pipeline.workspace)/ukhos100permitservicestubservice/*.zip'
       filetype: 'json'
       targetfiles: '**/appsettings.json'
 
   - task: azurewebapp@1
-    displayname: "azure stub app deploy"
+    displayName: "azure stub app deploy"
     inputs:
       azuresubscription: "${{ parameters.azuresubscription }}"
       apptype: webapp
