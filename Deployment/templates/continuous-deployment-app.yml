@@ -19,7 +19,7 @@ steps:
       package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
            
   - task: AzureWebApp@1
-    displayName: "Azure Api App Deploy"
+    displayName: "Azure App Deploy: S100-Permit-ApiService"
     inputs:
       azureSubscription: "${{ parameters.AzureSubscription }}"
       appType: webApp
