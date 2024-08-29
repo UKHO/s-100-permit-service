@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Linq;
+using System.Net;
 using UKHO.S100PermitService.StubService.Configuration;
 using WireMock;
 using WireMock.Matchers;
@@ -14,6 +15,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     {
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
         private const string APPLICATIONTYPE = "application/json";
+        int[] VALIDLICENCEIDs = { 1, 2, 3, 4 };
 
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
@@ -37,67 +39,89 @@ namespace UKHO.S100PermitService.StubService.Stubs
             //}));
 
             //404 - NotFound
-            server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/2").UsingGet())
+            //server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url).WithParam("licenceid","2").UsingGet())
+            //.RespondWith(Response.Create().WithCallback(req =>
+            //{
+            //    return SetResponse(req);
+            //}));
+
+            //server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/2").UsingGet()
+            //    .WithHeader("correlationId","*"))
+            //.RespondWith(Response.Create().WithCallback(req =>
+            //{
+            //    return SetResponse(req);
+            //}));
+
+            server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch)
+                .WithHeader("correlationId", "*"))
             .RespondWith(Response.Create().WithCallback(req =>
             {
                 return SetResponse(req);
             }));
 
-            //400 - BadRequest
-            server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/error").UsingGet())
-            .RespondWith(Response.Create().WithCallback(req =>
-            {
-                return SetResponse(req);
-            }));
+            ////400 - BadRequest
+            //server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet())
+            //.RespondWith(Response.Create().WithCallback(req =>
+            //{
+            //    return SetResponse(req);
+            //}));
 
             //401 - Unauthorized
             server
             .Given(Request.Create()
-             .WithPath(_userPermitsServiceConfiguration.Url + "/1")
+             .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
              .UsingGet()
              .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
             .RespondWith(Response.Create()
              .WithStatusCode(HttpStatusCode.Unauthorized)
-             .WithBody(@"{ ""result"": ""token missing""}"));
+             .WithBody(@"{ ""result"": ""token is missing""}"));
 
-            server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/1").UsingGet()
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-            .RespondWith(Response.Create().WithCallback(req =>
-            {
-                return SetResponse(req);
-            }));
+            //server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
+            //    .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+            //.RespondWith(Response.Create().WithCallback(req =>
+            //{
+            //    return SetResponse(req);
+            //}));
 
         }
 
-        private static ResponseMessage SetResponse(IRequestMessage request)
+        private ResponseMessage SetResponse(IRequestMessage request)
         {
-            var scenario = request.AbsolutePath.Split('/')[2];
+            var licenceID = request.AbsolutePath.Split('/')[2];
+
+            var responseCode = Int32.TryParse(licenceID, out int result) ? VALIDLICENCEIDs.Contains(result) ? 200 : 404 : 400;
             var response = new ResponseMessage();
             var bodyData = new BodyData()
             {
                 DetectedBodyType = BodyType.String
             };
 
-            switch(scenario)
+            //var scenario = Convert.ToString(request.Query["licenceid"]);
+            string fileContent;
+            switch(responseCode)
             {
-                case "1"://200 - OK
+                case 200://200 - OK
 
-                    var fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", "response-200-licenceid-1.json");
+                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", $"response-200-licenceid-{result}.json");
 
                     response.StatusCode = HttpStatusCode.OK;
                     bodyData.BodyAsString = File.ReadAllText(fileContent);
 
                     break;
 
-                case "2"://404 - NotFound
+                case 404://404 - NotFound
+                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", "response-404.json");
 
-                    bodyData.BodyAsString = "LicenseID not found or invalid";
                     response.StatusCode = HttpStatusCode.NotFound;
+                    bodyData.BodyAsString = File.ReadAllText(fileContent);
                     break;
 
-                case "error"://400 - BadRequest
+                case 400://400 - BadRequest
 
-                    bodyData.BodyAsString = "Bad Request";
+                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", "response-400.json");
+
+                    bodyData.BodyAsString = File.ReadAllText(fileContent);
                     response.StatusCode = HttpStatusCode.BadRequest;
                     break;
 
@@ -105,8 +129,11 @@ namespace UKHO.S100PermitService.StubService.Stubs
                     break;
             }
 
+            var correlationId = !string.IsNullOrEmpty(request?.Headers?["correlationId"]?[0]) ? request.Headers["correlationId"][0] : Guid.NewGuid().ToString();
+
             response.BodyData = bodyData;
             response.AddHeader("Content-Type", APPLICATIONTYPE);
+            response.AddHeader("correlationId", correlationId);
             return response;
         }
     }
