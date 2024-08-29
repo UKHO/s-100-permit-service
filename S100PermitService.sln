@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.UnitTests", "tests\UKHO.S100PermitService.API.UnitTests\UKHO.S100PermitService.API.UnitTests.csproj", "{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.StubService.UnitTests", "tests\UKHO.S100PermitService.StubService.UnitTests\UKHO.S100PermitService.StubService.UnitTests.csproj", "{EFFBCF39-2B23-42C4-84A6-D2C91723645E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -46,6 +52,7 @@ Global
 		{4D96041E-A762-4C09-9E1E-1319CE667323} = {B768CB28-7109-49B6-980D-FE2F110A236B}
 		{91B71F54-1740-4F89-8FB9-853CF0A494CC} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
 		{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
+		{EFFBCF39-2B23-42C4-84A6-D2C91723645E} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A236686-85EA-4703-A715-FCBAA6461AAE}
