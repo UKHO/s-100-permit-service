@@ -10,8 +10,8 @@ namespace UKHO.S100PermitService.StubService.StubSetup
 
         public StubManager(StubFactory stubFactory, WireMockServer wireMockServer)
         {
-            _stubFactory = stubFactory;
-            _wireMockServer = wireMockServer;
+            _stubFactory = stubFactory ?? throw new ArgumentNullException(nameof(stubFactory));
+            _wireMockServer = wireMockServer ?? throw new ArgumentNullException(nameof(wireMockServer));
         }
 
         public void RegisterStubs()

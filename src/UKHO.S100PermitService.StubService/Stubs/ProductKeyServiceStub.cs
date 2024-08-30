@@ -12,7 +12,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceConfiguration)
         {
-            _productKeyServiceConfiguration = productKeyServiceConfiguration;
+            _productKeyServiceConfiguration = productKeyServiceConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceConfiguration));
         }
 
         public void ConfigureStub(WireMockServer server)

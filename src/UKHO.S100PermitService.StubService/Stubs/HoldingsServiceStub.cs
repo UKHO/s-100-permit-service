@@ -12,7 +12,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public HoldingsServiceStub(HoldingsServiceConfiguration holdingsServiceConfiguration)
         {
-            _holdingsServiceConfiguration = holdingsServiceConfiguration;
+            _holdingsServiceConfiguration = holdingsServiceConfiguration ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));
         }
 
         public void ConfigureStub(WireMockServer server)
