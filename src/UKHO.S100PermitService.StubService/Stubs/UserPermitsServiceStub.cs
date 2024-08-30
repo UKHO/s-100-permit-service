@@ -15,8 +15,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
     {
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
         private const string APPLICATIONTYPE = "application/json";
-        int[] VALIDLICENCEIDs = { 1, 2, 3, 4 };
-
+        private const string RESPONSEFILEDIRECTORY = "StubData\\UserPermits";
+        private readonly string RESPONSEFILEDIRECTORYPATH = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
             _userPermitsServiceConfiguration = userPermitsServiceConfiguration;
@@ -24,65 +24,25 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
-            //server
-            //    .Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url).UsingGet())
-            //    .RespondWith(Response.Create()
-            //        .WithStatusCode(HttpStatusCode.OK)
-            //        .WithHeader("Content-Type", "application/json")
-            //        .WithBody("{ \"message\": \"User Permits API Stub response\" }"));
-
-            //200 - OK
-            //server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/1").UsingGet())
-            //.RespondWith(Response.Create().WithCallback(req =>
-            //{
-            //    return SetResponse(req);
-            //}));
-
-            //404 - NotFound
-            //server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url).WithParam("licenceid","2").UsingGet())
-            //.RespondWith(Response.Create().WithCallback(req =>
-            //{
-            //    return SetResponse(req);
-            //}));
-
-            //server.Given(Request.Create().WithPath(_userPermitsServiceConfiguration.Url + "/2").UsingGet()
-            //    .WithHeader("correlationId","*"))
-            //.RespondWith(Response.Create().WithCallback(req =>
-            //{
-            //    return SetResponse(req);
-            //}));
-
-            server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch)
-                .WithHeader("correlationId", "*"))
-            .RespondWith(Response.Create().WithCallback(req =>
-            {
-                return SetResponse(req);
-            }));
-
-            ////400 - BadRequest
-            //server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet())
-            //.RespondWith(Response.Create().WithCallback(req =>
-            //{
-            //    return SetResponse(req);
-            //}));
-
             //401 - Unauthorized
             server
             .Given(Request.Create()
              .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
              .UsingGet()
-             .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
+             .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch)
+             .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()))
             .RespondWith(Response.Create()
              .WithStatusCode(HttpStatusCode.Unauthorized)
              .WithBody(@"{ ""result"": ""token is missing""}"));
 
-            //server.Given(Request.Create().WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
-            //    .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-            //.RespondWith(Response.Create().WithCallback(req =>
-            //{
-            //    return SetResponse(req);
-            //}));
+            server.Given
+                (Request.Create()
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+            .RespondWith(Response.Create().WithCallback(req =>
+            {
+                return SetResponse(req);
+            }));
 
         }
 
@@ -90,50 +50,47 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var licenceID = request.AbsolutePath.Split('/')[2];
 
-            var responseCode = Int32.TryParse(licenceID, out int result) ? VALIDLICENCEIDs.Contains(result) ? 200 : 404 : 400;
+            Int32.TryParse(licenceID, out var licenceId);
+
             var response = new ResponseMessage();
             var bodyData = new BodyData()
             {
                 DetectedBodyType = BodyType.String
             };
 
-            //var scenario = Convert.ToString(request.Query["licenceid"]);
-            string fileContent;
-            switch(responseCode)
+            string filePath;
+            switch(licenceId)
             {
-                case 200://200 - OK
+                case 1://200 - OK
+                case 2:
+                case 3:
+                case 4:
+                case 5:
 
-                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", $"response-200-licenceid-{result}.json");
-
-                    response.StatusCode = HttpStatusCode.OK;
-                    bodyData.BodyAsString = File.ReadAllText(fileContent);
+                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-200-licenceId-{licenceId}.json");
+                    response.StatusCode = HttpStatusCode.OK;                    
 
                     break;
 
-                case 404://404 - NotFound
-                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", "response-404.json");
+                case 0://400 - BadRequest
 
-                    response.StatusCode = HttpStatusCode.NotFound;
-                    bodyData.BodyAsString = File.ReadAllText(fileContent);
-                    break;
-
-                case 400://400 - BadRequest
-
-                    fileContent = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData//UserPermits", "response-400.json");
-
-                    bodyData.BodyAsString = File.ReadAllText(fileContent);
+                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-400.json");                    
                     response.StatusCode = HttpStatusCode.BadRequest;
+
                     break;
 
-                default:
+                default: //404 - NotFound
+
+                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-404.json");
+                    response.StatusCode = HttpStatusCode.NotFound;
+                    
                     break;
             }
 
-            var correlationId = !string.IsNullOrEmpty(request?.Headers?["correlationId"]?[0]) ? request.Headers["correlationId"][0] : Guid.NewGuid().ToString();
-
+            bodyData.BodyAsString = File.ReadAllText(filePath);
             response.BodyData = bodyData;
             response.AddHeader("Content-Type", APPLICATIONTYPE);
-            response.AddHeader("correlationId", correlationId);
+            response.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
             return response;
         }
     }
