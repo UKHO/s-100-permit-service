@@ -19,40 +19,41 @@ namespace UKHO.S100PermitService.StubService.Stubs
         private readonly string RESPONSEFILEDIRECTORYPATH = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
-            _userPermitsServiceConfiguration = userPermitsServiceConfiguration;
+            _userPermitsServiceConfiguration = userPermitsServiceConfiguration ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration));
         }
 
         public void ConfigureStub(WireMockServer server)
         {
             //401 - Unauthorized
-            server
-            .Given(Request.Create()
-             .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
-             .UsingGet()
-             .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch)
-             .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()))
+            server.Given
+                (Request.Create()
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
+                .UsingGet()
+                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()))
             .RespondWith(Response.Create()
-             .WithStatusCode(HttpStatusCode.Unauthorized)
-             .WithBody(@"{ ""result"": ""token is missing""}"));
+                .WithStatusCode(HttpStatusCode.Unauthorized)
+                .WithBody(@"{ ""result"": ""token is missing""}"));
 
             server.Given
                 (Request.Create()
-                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*")).UsingGet()
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
+                .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-            .RespondWith(Response.Create().WithCallback(req =>
+            .RespondWith(Response.Create().WithCallback(request =>
             {
-                return SetResponse(req);
+                return SetResponseMessage(request);
             }));
 
         }
 
-        private ResponseMessage SetResponse(IRequestMessage request)
+        private ResponseMessage SetResponseMessage(IRequestMessage request)
         {
             var licenceID = request.AbsolutePath.Split('/')[2];
 
             Int32.TryParse(licenceID, out var licenceId);
 
-            var response = new ResponseMessage();
+            var responseMessage = new ResponseMessage();
             var bodyData = new BodyData()
             {
                 DetectedBodyType = BodyType.String
@@ -68,30 +69,30 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 case 5:
 
                     filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-200-licenceId-{licenceId}.json");
-                    response.StatusCode = HttpStatusCode.OK;                    
+                    responseMessage.StatusCode = HttpStatusCode.OK;
 
                     break;
 
                 case 0://400 - BadRequest
 
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-400.json");                    
-                    response.StatusCode = HttpStatusCode.BadRequest;
+                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-400.json");
+                    responseMessage.StatusCode = HttpStatusCode.BadRequest;
 
                     break;
 
                 default: //404 - NotFound
 
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-404.json");
-                    response.StatusCode = HttpStatusCode.NotFound;
-                    
+                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-404.json");
+                    responseMessage.StatusCode = HttpStatusCode.NotFound;
+
                     break;
             }
 
             bodyData.BodyAsString = File.ReadAllText(filePath);
-            response.BodyData = bodyData;
-            response.AddHeader("Content-Type", APPLICATIONTYPE);
-            response.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
-            return response;
+            responseMessage.BodyData = bodyData;
+            responseMessage.AddHeader("Content-Type", APPLICATIONTYPE);
+            responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
+            return responseMessage;
         }
     }
 }
