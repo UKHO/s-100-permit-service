@@ -11,6 +11,8 @@ using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Configuration;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService
 {
@@ -110,6 +112,10 @@ namespace UKHO.S100PermitService
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddControllers();
+
+            builder.Services.AddScoped<IFileSystemHelper, FileSystemHelper>();
+            builder.Services.AddScoped<IXmlHelper, XmlHelper>();
+            builder.Services.AddScoped<IPermitXmlService, PermitXmlService>();
 
             builder.Services.AddEndpointsApiExplorer();
             ConfigureSwagger();
