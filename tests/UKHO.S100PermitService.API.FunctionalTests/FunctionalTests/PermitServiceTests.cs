@@ -7,6 +7,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task DummyTest()
         {
+            await Task.CompletedTask;
         }
     }
 }
