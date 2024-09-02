@@ -20,7 +20,6 @@ namespace UKHO.S100PermitService
     {
         public static void Main(string[] args)
         {
-            EventHubLoggingConfiguration eventHubLoggingConfiguration;
             IHttpContextAccessor httpContextAccessor = new HttpContextAccessor();
             var builder = WebApplication.CreateBuilder(args);
             IConfiguration configuration = builder.Configuration;
@@ -46,43 +45,7 @@ namespace UKHO.S100PermitService
                 .WriteTo.File("Logs/UKHO.S100PermitService.API-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
                 .CreateLogger();
 #endif
-            eventHubLoggingConfiguration = configuration.GetSection("EventHubLoggingConfiguration").Get<EventHubLoggingConfiguration>()!;
-
-            //builder.Host.ConfigureLogging(logging =>
-            //{
-            //    logging.ClearProviders();
-            //    if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration.ConnectionString))
-            //    {
-            //        void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
-            //        {
-            //            if(httpContextAccessor.HttpContext != null)
-            //            {
-            //                additionalValues["_Environment"] = eventHubLoggingConfiguration.Environment;
-            //                additionalValues["_System"] = eventHubLoggingConfiguration.System;
-            //                additionalValues["_Service"] = eventHubLoggingConfiguration.Service;
-            //                additionalValues["_NodeName"] = eventHubLoggingConfiguration.NodeName;
-            //                additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-            //                additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
-            //                additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
-            //                additionalValues["_X-Correlation-ID"] = httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
-            //            }
-            //        }
-            //        logging.AddEventHub(config =>
-            //    {
-            //        config.Environment = eventHubLoggingConfiguration.Environment;
-            //        config.DefaultMinimumLogLevel =
-            //            (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.MinimumLoggingLevel, true);
-            //        config.MinimumLogLevels["UKHO"] =
-            //            (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.UkhoMinimumLoggingLevel, true);
-            //        config.EventHubConnectionString = eventHubLoggingConfiguration.ConnectionString;
-            //        config.EventHubEntityPath = eventHubLoggingConfiguration.EntityPath;
-            //        config.System = eventHubLoggingConfiguration.System;
-            //        config.Service = eventHubLoggingConfiguration.Service;
-            //        config.NodeName = eventHubLoggingConfiguration.NodeName;
-            //        config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
-            //    });
-            //    }
-            //});
+            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
 
             builder.Services.AddLogging(loggingBuilder =>
             {
@@ -110,7 +73,6 @@ namespace UKHO.S100PermitService
             });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            builder.Services.AddControllers();
 
             builder.Services.AddEndpointsApiExplorer();
             ConfigureSwagger();
@@ -127,7 +89,7 @@ namespace UKHO.S100PermitService
             app.UseHttpsRedirection();
             app.MapControllers();
             app.Run();
-            //------------------------
+
             void ConfigureSwagger()
             {
                 var swaggerConfiguration = new SwaggerConfiguration();
@@ -147,7 +109,6 @@ namespace UKHO.S100PermitService
                 });
             }
 
-            //appinsights and eventhub
             void ConfigureLogging(WebApplication app)
             {
                 var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
@@ -161,7 +122,7 @@ namespace UKHO.S100PermitService
                         if(httpContextAccessor.HttpContext != null)
                         {
                             additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
+                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                             additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                             additionalValues["_X-Correlation-ID"] =
                                 httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
@@ -184,6 +145,7 @@ namespace UKHO.S100PermitService
                                                  config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
                                              });
                 }
+                app.UseCorrelationIdMiddleware();
             }
         }
     }
