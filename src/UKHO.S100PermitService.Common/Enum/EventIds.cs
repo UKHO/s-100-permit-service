@@ -40,5 +40,4 @@ namespace UKHO.S100PermitService.Common.Enum
             return new EventId((int)eventId, eventId.ToString());
         }
     }
-
 }
