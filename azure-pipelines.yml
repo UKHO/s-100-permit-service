@@ -124,7 +124,7 @@ stages:
             displayName: "Dotnet test - Perform Unit Tests"
             inputs:
               command: "test"
-              projects: "**/*UnitTests.csproj"
+              projects: '**/*UKHO.S100PermitService.API.UnitTests.csproj'
               arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
               publishTestResults: true
               testRunTitle: "UnitTests"
