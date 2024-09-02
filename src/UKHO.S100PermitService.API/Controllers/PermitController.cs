@@ -2,11 +2,11 @@
 using UKHO.S100PermitService.Common.Enum;
 
 namespace UKHO.S100PermitService.API.Controllers
-{
-    [Route("api/[controller]")]
+{    
     [ApiController]
     public class PermitController : BaseController<PermitController>
     {
+        private const string LicenceId = "/permits/{licenceId}";
         private readonly ILogger<PermitController> _logger;
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger)
@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         [HttpPost]
-        [Route("/permits/{licenceId}")]
+        [Route(LicenceId)]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
             _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "User permit api call started.");
