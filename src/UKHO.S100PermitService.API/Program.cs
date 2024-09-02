@@ -2,6 +2,7 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
@@ -47,41 +48,41 @@ namespace UKHO.S100PermitService
 #endif
             eventHubLoggingConfiguration = configuration.GetSection("EventHubLoggingConfiguration").Get<EventHubLoggingConfiguration>()!;
 
-            builder.Host.ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration.ConnectionString))
-                {
-                    void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
-                    {
-                        if(httpContextAccessor.HttpContext != null)
-                        {
-                            additionalValues["_Environment"] = eventHubLoggingConfiguration.Environment;
-                            additionalValues["_System"] = eventHubLoggingConfiguration.System;
-                            additionalValues["_Service"] = eventHubLoggingConfiguration.Service;
-                            additionalValues["_NodeName"] = eventHubLoggingConfiguration.NodeName;
-                            additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
-                            additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
-                            additionalValues["_X-Correlation-ID"] = httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
-                        }
-                    }
-                    logging.AddEventHub(config =>
-                {
-                    config.Environment = eventHubLoggingConfiguration.Environment;
-                    config.DefaultMinimumLogLevel =
-                        (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.MinimumLoggingLevel, true);
-                    config.MinimumLogLevels["UKHO"] =
-                        (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.UkhoMinimumLoggingLevel, true);
-                    config.EventHubConnectionString = eventHubLoggingConfiguration.ConnectionString;
-                    config.EventHubEntityPath = eventHubLoggingConfiguration.EntityPath;
-                    config.System = eventHubLoggingConfiguration.System;
-                    config.Service = eventHubLoggingConfiguration.Service;
-                    config.NodeName = eventHubLoggingConfiguration.NodeName;
-                    config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
-                });
-                }
-            });
+            //builder.Host.ConfigureLogging(logging =>
+            //{
+            //    logging.ClearProviders();
+            //    if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration.ConnectionString))
+            //    {
+            //        void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
+            //        {
+            //            if(httpContextAccessor.HttpContext != null)
+            //            {
+            //                additionalValues["_Environment"] = eventHubLoggingConfiguration.Environment;
+            //                additionalValues["_System"] = eventHubLoggingConfiguration.System;
+            //                additionalValues["_Service"] = eventHubLoggingConfiguration.Service;
+            //                additionalValues["_NodeName"] = eventHubLoggingConfiguration.NodeName;
+            //                additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+            //                additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
+            //                additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
+            //                additionalValues["_X-Correlation-ID"] = httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+            //            }
+            //        }
+            //        logging.AddEventHub(config =>
+            //    {
+            //        config.Environment = eventHubLoggingConfiguration.Environment;
+            //        config.DefaultMinimumLogLevel =
+            //            (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.MinimumLoggingLevel, true);
+            //        config.MinimumLogLevels["UKHO"] =
+            //            (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.UkhoMinimumLoggingLevel, true);
+            //        config.EventHubConnectionString = eventHubLoggingConfiguration.ConnectionString;
+            //        config.EventHubEntityPath = eventHubLoggingConfiguration.EntityPath;
+            //        config.System = eventHubLoggingConfiguration.System;
+            //        config.Service = eventHubLoggingConfiguration.Service;
+            //        config.NodeName = eventHubLoggingConfiguration.NodeName;
+            //        config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
+            //    });
+            //    }
+            //});
 
             builder.Services.AddLogging(loggingBuilder =>
             {
@@ -115,6 +116,7 @@ namespace UKHO.S100PermitService
             ConfigureSwagger();
 
             var app = builder.Build();
+            ConfigureLogging(app);
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -141,11 +143,47 @@ namespace UKHO.S100PermitService
                         {
                             Email = swaggerConfiguration.Email,
                         },
-                    });
-                    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                    //c.IncludeXmlComments(xmlPath);
+                    });                   
                 });
+            }
+
+            //appinsights and eventhub
+            void ConfigureLogging(WebApplication app)
+            {
+                var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+                var eventHubLoggingConfiguration = app.Services.GetRequiredService<IOptions<EventHubLoggingConfiguration>>();
+                var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
+
+                if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration?.Value.ConnectionString))
+                {
+                    void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
+                    {
+                        if(httpContextAccessor.HttpContext != null)
+                        {
+                            additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
+                            additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
+                            additionalValues["_X-Correlation-ID"] =
+                                httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;                          
+                        }
+                    }
+
+                    loggerFactory.AddEventHub(
+                                             config =>
+                                             {
+                                                 config.Environment = eventHubLoggingConfiguration.Value.Environment;
+                                                 config.DefaultMinimumLogLevel =
+                                                     (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.MinimumLoggingLevel, true);
+                                                 config.MinimumLogLevels["UKHO"] =
+                                                     (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.UkhoMinimumLoggingLevel, true);
+                                                 config.EventHubConnectionString = eventHubLoggingConfiguration.Value.ConnectionString;
+                                                 config.EventHubEntityPath = eventHubLoggingConfiguration.Value.EntityPath;
+                                                 config.System = eventHubLoggingConfiguration.Value.System;
+                                                 config.Service = eventHubLoggingConfiguration.Value.Service;
+                                                 config.NodeName = eventHubLoggingConfiguration.Value.NodeName;
+                                                 config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
+                                             });
+                }            
             }
         }
     }

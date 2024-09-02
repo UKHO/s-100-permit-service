@@ -180,4 +180,18 @@
 		<cve>CVE-2021-34485</cve>
 		<cve>CVE-2021-26423</cve>
 	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+	file name: Microsoft.AspNetCore.Hosting.Abstractions.dll
+	See https://nvd.nist.gov/vuln/detail/CVE-2018-8409 for details on this CVE.
+	Note: This was reanalysed by NIST on 4th October, and is now a breaking issue.
+	Affects .NET Core 2.1 - now on .NET 6 so false positive.
+	See https://msrc.microsoft.com/update-guide/en-us/vulnerability/CVE-2018-8409
+	]]>
+		</notes>
+		<cve>CVE-2018-8409</cve>
+		<cve>CVE-2020-1108</cve>
+		<cve>CVE-2021-1721</cve>
+	</suppress>
 </suppressions>
