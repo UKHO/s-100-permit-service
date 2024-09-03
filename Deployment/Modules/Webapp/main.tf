@@ -1,5 +1,5 @@
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = "${var.service_name}-${local.env_name}-asp"
+  name                = "${var.service_name}-${var.env_name}-asp"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku_name            = var.sku_name
@@ -32,8 +32,8 @@ resource "azurerm_windows_web_app" "webapp_service" {
   https_only = true
 }
 
-resource "azurerm_windows_web_app" "mock_webapp_service" {  
-  name                = var.mock_webapp_name
+resource "azurerm_windows_web_app" "stub_webapp_service" {  
+  name                = var.stub_webapp_name
   location            = var.location
   resource_group_name = var.resource_group_name
   service_plan_id     = azurerm_service_plan.app_service_plan.id
@@ -48,7 +48,7 @@ resource "azurerm_windows_web_app" "mock_webapp_service" {
     ftps_state = "Disabled"
   }
      
-  app_settings = var.mock_app_settings
+  app_settings = var.stub_app_settings
 
   identity {
     type = "SystemAssigned"

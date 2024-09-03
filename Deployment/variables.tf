@@ -12,7 +12,7 @@ locals {
   env_name           = lower(terraform.workspace)
   service_name       = "ps"  
   web_app_name       = "${local.service_name}-${local.env_name}-api"
-  mock_web_app_name  = "${local.service_name}-${local.env_name}-stub"
+  stub_web_app_name  = "${local.service_name}-${local.env_name}-stub"
   key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"    
   tags = {
     SERVICE                   = "S100 Permit Service"

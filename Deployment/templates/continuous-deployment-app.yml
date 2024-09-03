@@ -15,7 +15,7 @@ steps:
     inputs:
       azureSubscription: "${{ parameters.AzureSubscription }}"
       appType: webApp
-      appName: "$(MOCK_WEB_APP_NAME)"
+      appName: "$(STUB_WEB_APP_NAME)"
       package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
            
   - task: AzureWebApp@1
