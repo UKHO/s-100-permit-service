@@ -1,0 +1,15 @@
+[
+  {
+    "productCode": "P1231",
+    "productTitle": "P1231",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "1",
+        "cellTitle": "1",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  }
+]

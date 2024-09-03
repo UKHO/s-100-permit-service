@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     {
         private const string APPLICATIONTYPE = "application/json";
         private const string RESPONSEFILEDIRECTORY = "StubData\\Holdings";
-        private readonly string RESPONSEFILEDIRECTORYPATH = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
+        private readonly string responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
 
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
 
@@ -58,20 +58,20 @@ namespace UKHO.S100PermitService.StubService.Stubs
             switch(licenceId)
             {
                 //200 - OK
-                case int n when n >= 1 && n <= 4:
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-200-licenceid-{licenceId}.json");
+                case int n when n >= 1 && n <= 5:
+                    filePath = Path.Combine(responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;
 
                 //400 - BadRequest
                 case 0:
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-400.json");
+                    filePath = Path.Combine(responseFileDirectoryPath, "response-400.json");
                     responseMessage.StatusCode = HttpStatusCode.BadRequest;
                     break;
 
                 //404 - NotFound
                 default:
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-404.json");
+                    filePath = Path.Combine(responseFileDirectoryPath, "response-404.json");
                     responseMessage.StatusCode = HttpStatusCode.NotFound;
                     break;
             }
