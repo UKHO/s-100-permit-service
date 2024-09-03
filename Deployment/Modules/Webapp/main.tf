@@ -1,5 +1,5 @@
 resource "azurerm_service_plan" "app_service_plan" {
-  name                = "${var.service_name}-asp"
+  name                = "${var.service_name}-${local.env_name}-asp"
   location            = var.location
   resource_group_name = var.resource_group_name
   sku_name            = var.sku_name
@@ -17,7 +17,7 @@ resource "azurerm_windows_web_app" "webapp_service" {
   site_config {
     application_stack {    
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v8.0"
     }
     always_on  = true
     ftps_state = "Disabled"
@@ -42,7 +42,7 @@ resource "azurerm_windows_web_app" "mock_webapp_service" {
   site_config {
     application_stack {    
       current_stack  = "dotnet"
-      dotnet_version = "v6.0"
+      dotnet_version = "v8.0"
     }
     always_on  = true
     ftps_state = "Disabled"
