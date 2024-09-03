@@ -3,13 +3,13 @@ using UKHO.S100PermitService.Common.Enum;
 using UKHO.S100PermitService.Common.Helpers;
 
 namespace UKHO.S100PermitService.API.Controllers
-{    
+{
+    [Route("api/[controller]")]
     [ApiController]
     public class PermitController : BaseController<PermitController>
     {       
         private readonly ILogger<PermitController> _logger;
-        public PermitController(IHttpContextAccessor httpContextAccessor,
-                                ILogger<PermitController> logger)
+        public PermitController(IHttpContextAccessor httpContextAccessor, ILogger<PermitController> logger)
         : base(httpContextAccessor)
         {
             _logger = logger;

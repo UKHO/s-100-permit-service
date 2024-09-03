@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -9,9 +7,10 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
-using UKHO.S100PermitService.API.Configuration;
-using UKHO.S100PermitService.API.Middleware;
+using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
 
 namespace UKHO.S100PermitService
@@ -37,8 +36,9 @@ namespace UKHO.S100PermitService
                 new DefaultAzureCredentialOptions()));
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
-
-            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            ////  The following line enables Application Insights telemetry collection.
+            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            builder.Services.AddApplicationInsightsTelemetry(options);
 
             builder.Services.AddLogging(loggingBuilder =>
             {
@@ -55,9 +55,9 @@ namespace UKHO.S100PermitService
                 loggingBuilder.AddAzureWebAppDiagnostics();
             });
 
-          ////  The following line enables Application Insights telemetry collection.
-             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry(options);                     
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddControllers(o =>
             {
@@ -69,12 +69,9 @@ namespace UKHO.S100PermitService
 
             builder.Services.AddHeaderPropagation(options =>
             {
-                options.Headers.Add(CorrelationIdMiddleware.XCorrelationIdHeaderKey);
+                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
             });
 
-            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            builder.Services.AddEndpointsApiExplorer();
-            
             ConfigureSwagger();
 
             var app = builder.Build();
@@ -125,7 +122,7 @@ namespace UKHO.S100PermitService
                             additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                             additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                             additionalValues["_X-Correlation-ID"] =
-                                httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                                httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
                         }
                     }
 
@@ -144,8 +141,7 @@ namespace UKHO.S100PermitService
                                                  config.NodeName = eventHubLoggingConfiguration.Value.NodeName;
                                                  config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
                                              });
-                }
-                app.UseCorrelationIdMiddleware();
+                }                
             }
         }
     }
