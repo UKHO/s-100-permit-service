@@ -12,9 +12,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class HoldingsServiceStub : IStub
     {
-        private const string APPLICATIONTYPE = "application/json";
-        private const string RESPONSEFILEDIRECTORY = "StubData\\Holdings";
-        private readonly string responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
+        private const string ApplicationType = "application/json";
+        private const string ResponseFileDirectory = "StubData\\Holdings";
+        private readonly string responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
 
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
 
@@ -78,7 +78,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             bodyData.BodyAsString = File.ReadAllText(filePath);
             responseMessage.BodyData = bodyData;
-            responseMessage.AddHeader("Content-Type", APPLICATIONTYPE);
+            responseMessage.AddHeader("Content-Type", ApplicationType);
             responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
             return responseMessage;
         }
