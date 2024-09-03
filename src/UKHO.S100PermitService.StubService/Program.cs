@@ -30,11 +30,11 @@ namespace UKHO.S100PermitService.StubService
 
             var server = WireMockServer.Start(new WireMockServerSettings
             {
-                Port = stubConfiguration?.Port,
+                Urls = stubConfiguration?.Urls,
                 UseSSL = true
             });
 
-            Console.WriteLine($"WireMock server is running at https://localhost:{stubConfiguration?.Port}");
+            Console.WriteLine($"WireMock server is running at {stubConfiguration?.Urls}");
 
             var stubFactory = new StubFactory(holdingsServiceConfiguration!, productKeyServiceConfiguration!);
             var stubManager = new StubManager(stubFactory, server);

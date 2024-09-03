@@ -2,6 +2,7 @@
 {
     public class StubConfiguration
     {
-        public int? Port { get; set; }
+        //public int? Port { get; set; }
+        public string[]? Urls { get; set; }
     }
 }
