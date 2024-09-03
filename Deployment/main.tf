@@ -18,7 +18,7 @@ module "eventhub" {
 module "webapp_service" {
   source                    = "./Modules/Webapp"
   name                      = local.web_app_name
-  mock_webapp_name          = local.mock_web_app_name
+  stub_webapp_name          = local.stub_web_app_name
   service_name              = local.service_name                 
   resource_group_name       = azurerm_resource_group.rg.name
   env_name                  = local.env_name
@@ -34,7 +34,7 @@ module "webapp_service" {
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                          = "true"
     "WEBSITE_ADD_SITENAME_BINDINGS_IN_APPHOST_CONFIG"          = "1"    
   }
-  mock_app_settings = {
+  stub_app_settings = {
     "ASPNETCORE_ENVIRONMENT"                                   = local.env_name
     "WEBSITE_RUN_FROM_PACKAGE"                                 = "1"
     "WEBSITE_ENABLE_SYNC_UPDATE_SITE"                          = "true"
