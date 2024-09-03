@@ -1,11 +1,9 @@
 ﻿using FakeItEasy;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Enum;
-using Assert = Microsoft.VisualStudio.TestTools.UnitTesting.Assert;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {
@@ -28,16 +26,23 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         [Test]
         public async Task WhenGetPermitIsCalledReturnsOKResponse()
         {
-            var result = (OkObjectResult)await _permitController.GeneratePermits(007);
-          
-            Assert.AreEqual(200, result.StatusCode);
+            var result = await _permitController.GeneratePermits(007);
+
+            result.Equals(200);
+
             A.CallTo(_fakeLogger).Where(call =>
-                     call.Method.Name == "Log"
-                     && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                     && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStart.ToEventId()
-                      && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString()
-                     == "User permit api call started.Correlation-ID _X-Correlation-ID : {CorrelationId}"
-                     ).MustHaveHappenedOnceExactly();           
-        }
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started |_X-Correlation-ID:{correlationId}"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+           call.Method.Name == "Log"
+           && call.GetArgument<LogLevel>(0) == LogLevel.Information
+           && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end | _X-Correlation-ID:{correlationId}"
+           ).MustHaveHappenedOnceExactly();
+        }        
     }
 }

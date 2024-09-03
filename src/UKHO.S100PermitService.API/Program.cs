@@ -8,6 +8,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
+using Serilog.Events;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Configuration;
 using UKHO.S100PermitService.API.Middleware;
@@ -19,8 +20,7 @@ namespace UKHO.S100PermitService
     public class Program
     {
         public static void Main(string[] args)
-        {
-            ////IHttpContextAccessor httpContextAccessor = new HttpContextAccessor();
+        {            
             var builder = WebApplication.CreateBuilder(args);
             IConfiguration configuration = builder.Configuration;
 
@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService
             builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
 #endif
             builder.Configuration.AddEnvironmentVariables();
-
+            
             var kvServiceUri = configuration["KeyVaultSettings:ServiceUri"];
             if(!string.IsNullOrWhiteSpace(kvServiceUri))
             {
@@ -38,36 +38,26 @@ namespace UKHO.S100PermitService
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
 
-#if DEBUG
-            //create the logger and setup of sinks, filters and properties
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.File("Logs/UKHO.S100PermitService.API-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
-                .CreateLogger();
-#endif
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
 
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
+#if DEBUG
+                loggingBuilder.AddSerilog(new LoggerConfiguration()
+                                 .WriteTo.File("Logs/UKHO.S100PermitService.API-Logs-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
+                                 .MinimumLevel.Information()
+                                 .MinimumLevel.Override("UKHO", LogEventLevel.Debug)
+                                 .CreateLogger(), dispose: true);
+#endif
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
-                loggingBuilder.AddSerilog();
                 loggingBuilder.AddAzureWebAppDiagnostics();
             });
 
-            // The following line enables Application Insights telemetry collection.
-            //// var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            ////// builder.Services.AddApplicationInsightsTelemetry(options);
-
-            builder.Services.AddHeaderPropagation(options =>
-            {
-                options.Headers.Add(CorrelationIdMiddleware.XCorrelationIdHeaderKey);
-            });
-
-            // Add services to the container.
-
-            builder.Services.AddApplicationInsightsTelemetry();
+          ////  The following line enables Application Insights telemetry collection.
+             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            builder.Services.AddApplicationInsightsTelemetry(options);                     
 
             builder.Services.AddControllers(o =>
             {
@@ -79,6 +69,7 @@ namespace UKHO.S100PermitService
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddEndpointsApiExplorer();
+            
             ConfigureSwagger();
 
             var app = builder.Build();
