@@ -22,14 +22,14 @@ namespace UKHO.S100PermitService
         public static void Main(string[] args)
         {            
             var builder = WebApplication.CreateBuilder(args);
-            IConfiguration configuration = builder.Configuration;
 
 #if DEBUG
             //Add development overrides configuration
             builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
 #endif
             builder.Configuration.AddEnvironmentVariables();
-            
+
+            IConfiguration configuration = builder.Configuration;
             var kvServiceUri = configuration["KeyVaultSettings:ServiceUri"];
             if(!string.IsNullOrWhiteSpace(kvServiceUri))
             {
@@ -65,6 +65,11 @@ namespace UKHO.S100PermitService
             }).AddNewtonsoftJson(options =>
             {
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+            });
+
+            builder.Services.AddHeaderPropagation(options =>
+            {
+                options.Headers.Add(CorrelationIdMiddleware.XCorrelationIdHeaderKey);
             });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
