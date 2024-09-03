@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using UKHO.S100PermitService.StubService.Configuration;
 using UKHO.S100PermitService.StubService.StubSetup;
@@ -10,13 +11,30 @@ namespace UKHO.S100PermitService.StubService
 {
     internal static class Program
     {
-        private static void Main()
+        public static void Main(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .Build();
+            CreateHostBuilder(args).Build().Run();
+        }
 
-            var services = new ServiceCollection();
+        private static IHostBuilder CreateHostBuilder(string[] args)
+            => Host.CreateDefaultBuilder(args)
+                .ConfigureServices((host, services) => ConfigureServices(services, host.Configuration));
+
+        //private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        //{
+        //    services.AddLogging(logging => logging.AddConsole().AddDebug());
+
+        //    services.AddTransient<IWireMockService, WireMockService>();
+        //    services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
+
+        //    services.AddHostedService<App>();
+        //}
+
+        private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
+        {
+            //configuration
+            //    .AddJsonFile("appsettings.json")
+            //    .Build();
 
             services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
             services.Configure<HoldingsServiceConfiguration>(configuration.GetSection("HoldingsServiceConfiguration"));
