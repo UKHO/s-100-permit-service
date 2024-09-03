@@ -31,11 +31,11 @@ variable "env_name" {
   type = string
 }
 
-variable "mock_webapp_name" {
+variable "stub_webapp_name" {
   type = string
 }
 
-variable "mock_app_settings" {
+variable "stub_app_settings" {
   type = map(string)
 }
 

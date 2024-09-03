@@ -344,6 +344,10 @@ stages:
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
+          - name : ResourceGroup
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -389,8 +393,8 @@ stages:
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : MOCK_WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs.outputs['vNextIATDeployTerraform.outputs.TerraformDeploy.mockWebApp'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.vNextIATDeployTerraform.outputs.outputs['vNextIATDeployTerraform.outputs.TerraformDeploy.stubWebApp'] ]
           - name : ResourceGroup
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
         workspace:
@@ -436,8 +440,8 @@ stages:
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : MOCK_WEB_APP_NAME
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.mockWebApp'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : ResourceGroup
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.ResourceGroup'] ]
         workspace:
