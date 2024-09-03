@@ -57,6 +57,6 @@ Write-Host "##vso[task.setvariable variable=WEB_APP;isOutput=true]$($terraformOu
 Write-Host "##vso[task.setvariable variable=MOCK_WEB_APP_NAME]$($terraformOutput.mock_webapp_name.value)"
 Write-Host "##vso[task.setvariable variable=ResourceGroup;isOutput=true]$($terraformOutput.resource_group.value)"
 Write-Host "##vso[task.setvariable variable=mockWebApp;isOutput=true]$($terraformOutput.mock_webapp_name.value)"
-Write-Host "##vso[task.setvariable variable=KeyVaultServiceUri]$($terraformOutput.keyvault_uri.value)"
+Write-Host "##vso[task.setvariable variable=KeyVaultServiceUri;isOutput=true]$($terraformOutput.keyvault_uri.value)"
 
 $terraformOutput | ConvertTo-Json -Depth 5 > $terraformJsonOutputFile
