@@ -11,18 +11,18 @@ namespace UKHO.S100PermitService.StubService.Stubs
     {
         public const string CONTENTTYPE = "Content-Type";
         public const string APPLICATIONTYPE = "application/json";
-        private readonly ProductKeyServiceConfiguration productKeyServiceConfiguration;
+        private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
         public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceConfiguration)
         {
-            this.productKeyServiceConfiguration = productKeyServiceConfiguration;
+            _productKeyServiceConfiguration = productKeyServiceConfiguration;
         }
 
         public void ConfigureStub(WireMockServer server)
         {
             server //401
              .Given(Request.Create()
-             .WithPath(productKeyServiceConfiguration.Url)
+             .WithPath(_productKeyServiceConfiguration.Url)
              .UsingPost()
              .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
              .RespondWith(Response.Create()
@@ -32,17 +32,17 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //404
                   .Given(Request.Create()
-                  .WithPath(productKeyServiceConfiguration.Url)
+                  .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                   .RespondWith(Response.Create()
                         .WithStatusCode(HttpStatusCode.NotFound)
                         .WithHeader(CONTENTTYPE, APPLICATIONTYPE)
-                        .WithBody("{\r\n  \"correlationId\": \"4c2dec2a-f44f-445d-837f-99fa72836533\",\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetProductKey\",\r\n      \"description\": \"Key not found for Product and Edition \"\r\n    }\r\n  ]\r\n}\r\n"));
+                        .WithBodyFromFile(Path.Combine("StubData\\PKS", "response-Allinvalid-404.json")));
 
             server //404
                   .Given(Request.Create()
-                  .WithPath(productKeyServiceConfiguration.Url)
+                  .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
                   .WithBody(new JsonMatcher(GetJsonData(Path.Combine("StubData\\PKS", "request-404.json"))))
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //200
                   .Given(Request.Create()
-                  .WithPath(productKeyServiceConfiguration.Url)
+                  .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
                   .WithBody(new JsonMatcher(GetJsonData(Path.Combine("StubData\\PKS", "request-200.json"))))
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //400
                   .Given(Request.Create()
-                  .WithPath(productKeyServiceConfiguration.Url)
+                  .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
                   .WithBody(new JsonMatcher(GetJsonData(Path.Combine("StubData\\PKS", "request-400.json"))))
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
