@@ -1,4 +1,5 @@
-﻿using UKHO.S100PermitService.StubService.Configuration;
+﻿using Microsoft.Extensions.Options;
+using UKHO.S100PermitService.StubService.Configuration;
 using UKHO.S100PermitService.StubService.Stubs;
 
 namespace UKHO.S100PermitService.StubService.StubSetup
@@ -8,10 +9,10 @@ namespace UKHO.S100PermitService.StubService.StubSetup
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
-        public StubFactory(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration)
+        public StubFactory(IOptions<HoldingsServiceConfiguration> holdingsServiceConfiguration, IOptions<ProductKeyServiceConfiguration> productKeyServiceConfiguration)
         {
-            _holdingsServiceConfiguration = holdingsServiceConfiguration;
-            _productKeyServiceConfiguration = productKeyServiceConfiguration;
+            _holdingsServiceConfiguration = holdingsServiceConfiguration.Value;
+            _productKeyServiceConfiguration = productKeyServiceConfiguration.Value;
         }
 
         public IStub CreateHoldingsServiceStub()
