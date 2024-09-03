@@ -9,8 +9,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class ProductKeyServiceStub : IStub
     {
-        public const string CONTENTTYPE = "Content-Type";
-        public const string APPLICATIONTYPE = "application/json";
+        public const string ContentType = "Content-Type";
+        public const string ApplicationType = "application/json";
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
         public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceConfiguration)
@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
              .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
              .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
-                .WithHeader(CONTENTTYPE, APPLICATIONTYPE)
+                .WithHeader(ContentType, ApplicationType)
                 .WithBody(@"{ ""result"": ""token missing""}"));
 
             server //404
@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                   .RespondWith(Response.Create()
                         .WithStatusCode(HttpStatusCode.NotFound)
-                        .WithHeader(CONTENTTYPE, APPLICATIONTYPE)
+                        .WithHeader(ContentType, ApplicationType)
                         .WithBodyFromFile(Path.Combine("StubData\\PKS", "response-Allinvalid-404.json")));
 
             server //404
@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                   .RespondWith(Response.Create()
                         .WithStatusCode(HttpStatusCode.NotFound)
-                        .WithHeader(CONTENTTYPE, APPLICATIONTYPE)
+                        .WithHeader(ContentType, ApplicationType)
                         .WithBodyFromFile(Path.Combine("StubData\\PKS", "response-404.json")));
 
             server //200
@@ -59,7 +59,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                   .RespondWith(Response.Create()
                         .WithStatusCode(HttpStatusCode.OK)
-                        .WithHeader(CONTENTTYPE, APPLICATIONTYPE)
+                        .WithHeader(ContentType, ApplicationType)
                         .WithBodyFromFile(Path.Combine("StubData\\PKS", "response-200.json")));
 
             server //400
@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                   .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                   .RespondWith(Response.Create()
                         .WithStatusCode(HttpStatusCode.BadRequest)
-                        .WithHeader(CONTENTTYPE, APPLICATIONTYPE));
+                        .WithHeader(ContentType, ApplicationType));
         }
 
         private static string GetJsonData(string filePath)
