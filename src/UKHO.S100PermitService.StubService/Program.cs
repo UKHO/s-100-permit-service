@@ -18,23 +18,19 @@ namespace UKHO.S100PermitService.StubService
 
             var services = new ServiceCollection();
 
-            services.Configure<StubConfiguration>(configuration.GetSection("StubConfiguration"));
+            services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
             services.Configure<HoldingsServiceConfiguration>(configuration.GetSection("HoldingsServiceConfiguration"));
             services.Configure<ProductKeyServiceConfiguration>(configuration.GetSection("ProductKeyServiceConfiguration"));
 
             var serviceProvider = services.BuildServiceProvider();
 
-            var stubConfiguration = serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
+            var wireMockServerSettings = serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
             var holdingsServiceConfiguration = serviceProvider.GetService<IOptions<HoldingsServiceConfiguration>>()?.Value;
             var productKeyServiceConfiguration = serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
 
-            var server = WireMockServer.Start(new WireMockServerSettings
-            {
-                Urls = stubConfiguration?.Urls,
-                UseSSL = true
-            });
+            var server = WireMockServer.Start(wireMockServerSettings!);
 
-            Console.WriteLine($"WireMock server is running at {stubConfiguration?.Urls}");
+            Console.WriteLine($"WireMock server is running at {wireMockServerSettings?.Urls?[0]}");
 
             var stubFactory = new StubFactory(holdingsServiceConfiguration!, productKeyServiceConfiguration!);
             var stubManager = new StubManager(stubFactory, server);
