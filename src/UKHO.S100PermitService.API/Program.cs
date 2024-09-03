@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -6,8 +8,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Configuration;
 using UKHO.S100PermitService.API.Middleware;
@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService
     {
         public static void Main(string[] args)
         {
-            IHttpContextAccessor httpContextAccessor = new HttpContextAccessor();
+            ////IHttpContextAccessor httpContextAccessor = new HttpContextAccessor();
             var builder = WebApplication.CreateBuilder(args);
             IConfiguration configuration = builder.Configuration;
 
@@ -57,11 +57,16 @@ namespace UKHO.S100PermitService
             });
 
             // The following line enables Application Insights telemetry collection.
-            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry(options);
+            //// var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            ////// builder.Services.AddApplicationInsightsTelemetry(options);
+
+            builder.Services.AddHeaderPropagation(options =>
+            {
+                options.Headers.Add(CorrelationIdMiddleware.XCorrelationIdHeaderKey);
+            });
 
             // Add services to the container.
-            builder.Logging.AddAzureWebAppDiagnostics();
+
             builder.Services.AddApplicationInsightsTelemetry();
 
             builder.Services.AddControllers(o =>
@@ -73,7 +78,6 @@ namespace UKHO.S100PermitService
             });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
             builder.Services.AddEndpointsApiExplorer();
             ConfigureSwagger();
 

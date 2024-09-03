@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using UKHO.S100PermitService.Common.Enum;
 
 namespace UKHO.S100PermitService.API.Controllers
@@ -19,11 +21,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [Route(LicenceId)]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "User permit api call started.");
+            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "User permit api call started.Correlation-ID:{correlationId}", GetCurrentCorrelationId());
 
             await Task.CompletedTask;
 
-            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "User permit api call end.");
+            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "User permit api call end.Correlation-ID:{correlationId}", GetCurrentCorrelationId());
 
             return Ok();
         }
