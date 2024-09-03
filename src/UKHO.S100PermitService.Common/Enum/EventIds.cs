@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.Enum
         /// <summary>
         /// 940002 - Generate Permit API call started.
         /// </summary>
-        GeneratePermitStart = 940002,
+        GeneratePermitStarted = 940002,
 
         /// <summary>
         /// 940003 - Generate Permit API call end.
