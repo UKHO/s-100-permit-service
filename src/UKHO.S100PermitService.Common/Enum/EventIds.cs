@@ -21,7 +21,37 @@ namespace UKHO.S100PermitService.Common.Enum
         /// <summary>
         /// 940003 - Generate Permit API call end.
         /// </summary>
-        GeneratePermitEnd = 940003
+        GeneratePermitEnd = 940003,
+
+        /// <summary>
+        /// 940004 - Permit Mapping call started.
+        /// </summary>
+        PermitMapStart = 940004,
+
+        /// <summary>
+        /// 940005 - Permit Mapping call end.
+        /// </summary>
+        PermitMapEnd = 940005,
+
+        /// <summary>
+        /// 940006 - Xml serialization call started.
+        /// </summary>
+        XmlSerializationStart = 940006,
+
+        /// <summary>
+        /// 940007 - Xml serialization call end.
+        /// </summary>
+        XmlSerializationEnd = 940007,
+
+        /// <summary>
+        /// 940008 - File creation call started.
+        /// </summary>
+        FileCreationStart = 940008,
+
+        /// <summary>
+        /// 940009 - File creation call end.
+        /// </summary>
+        FileCreationEnd = 940009
     }
 
     /// <summary>

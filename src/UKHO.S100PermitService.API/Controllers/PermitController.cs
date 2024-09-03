@@ -53,17 +53,17 @@ namespace UKHO.S100PermitService.API.Controllers
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
             var tempPath = Path.Combine(Path.GetTempPath(), "Master", $"PERMIT.xml");
 
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Permit Map call started");
+            _logger.LogInformation(EventIds.PermitMapStart.ToEventId(), "Permit Map call started");
             var permit = _permitXmlService.MapPermit(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Permit Map call completed");
+            _logger.LogInformation(EventIds.PermitMapEnd.ToEventId(), "Permit Map call completed");
 
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Permit Xml serialization started");
+            _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _xmlHelper.GetPermitXmlString(permit);
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Permit Xml serialization completed");
+            _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Xml file creation started");
+            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Xml file creation started");
             _fileSystemHelper.CreateFile(permitXml, tempPath);
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Xml file creation completed");
+            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Xml file creation completed");
 
             await Task.CompletedTask;
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "User permit api call end.");
