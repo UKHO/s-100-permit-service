@@ -392,7 +392,7 @@ stages:
           - name : WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs.outputs['vNextIATDeployTerraform.outputs.TerraformDeploy.stubWebApp'] ]
+            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.outputs.TerraformDeploy.stubWebApp'] ]
           - name : ResourceGroup
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
         workspace:
