@@ -5,7 +5,7 @@ using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
-{    
+{
     [ApiController]
     public class PermitController : BaseController<PermitController>
     {
@@ -51,7 +51,7 @@ namespace UKHO.S100PermitService.API.Controllers
                 }
             });
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
-            var tempPath = Path.Combine(Path.GetTempPath(),"Master", $"PERMIT.xml");
+            var tempPath = Path.Combine(Path.GetTempPath(), "Master", $"PERMIT.xml");
 
             _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "Permit Map call started");
             var permit = _permitXmlService.MapPermit(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);

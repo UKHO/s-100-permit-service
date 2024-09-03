@@ -12,7 +12,7 @@ namespace UKHO.S100PermitService.Common.Helpers
         private const string SecondNamespace = "http://standards.iso.org/iso/19115/-3/gco/1.0";
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-        
+
         public string GetPermitXmlString(Permit permit)
         {
             var serializer = new XmlSerializer(typeof(Permit));
@@ -22,7 +22,9 @@ namespace UKHO.S100PermitService.Common.Helpers
 
             var settings = new XmlWriterSettings
             {
-                OmitXmlDeclaration = true, Indent = true, Encoding = new UTF8Encoding(false)
+                OmitXmlDeclaration = true,
+                Indent = true,
+                Encoding = new UTF8Encoding(false)
             };
 
             using var stringWriter = new StringWriter();
