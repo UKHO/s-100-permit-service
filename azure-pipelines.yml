@@ -114,17 +114,19 @@ stages:
               packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
 
           - task: DotNetCoreCLI@2
-            displayName: 'Stub Service Unit Tests'
+            displayName: 'Dotnet test - Stub Service Unit Tests'
             inputs:
               command: test
-              projects: 'UKHO.S100PermitService.StubService.UnitTests\UKHO.S100PermitService.StubService.UnitTests.csproj'
+              projects: '**/UKHO.S100PermitService.StubService.UnitTests.csproj'
               publishTestResults: true 
 
           - task: DotNetCoreCLI@2
-            displayName: "Dotnet test - Perform Unit Tests"
+            displayName: "Dotnet test - PermitService API Unit Tests"
             inputs:
               command: "test"
-              projects: '**/*UKHO.S100PermitService.API.UnitTests.csproj'
+              projects: |
+                **/*.UnitTests.csproj
+                !**/*StubService.UnitTests.csproj
               arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
               publishTestResults: true
               testRunTitle: "UnitTests"
