@@ -1,15 +1,17 @@
-﻿namespace UKHO.S100PermitService.Common.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace UKHO.S100PermitService.Common.Models
 {
 
     // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.
     /// <remarks/>
+    [ExcludeFromCodeCoverage]
     [Serializable()]
     [System.ComponentModel.DesignerCategory("code")]
     [System.Xml.Serialization.XmlType(AnonymousType = true, Namespace = "http://www.iho.int/s100/se/5.0")]
     [System.Xml.Serialization.XmlRoot(Namespace = "http://www.iho.int/s100/se/5.0", IsNullable = false)]
     public partial class Permit
     {
-
         private header headerField;
 
         private products[] productsField;
@@ -87,7 +89,6 @@
                 this.dataServerNameField = value;
             }
         }
-
 
         /// <remarks/>
         [System.Xml.Serialization.XmlElement("S100SE:dataServerIdentifier")]
@@ -256,5 +257,4 @@
             }
         }
     }
-    
 }
