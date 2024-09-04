@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader(ContentType, ApplicationType)
                 .WithBody(@"{ ""result"": ""token missing""}"));
 
-            server //404 when incorrect cell passed
+            server //404 when invalid or non-existent cell passed
                   .Given(Request.Create()
                   .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                         .WithHeader(ContentType, ApplicationType)
                         .WithBodyFromFile(Path.Combine("StubData\\PKS", "response-200.json")));
 
-            server //400
+            server //400 when incorrect request passed
                   .Given(Request.Create()
                   .WithPath(_productKeyServiceConfiguration.Url)
                   .UsingPost()
