@@ -18,9 +18,15 @@ namespace UKHO.S100PermitService.API.Middleware
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
-            httpContext.Request.EnableBuffering();
-            var correlationId = Guid.NewGuid().ToString();
-            httpContext.Request.Body.Position = 0;           
+            var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
+
+            if(string.IsNullOrEmpty(correlationId))
+            {
+                correlationId = Guid.NewGuid().ToString();
+                httpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
+            }
+
+            httpContext.Response.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
 
             var state = new Dictionary<string, object>
             {

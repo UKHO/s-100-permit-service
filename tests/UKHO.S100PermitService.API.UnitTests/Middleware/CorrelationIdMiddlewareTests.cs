@@ -2,17 +2,9 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualBasic;
-using Newtonsoft.Json.Linq;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
-using Constants = UKHO.S100PermitService.Common.Constants;
 
 namespace UKHO.S100PermitService.API.UnitTests.Middleware
 {
@@ -34,7 +26,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
         }
 
         [Test]
-        public async Task WhenCorrelationIdKeyDoesNotExistInRequestBody_ThenGenerateNewCorrelationId()
+        public async Task WhenCorrelationIdKeyDoesNotExistInHeader_ThenGenerateNewCorrelationId()
         {
             var correlationId = Guid.NewGuid().ToString();
             await _middleware.InvokeAsync(_fakeHttpContext);
@@ -42,8 +34,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
         }
 
         [Test]
-        public async Task WhenInvokeAsyncIsCalled_ThenNextMiddlewareShouldBeInvoked()
+        public async Task WhenCorrelationIdKeyExistInHeader_ThenNextMiddlewareShouldBeInvokedWithSameCorrelationId()
         {
+            var correlationId = _fakeHttpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
             await _middleware.InvokeAsync(_fakeHttpContext);
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).MustHaveHappenedOnceExactly();
         }

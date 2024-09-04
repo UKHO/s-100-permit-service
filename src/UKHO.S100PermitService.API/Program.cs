@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -6,8 +8,6 @@ using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
 using Serilog.Events;
-using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
