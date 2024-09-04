@@ -4,6 +4,8 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Enum;
+using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {
@@ -13,6 +15,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private PermitController _permitController;
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
+        private IPermitXmlService _fakePermitXmlService;
+        private IXmlHelper _fakeXmlHelper;
+        private IFileSystemHelper _fakeFileSystemHelper;
 
         [SetUp]
         public void Setup()
@@ -20,7 +25,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();
             A.CallTo(() => _fakeHttpContextAccessor.HttpContext).Returns(new DefaultHttpContext());
             _fakeLogger = A.Fake<ILogger<PermitController>>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger);
+            _fakePermitXmlService = A.Fake<IPermitXmlService>();
+            _fakeXmlHelper = A.Fake<IXmlHelper>();
+            _fakeFileSystemHelper = A.Fake<IFileSystemHelper>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitXmlService,_fakeXmlHelper,_fakeFileSystemHelper);
         }
 
         [Test]
