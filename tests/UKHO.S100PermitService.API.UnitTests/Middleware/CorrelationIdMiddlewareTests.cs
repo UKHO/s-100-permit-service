@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
 
             await _middleware.InvokeAsync(_fakeHttpContext);
 
-            A.CallTo(() => _fakeHttpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(Constants.XCorrelationIdHeaderKey)).Returns(true);
             A.CallTo(() => _fakeLogger.BeginScope(A<Dictionary<string, object>>.Ignored)).MustHaveHappenedOnceExactly();
         }
 

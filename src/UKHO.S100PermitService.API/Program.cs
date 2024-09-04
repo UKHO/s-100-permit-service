@@ -3,6 +3,7 @@ using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -89,7 +90,7 @@ namespace UKHO.S100PermitService.API
             {
                 options.Headers.Add(Constants.XCorrelationIdHeaderKey);
             });
-
+            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
             builder.Services.AddApplicationInsightsTelemetry();
 
             builder.Services.AddControllers();
