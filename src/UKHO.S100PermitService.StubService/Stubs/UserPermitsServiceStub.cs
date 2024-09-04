@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     {
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
         private const string ApplicationType = "application/json";
-        private const string ResponseFileDirectory = "StubData\\UserPermits";
+        private const string ResponseFileDirectory = @"StubData\UserPermits";
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
 
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)

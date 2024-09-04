@@ -6,14 +6,14 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
     [TestFixture]
     public class ConfigureStubTests
     {
+        private const string ResponseFileDirectory = @"StubData\UserPermits";
+        private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
         [Test]
         public void WhenConfigureUserPermitsServiceStub_ThenEnsureRequiredNumberOfJsonFilesAreInPlace()
         {
-            var stubFolderPath = Path.Combine(Path.GetFullPath(Path.Combine(Environment.CurrentDirectory)), "StubData", "UserPermits");
+            var jsonFiles = Directory.GetFiles(_responseFileDirectoryPath, "*.json");
 
-            var jsonFiles = Directory.GetFiles(stubFolderPath, "*.json");
-
-            jsonFiles.Length.Should().Be(1, "there should be exactly 1 JSON files in the stubs folder");
+            jsonFiles.Length.Should().Be(7, "there should be exactly 7 JSON files in the stubs folder");
         }
     }
 }
