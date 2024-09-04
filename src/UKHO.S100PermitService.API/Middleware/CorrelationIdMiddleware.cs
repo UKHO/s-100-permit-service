@@ -4,23 +4,33 @@ using UKHO.S100PermitService.Common;
 namespace UKHO.S100PermitService.API.Middleware
 {
     [ExcludeFromCodeCoverage]
-    public static class CorrelationIdMiddleware
+    public class CorrelationIdMiddleware
     {
-        public static IApplicationBuilder UseCorrelationIdMiddleware(this IApplicationBuilder builder)
+        public const string CorrelationIdKey = "data.correlationId";
+        public const string CorrIdKey = "corrid";
+
+        private readonly RequestDelegate _next;
+
+        public CorrelationIdMiddleware(RequestDelegate next)
         {
-            return builder.Use(async (context, func) =>
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext httpContext)
+        {
+            httpContext.Request.EnableBuffering();
+            var correlationId = Guid.NewGuid().ToString();
+            httpContext.Request.Body.Position = 0;           
+
+            var state = new Dictionary<string, object>
             {
-                var correlationId = context.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
-
-                if(string.IsNullOrEmpty(correlationId))
-                {
-                    correlationId = Guid.NewGuid().ToString();
-                    context.Request.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
-                }
-                context.Response.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
-
-                await func();
-            });
+                [Constants.XCorrelationIdHeaderKey] = correlationId!,
+            };
+            var logger = httpContext.RequestServices.GetRequiredService<ILogger<CorrelationIdMiddleware>>();
+            using(logger.BeginScope(state))
+            {
+                await _next(httpContext);
+            }
         }
     }
 }

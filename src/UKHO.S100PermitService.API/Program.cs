@@ -1,7 +1,6 @@
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
-using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -10,6 +9,7 @@ using Serilog.Events;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
 
@@ -36,10 +36,8 @@ namespace UKHO.S100PermitService
                 new DefaultAzureCredentialOptions()));
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
-            ////  The following line enables Application Insights telemetry collection.
-            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry(options);
 
+            builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
@@ -84,6 +82,7 @@ namespace UKHO.S100PermitService
                 c.RoutePrefix = "swagger";
             });
             app.UseHttpsRedirection();
+            app.UseCorrelationIdMiddleware();
             app.MapControllers();
             app.Run();
 
