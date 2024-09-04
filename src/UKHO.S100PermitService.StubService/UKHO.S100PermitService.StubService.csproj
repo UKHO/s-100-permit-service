@@ -54,6 +54,9 @@
     <None Update="StubData\Holdings\response-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\Holdings\response-401.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\Holdings\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

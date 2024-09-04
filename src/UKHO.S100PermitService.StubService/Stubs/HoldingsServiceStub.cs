@@ -12,10 +12,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class HoldingsServiceStub : IStub
     {
-        private const string APPLICATIONTYPE = "application/json";
-        private const string ResponseFileDirectory = "StubData\\Holdings";
-        private readonly string responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
-
+        private const string ApplicationType = "application/json";
+        private const string ResponseFileDirectory = @"StubData\Holdings";
+        private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
 
         public HoldingsServiceStub(HoldingsServiceConfiguration holdingsServiceConfiguration)
@@ -25,62 +24,65 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
-            //401 - Unauthorized
             server.Given
                 (Request.Create()
                 .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
                 .UsingGet()
-                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch)
-                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()))
+                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
-                .WithBody(@"{ ""result"": ""token is missing""}"));
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
                 .Given(Request.Create().WithPath(_holdingsServiceConfiguration.Url + "/*")
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch)
-                .WithHeader("X-Correlation-ID", "*"))
-                .RespondWith(Response.Create().WithCallback(SetResponse));
+                .UsingGet()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create().WithCallback(SetResponseFromLicenseId));
         }
 
-        private ResponseMessage SetResponse(IRequestMessage request)
+        private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
         {
-            var value = request.AbsolutePath.Split('/')[2];
-            int.TryParse(value, out var licenceId);
+            var licenceId = ExtractLicenceId(request);
 
-            var responseMessage = new ResponseMessage();
-            var bodyData = new BodyData()
+            var responseMessage = new ResponseMessage
             {
-                DetectedBodyType = BodyType.String
+                BodyData = new BodyData
+                {
+                    DetectedBodyType = BodyType.String
+                }
             };
 
             string filePath;
             switch(licenceId)
             {
-                //200 - OK
                 case int n when n >= 1 && n <= 5:
-                    filePath = Path.Combine(responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;
 
-                //400 - BadRequest
                 case 0:
-                    filePath = Path.Combine(responseFileDirectoryPath, "response-400.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, "response-400.json");
                     responseMessage.StatusCode = HttpStatusCode.BadRequest;
                     break;
 
-                //404 - NotFound
                 default:
-                    filePath = Path.Combine(responseFileDirectoryPath, "response-404.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, "response-404.json");
                     responseMessage.StatusCode = HttpStatusCode.NotFound;
                     break;
             }
 
-            bodyData.BodyAsString = File.ReadAllText(filePath);
-            responseMessage.BodyData = bodyData;
-            responseMessage.AddHeader("Content-Type", APPLICATIONTYPE);
+            responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
+            responseMessage.AddHeader("Content-Type", ApplicationType);
             responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
+
             return responseMessage;
+        }
+
+        private static int ExtractLicenceId(IRequestMessage request)
+        {
+            var value = request.AbsolutePath.Split('/')[2];
+            return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
     }
 }
