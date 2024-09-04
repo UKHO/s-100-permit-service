@@ -24,8 +24,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
-            server.Given
-                (Request.Create()
+            server
+                .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
@@ -35,7 +35,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
-                .Given(Request.Create().WithPath(_holdingsServiceConfiguration.Url + "/*")
+                .Given(Request.Create()
+                .WithPath(_holdingsServiceConfiguration.Url + "/*")
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create().WithCallback(SetResponseFromLicenseId));

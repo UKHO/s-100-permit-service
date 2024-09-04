@@ -33,6 +33,9 @@
     <None Update="StubData\PKS\response-200.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\PKS\response-401.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\PKS\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
