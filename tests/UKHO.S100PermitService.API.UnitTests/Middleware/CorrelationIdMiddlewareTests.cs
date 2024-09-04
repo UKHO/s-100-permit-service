@@ -1,4 +1,5 @@
-﻿using FakeItEasy;
+﻿using System.Text;
+using FakeItEasy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,15 +30,23 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
         public async Task WhenCorrelationIdKeyDoesNotExistInHeader_ThenGenerateNewCorrelationId()
         {
             var correlationId = Guid.NewGuid().ToString();
+
             await _middleware.InvokeAsync(_fakeHttpContext);
+
+            A.CallTo(() => _fakeHttpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeLogger.BeginScope(A<Dictionary<string, object>>.Ignored)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
-        public async Task WhenCorrelationIdKeyExistInHeader_ThenNextMiddlewareShouldBeInvokedWithSameCorrelationId()
+        public async Task WhenCorrelationIdKeyExistsInHeader_ThenNextMiddlewareShouldBeInvokedWithSameCorrelationId()
         {
-            var correlationId = _fakeHttpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
+            var correlationId = Guid.NewGuid().ToString();
+            _fakeHttpContext.Request.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
+
             await _middleware.InvokeAsync(_fakeHttpContext);
+
+            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(Constants.XCorrelationIdHeaderKey)).Returns(true);
+            A.CallTo(() => _fakeHttpContext.Response.Headers[Constants.XCorrelationIdHeaderKey]).Returns(correlationId);
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).MustHaveHappenedOnceExactly();
         }
     }

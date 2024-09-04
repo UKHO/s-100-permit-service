@@ -6,9 +6,6 @@ namespace UKHO.S100PermitService.API.Middleware
     [ExcludeFromCodeCoverage]
     public class CorrelationIdMiddleware
     {
-        public const string CorrelationIdKey = "data.correlationId";
-        public const string CorrIdKey = "corrid";
-
         private readonly RequestDelegate _next;
 
         public CorrelationIdMiddleware(RequestDelegate next)
@@ -32,6 +29,7 @@ namespace UKHO.S100PermitService.API.Middleware
             {
                 [Constants.XCorrelationIdHeaderKey] = correlationId!,
             };
+
             var logger = httpContext.RequestServices.GetRequiredService<ILogger<CorrelationIdMiddleware>>();
             using(logger.BeginScope(state))
             {

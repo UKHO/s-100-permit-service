@@ -1,5 +1,8 @@
-﻿namespace UKHO.S100PermitService.Common.Configuration
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace UKHO.S100PermitService.Common.Configuration
 {
+    [ExcludeFromCodeCoverage]
     public class EventHubLoggingConfiguration
     {
         public string? MinimumLoggingLevel { get; set; }
