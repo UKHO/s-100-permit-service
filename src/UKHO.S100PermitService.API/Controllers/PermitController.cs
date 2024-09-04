@@ -6,10 +6,10 @@ using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
     public class PermitController : BaseController<PermitController>
-    {
-        private const string LicenceId = "/permits/{licenceId}";
+    {       
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitXmlService _permitXmlService;
         private readonly IXmlHelper _xmlHelper;
@@ -28,11 +28,11 @@ namespace UKHO.S100PermitService.API.Controllers
             _fileSystemHelper = fileSystemHelper;
         }
 
-        [HttpPost]
-        [Route(LicenceId)]
+        [HttpPost]     
+        [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStart.ToEventId(), "User permit api call started.");
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started | _X-Correlation-ID:{correlationId}", CommonHelper.CorrelationID);
 
             var productsList = new List<products>();
             productsList.Add(new products()
@@ -66,9 +66,10 @@ namespace UKHO.S100PermitService.API.Controllers
             _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Xml file creation completed");
 
             await Task.CompletedTask;
-            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "User permit api call end.");
+
+            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end | _X-Correlation-ID:{correlationId}", CommonHelper.CorrelationID);
+
             return Ok();
         }
-
     }
 }

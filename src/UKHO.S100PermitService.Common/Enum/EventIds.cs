@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace UKHO.S100PermitService.Common.Enum
 {
@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.Enum
         /// <summary>
         /// 940002 - Generate Permit API call started.
         /// </summary>
-        GeneratePermitStart = 940002,
+        GeneratePermitStarted = 940002,
 
         /// <summary>
         /// 940003 - Generate Permit API call end.
@@ -70,5 +70,4 @@ namespace UKHO.S100PermitService.Common.Enum
             return new EventId((int)eventId, eventId.ToString());
         }
     }
-
 }

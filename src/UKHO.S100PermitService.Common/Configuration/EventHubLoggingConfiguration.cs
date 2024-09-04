@@ -1,5 +1,4 @@
-﻿
-namespace UKHO.S100PermitService.Common.Configuration
+﻿namespace UKHO.S100PermitService.Common.Configuration
 {
     public class EventHubLoggingConfiguration
     {

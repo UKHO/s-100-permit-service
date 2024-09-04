@@ -2,14 +2,15 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using Serilog;
+using Serilog.Events;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
-using UKHO.S100PermitService.API.Configuration;
-using UKHO.S100PermitService.API.Middleware;
+using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.Services;
@@ -20,11 +21,8 @@ namespace UKHO.S100PermitService
     public class Program
     {
         public static void Main(string[] args)
-        {
-            EventHubLoggingConfiguration eventHubLoggingConfiguration;
-            IHttpContextAccessor httpContextAccessor = new HttpContextAccessor();
+        {            
             var builder = WebApplication.CreateBuilder(args);
-            IConfiguration configuration = builder.Configuration;
 
 #if DEBUG
             //Add development overrides configuration
@@ -32,6 +30,7 @@ namespace UKHO.S100PermitService
 #endif
             builder.Configuration.AddEnvironmentVariables();
 
+            IConfiguration configuration = builder.Configuration;
             var kvServiceUri = configuration["KeyVaultSettings:ServiceUri"];
             if(!string.IsNullOrWhiteSpace(kvServiceUri))
             {
@@ -39,68 +38,28 @@ namespace UKHO.S100PermitService
                 new DefaultAzureCredentialOptions()));
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
-
-#if DEBUG
-            //create the logger and setup of sinks, filters and properties
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Information()
-                .WriteTo.File("Logs/UKHO.S100PermitService.API-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
-                .CreateLogger();
-#endif
-            eventHubLoggingConfiguration = configuration.GetSection("EventHubLoggingConfiguration").Get<EventHubLoggingConfiguration>()!;
-
-            builder.Host.ConfigureLogging(logging =>
-            {
-                logging.ClearProviders();
-                if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration.ConnectionString))
-                {
-                    void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
-                    {
-                        if(httpContextAccessor.HttpContext != null)
-                        {
-                            additionalValues["_Environment"] = eventHubLoggingConfiguration.Environment;
-                            additionalValues["_System"] = eventHubLoggingConfiguration.System;
-                            additionalValues["_Service"] = eventHubLoggingConfiguration.Service;
-                            additionalValues["_NodeName"] = eventHubLoggingConfiguration.NodeName;
-                            additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
-                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers["User-Agent"].FirstOrDefault() ?? string.Empty;
-                            additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
-                            additionalValues["_X-Correlation-ID"] = httpContextAccessor.HttpContext.Request.Headers?[CorrelationIdMiddleware.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
-                        }
-                    }
-                    logging.AddEventHub(config =>
-                {
-                    config.Environment = eventHubLoggingConfiguration.Environment;
-                    config.DefaultMinimumLogLevel =
-                        (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.MinimumLoggingLevel, true);
-                    config.MinimumLogLevels["UKHO"] =
-                        (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.UkhoMinimumLoggingLevel, true);
-                    config.EventHubConnectionString = eventHubLoggingConfiguration.ConnectionString;
-                    config.EventHubEntityPath = eventHubLoggingConfiguration.EntityPath;
-                    config.System = eventHubLoggingConfiguration.System;
-                    config.Service = eventHubLoggingConfiguration.Service;
-                    config.NodeName = eventHubLoggingConfiguration.NodeName;
-                    config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
-                });
-                }
-            });
+            ////  The following line enables Application Insights telemetry collection.
+            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            builder.Services.AddApplicationInsightsTelemetry(options);
 
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
+#if DEBUG
+                loggingBuilder.AddSerilog(new LoggerConfiguration()
+                                 .WriteTo.File("Logs/UKHO.S100PermitService.API-Logs-.txt", rollingInterval: RollingInterval.Day, outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss} [{Level}] [{SourceContext}] {Message}{NewLine}{Exception}")
+                                 .MinimumLevel.Information()
+                                 .MinimumLevel.Override("UKHO", LogEventLevel.Debug)
+                                 .CreateLogger(), dispose: true);
+#endif
                 loggingBuilder.AddConsole();
                 loggingBuilder.AddDebug();
-                loggingBuilder.AddSerilog();
                 loggingBuilder.AddAzureWebAppDiagnostics();
             });
 
-            // The following line enables Application Insights telemetry collection.
-            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry(options);
-
-            // Add services to the container.
-            builder.Logging.AddAzureWebAppDiagnostics();
-            builder.Services.AddApplicationInsightsTelemetry();
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.AddControllers(o =>
             {
@@ -110,8 +69,10 @@ namespace UKHO.S100PermitService
                 options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
             });
 
-            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            builder.Services.AddControllers();
+            builder.Services.AddHeaderPropagation(options =>
+            {
+                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
+            });
 
             builder.Services.AddScoped<IFileSystemHelper, FileSystemHelper>();
             builder.Services.AddScoped<IXmlHelper, XmlHelper>();
@@ -121,6 +82,7 @@ namespace UKHO.S100PermitService
             ConfigureSwagger();
 
             var app = builder.Build();
+            ConfigureLogging(app);
 
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -131,7 +93,7 @@ namespace UKHO.S100PermitService
             app.UseHttpsRedirection();
             app.MapControllers();
             app.Run();
-            //------------------------
+
             void ConfigureSwagger()
             {
                 var swaggerConfiguration = new SwaggerConfiguration();
@@ -148,10 +110,45 @@ namespace UKHO.S100PermitService
                             Email = swaggerConfiguration.Email,
                         },
                     });
-                    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                    //c.IncludeXmlComments(xmlPath);
                 });
+            }
+
+            void ConfigureLogging(WebApplication app)
+            {
+                var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+                var eventHubLoggingConfiguration = app.Services.GetRequiredService<IOptions<EventHubLoggingConfiguration>>();
+                var httpContextAccessor = app.Services.GetRequiredService<IHttpContextAccessor>();
+
+                if(!string.IsNullOrWhiteSpace(eventHubLoggingConfiguration?.Value.ConnectionString))
+                {
+                    void ConfigAdditionalValuesProvider(IDictionary<string, object> additionalValues)
+                    {
+                        if(httpContextAccessor.HttpContext != null)
+                        {
+                            additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                            additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
+                            additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
+                            additionalValues["_X-Correlation-ID"] =
+                                httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                        }
+                    }
+
+                    loggerFactory.AddEventHub(
+                                             config =>
+                                             {
+                                                 config.Environment = eventHubLoggingConfiguration.Value.Environment;
+                                                 config.DefaultMinimumLogLevel =
+                                                     (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.MinimumLoggingLevel, true);
+                                                 config.MinimumLogLevels["UKHO"] =
+                                                     (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.UkhoMinimumLoggingLevel, true);
+                                                 config.EventHubConnectionString = eventHubLoggingConfiguration.Value.ConnectionString;
+                                                 config.EventHubEntityPath = eventHubLoggingConfiguration.Value.EntityPath;
+                                                 config.System = eventHubLoggingConfiguration.Value.System;
+                                                 config.Service = eventHubLoggingConfiguration.Value.Service;
+                                                 config.NodeName = eventHubLoggingConfiguration.Value.NodeName;
+                                                 config.AdditionalValuesProvider = ConfigAdditionalValuesProvider;
+                                             });
+                }                
             }
         }
     }
