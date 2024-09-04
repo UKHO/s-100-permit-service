@@ -1,12 +1,9 @@
 ﻿using FluentAssertions;
-using FluentAssertions.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using ProtoBuf.Meta;
-using System.Configuration;
 using UKHO.S100PermitService.StubService.Configuration;
 using WireMock.Server;
 using WireMock.Settings;
@@ -46,8 +43,6 @@ namespace UKHO.S100PermitService.StubService.UnitTests
         [Test]
         public void WhenWireMockServerIsStarted_ThenServerIsRunning()
         {
-            var wireMockServerSettings = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
-
             var server = WireMockServer.Start(new WireMockServerSettings
             {
                 ReadStaticMappings = true,
