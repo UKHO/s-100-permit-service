@@ -42,6 +42,9 @@
     <None Update="StubData\Holdings\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\UserPermits\response-401.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="web.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

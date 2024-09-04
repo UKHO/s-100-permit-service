@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
-                .WithBody(@"{ ""result"": ""token is missing""}"));
+                .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server.Given
                 (Request.Create()
@@ -43,12 +43,12 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
             .RespondWith(Response.Create().WithCallback(request =>
             {
-                return SetResponseMessage(request);
+                return SetResponseFromLicenseId(request);
             }));
 
         }
 
-        private ResponseMessage SetResponseMessage(IRequestMessage request)
+        private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
         {
             int licenceId = ExtractLicenceId(request);
 

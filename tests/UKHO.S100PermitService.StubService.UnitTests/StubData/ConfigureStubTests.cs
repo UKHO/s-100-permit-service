@@ -13,7 +13,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
         {
             var jsonFiles = Directory.GetFiles(_responseFileDirectoryPath, "*.json");
 
-            jsonFiles.Length.Should().Be(7, "there should be exactly 7 JSON files in the stubs folder");
+            jsonFiles.Length.Should().Be(8, "there should be exactly 8 JSON files in the stubs folder");
         }
     }
 }
