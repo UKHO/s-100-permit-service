@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
-            .RespondWith(Response.Create()
+                .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
