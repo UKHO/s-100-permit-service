@@ -32,21 +32,20 @@ namespace UKHO.S100PermitService.StubService.Stubs
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
-                .WithBody(@"{ ""result"": ""token is missing""}"));
+                .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
                 .Given(Request.Create().WithPath(_holdingsServiceConfiguration.Url + "/*")
                 .UsingGet()
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch)
-                .WithHeader("X-Correlation-ID", "*"))
-                .RespondWith(Response.Create().WithCallback(SetResponse));
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create().WithCallback(SetResponseFromLicenseId));
         }
 
-        private ResponseMessage SetResponse(IRequestMessage request)
+        private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
         {
             var licenceId = ExtractLicenceId(request);
 
-            var responseMessage = new ResponseMessage()
+            var responseMessage = new ResponseMessage
             {
                 BodyData = new BodyData
                 {
