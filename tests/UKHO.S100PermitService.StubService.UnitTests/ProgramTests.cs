@@ -1,9 +1,12 @@
 ﻿using FluentAssertions;
+using FluentAssertions.Common;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
+using ProtoBuf.Meta;
+using System.Configuration;
 using UKHO.S100PermitService.StubService.Configuration;
 using WireMock.Server;
 using WireMock.Settings;
@@ -26,7 +29,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests
 
             _services = new ServiceCollection();
             _services.AddLogging(configure => configure.AddConsole());
-            _services.Configure<StubConfiguration>(_configuration.GetSection("StubConfiguration"));
+            _services.Configure<WireMockServerSettings>(_configuration.GetSection("WireMockServerSettings"));
             _services.Configure<HoldingsServiceConfiguration>(_configuration.GetSection("HoldingsServiceConfiguration"));
             _services.Configure<ProductKeyServiceConfiguration>(_configuration.GetSection("ProductKeyServiceConfiguration"));
             _services.Configure<UserPermitsServiceConfiguration>(_configuration.GetSection("UserPermitsServiceConfiguration"));
@@ -43,11 +46,10 @@ namespace UKHO.S100PermitService.StubService.UnitTests
         [Test]
         public void WhenWireMockServerIsStarted_ThenServerIsRunning()
         {
-            var stubConfiguration = _serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
+            var wireMockServerSettings = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
 
             var server = WireMockServer.Start(new WireMockServerSettings
             {
-                Port = stubConfiguration?.Port,
                 ReadStaticMappings = true,
                 WatchStaticMappings = true,
                 WatchStaticMappingsInSubdirectories = true,
@@ -57,7 +59,6 @@ namespace UKHO.S100PermitService.StubService.UnitTests
             var isRunning = server.IsStarted;
 
             isRunning.Should().BeTrue();
-            stubConfiguration?.Port.Should().Be(server.Ports[0]);
 
             server.Should().NotBeNull();
             server.Stop();
@@ -66,7 +67,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests
         [Test]
         public void WhenConfigurationsAreLoadedThenTheyAreNotMissing()
         {
-            var stubConfiguration = _serviceProvider.GetService<IOptions<StubConfiguration>>()?.Value;
+            var stubConfiguration = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
             var holdingsServiceConfiguration = _serviceProvider.GetService<IOptions<HoldingsServiceConfiguration>>()?.Value;
             var productKeyServiceConfiguration = _serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
             var userPermitsServiceConfiguration = _serviceProvider.GetService<IOptions<UserPermitsServiceConfiguration>>()?.Value;

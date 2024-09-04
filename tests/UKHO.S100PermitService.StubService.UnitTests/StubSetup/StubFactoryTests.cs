@@ -1,5 +1,6 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using UKHO.S100PermitService.StubService.Configuration;
 using UKHO.S100PermitService.StubService.Stubs;
@@ -11,16 +12,16 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
     public class StubFactoryTests
     {
         private StubFactory _stubFactory;
-        private HoldingsServiceConfiguration _holdingsServiceConfiguration;
-        private ProductKeyServiceConfiguration _productKeyServiceConfiguration;
-        private UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
+        private IOptions<HoldingsServiceConfiguration> _holdingsServiceConfiguration;
+        private IOptions<ProductKeyServiceConfiguration> _productKeyServiceConfiguration;
+        private IOptions<UserPermitsServiceConfiguration> _userPermitsServiceConfiguration;
 
         [SetUp]
         public void SetUp()
         {
-            _holdingsServiceConfiguration = A.Fake<HoldingsServiceConfiguration>();
-            _productKeyServiceConfiguration = A.Fake<ProductKeyServiceConfiguration>();
-            _userPermitsServiceConfiguration = A.Fake<UserPermitsServiceConfiguration>();
+            _holdingsServiceConfiguration = A.Fake<IOptions<HoldingsServiceConfiguration>>();
+            _productKeyServiceConfiguration = A.Fake<IOptions<ProductKeyServiceConfiguration>>();
+            _userPermitsServiceConfiguration = A.Fake<IOptions<UserPermitsServiceConfiguration>>();
 
             _stubFactory = new StubFactory(_holdingsServiceConfiguration, _productKeyServiceConfiguration, _userPermitsServiceConfiguration);
         }

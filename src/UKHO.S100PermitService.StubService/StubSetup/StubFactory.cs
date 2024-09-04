@@ -1,4 +1,5 @@
-﻿using UKHO.S100PermitService.StubService.Configuration;
+﻿using Microsoft.Extensions.Options;
+using UKHO.S100PermitService.StubService.Configuration;
 using UKHO.S100PermitService.StubService.Stubs;
 
 namespace UKHO.S100PermitService.StubService.StubSetup
@@ -9,11 +10,11 @@ namespace UKHO.S100PermitService.StubService.StubSetup
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
 
-        public StubFactory(HoldingsServiceConfiguration holdingsServiceConfiguration, ProductKeyServiceConfiguration productKeyServiceConfiguration, UserPermitsServiceConfiguration userPermitsServiceConfiguration)
+        public StubFactory(IOptions<HoldingsServiceConfiguration> holdingsServiceConfiguration, IOptions<ProductKeyServiceConfiguration> productKeyServiceConfiguration, IOptions<UserPermitsServiceConfiguration> userPermitsServiceConfiguration)
         {
-            _holdingsServiceConfiguration = holdingsServiceConfiguration ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));
-            _productKeyServiceConfiguration = productKeyServiceConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceConfiguration));
-            _userPermitsServiceConfiguration = userPermitsServiceConfiguration ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration));
+            _holdingsServiceConfiguration = holdingsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));           
+            _productKeyServiceConfiguration = productKeyServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(productKeyServiceConfiguration)); ;
+            _userPermitsServiceConfiguration = userPermitsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration)); ;
         }
 
         public IStub CreateHoldingsServiceStub()
