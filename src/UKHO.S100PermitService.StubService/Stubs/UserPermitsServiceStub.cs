@@ -14,9 +14,10 @@ namespace UKHO.S100PermitService.StubService.Stubs
     public class UserPermitsServiceStub : IStub
     {
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
-        private const string APPLICATIONTYPE = "application/json";
-        private const string RESPONSEFILEDIRECTORY = "StubData\\UserPermits";
-        private readonly string RESPONSEFILEDIRECTORYPATH = Path.Combine(Environment.CurrentDirectory, RESPONSEFILEDIRECTORY);
+        private const string ApplicationType = "application/json";
+        private const string ResponseFileDirectory = "StubData\\UserPermits";
+        private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
+
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
             _userPermitsServiceConfiguration = userPermitsServiceConfiguration ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration));
@@ -29,10 +30,10 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 (Request.Create()
                 .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
                 .UsingGet()
-                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch)
-                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()))
+                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
             .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                 .WithBody(@"{ ""result"": ""token is missing""}"));
 
             server.Given
@@ -49,9 +50,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         private ResponseMessage SetResponseMessage(IRequestMessage request)
         {
-            var licenceID = request.AbsolutePath.Split('/')[2];
-
-            Int32.TryParse(licenceID, out var licenceId);
+            int licenceId = ExtractLicenceId(request);
 
             var responseMessage = new ResponseMessage();
             var bodyData = new BodyData()
@@ -60,29 +59,25 @@ namespace UKHO.S100PermitService.StubService.Stubs
             };
 
             string filePath;
-            switch(licenceId)
+            switch (licenceId)
             {
-                case 1://200 - OK
-                case 2:
-                case 3:
-                case 4:
-                case 5:
+                case int n when n >= 1 && n <= 5://200 - OK
 
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, $"response-200-licenceId-{licenceId}.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceId-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
 
                     break;
 
                 case 0://400 - BadRequest
 
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-400.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, "response-400.json");
                     responseMessage.StatusCode = HttpStatusCode.BadRequest;
 
                     break;
 
                 default: //404 - NotFound
 
-                    filePath = Path.Combine(RESPONSEFILEDIRECTORYPATH, "response-404.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, "response-404.json");
                     responseMessage.StatusCode = HttpStatusCode.NotFound;
 
                     break;
@@ -90,9 +85,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             bodyData.BodyAsString = File.ReadAllText(filePath);
             responseMessage.BodyData = bodyData;
-            responseMessage.AddHeader("Content-Type", APPLICATIONTYPE);
+            responseMessage.AddHeader("Content-Type", ApplicationType);
             responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
             return responseMessage;
+        }
+
+        private static int ExtractLicenceId(IRequestMessage request)
+        {
+            var value = request.AbsolutePath.Split('/')[2];
+            return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
     }
 }

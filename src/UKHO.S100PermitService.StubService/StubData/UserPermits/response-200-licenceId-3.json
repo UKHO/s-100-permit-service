@@ -1,0 +1,17 @@
+{
+  "LicenceId": "3",
+  "UserPermits": [
+    {
+      "Title": "IHO Test System",
+      "UPN": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+    },
+    {
+      "Title": "OeM Test 1",
+      "UPN": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"
+    },
+    {
+      "Title": "OeM Test 2",
+      "UPN": "CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC"
+    }
+  ]
+}
