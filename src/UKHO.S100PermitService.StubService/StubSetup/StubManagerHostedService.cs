@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.StubService.StubSetup
             _wireMockServer = WireMockServer.Start(wireMockServerSettings.Value);
         }
 
-        public void RegisterStubs()
+        private void RegisterStubs()
         {
             RegisterStub(_stubFactory.CreateHoldingsServiceStub());
             RegisterStub(_stubFactory.CreateProductKeyServiceStub());
