@@ -113,7 +113,7 @@ namespace UKHO.S100PermitService.API
                 {
                     if(httpContextAccessor.HttpContext != null)
                     {
-                        additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress.ToString();
+                        additionalValues["_RemoteIPAddress"] = httpContextAccessor.HttpContext.Connection.RemoteIpAddress!.ToString();
                         additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                         additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                         additionalValues["_X-Correlation-ID"] =
@@ -125,9 +125,9 @@ namespace UKHO.S100PermitService.API
                                          {
                                              config.Environment = eventHubLoggingConfiguration.Value.Environment;
                                              config.DefaultMinimumLogLevel =
-                                                 (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.MinimumLoggingLevel, true);
+                                                 (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.MinimumLoggingLevel!, true);
                                              config.MinimumLogLevels["UKHO"] =
-                                                 (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.UkhoMinimumLoggingLevel, true);
+                                                 (LogLevel)Enum.Parse(typeof(LogLevel), eventHubLoggingConfiguration.Value.UkhoMinimumLoggingLevel!, true);
                                              config.EventHubConnectionString = eventHubLoggingConfiguration.Value.ConnectionString;
                                              config.EventHubEntityPath = eventHubLoggingConfiguration.Value.EntityPath;
                                              config.System = eventHubLoggingConfiguration.Value.System;
