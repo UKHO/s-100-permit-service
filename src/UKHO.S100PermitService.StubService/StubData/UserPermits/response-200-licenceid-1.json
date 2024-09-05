@@ -1,9 +1,9 @@
 {
-  "LicenceId": "1",
-  "UserPermits": [
+  "licenceId": "1",
+  "userPermits": [
     {
-      "Title": "IHO Test System",
-      "UPN": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "title": "IHO Test System",
+      "upn": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
     }
   ]
 }

@@ -6,7 +6,6 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
     [TestFixture]
     public class ConfigureStubTests
     {
-
         [Test]
         public void WhenConfigureUserPermitsServiceStub_ThenEnsureRequiredNumberOfJsonFilesAreInPlace()
         {

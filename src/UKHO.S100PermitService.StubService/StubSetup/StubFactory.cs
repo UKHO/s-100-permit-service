@@ -12,9 +12,9 @@ namespace UKHO.S100PermitService.StubService.StubSetup
 
         public StubFactory(IOptions<HoldingsServiceConfiguration> holdingsServiceConfiguration, IOptions<ProductKeyServiceConfiguration> productKeyServiceConfiguration, IOptions<UserPermitsServiceConfiguration> userPermitsServiceConfiguration)
         {
-            _holdingsServiceConfiguration = holdingsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));           
-            _productKeyServiceConfiguration = productKeyServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(productKeyServiceConfiguration)); ;
-            _userPermitsServiceConfiguration = userPermitsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration)); ;
+            _holdingsServiceConfiguration = holdingsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));
+            _productKeyServiceConfiguration = productKeyServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(productKeyServiceConfiguration));
+            _userPermitsServiceConfiguration = userPermitsServiceConfiguration?.Value ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration));
         }
 
         public IStub CreateHoldingsServiceStub()
