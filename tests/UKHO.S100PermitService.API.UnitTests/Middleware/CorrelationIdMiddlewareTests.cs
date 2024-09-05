@@ -1,5 +1,4 @@
-﻿using System.Text;
-using FakeItEasy;
+﻿using FakeItEasy;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -9,6 +8,7 @@ using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.UnitTests.Middleware
 {
+    [TestFixture]
     public class CorrelationIdMiddlewareTests
     {
         private RequestDelegate _fakeNextMiddleware;

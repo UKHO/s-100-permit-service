@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
@@ -10,12 +9,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
         protected BaseController(IHttpContextAccessor httpContextAccessor)
         {
-            this._httpContextAccessor = httpContextAccessor;
-        }
-
-        protected string GetCurrentCorrelationId()
-        {
-            return _httpContextAccessor.HttpContext!.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
-        }
+            _httpContextAccessor = httpContextAccessor;
+        }       
     }
 }

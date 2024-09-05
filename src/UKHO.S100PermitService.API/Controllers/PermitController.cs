@@ -8,6 +8,7 @@ namespace UKHO.S100PermitService.API.Controllers
     public class PermitController : BaseController<PermitController>
     {
         private readonly ILogger<PermitController> _logger;
+
         public PermitController(IHttpContextAccessor httpContextAccessor, ILogger<PermitController> logger)
         : base(httpContextAccessor)
         {

@@ -27,6 +27,7 @@ namespace UKHO.S100PermitService.API
             ConfigureSwagger(builder);
 
             var app = builder.Build();
+
             if(app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -52,6 +53,7 @@ namespace UKHO.S100PermitService.API
 
         private static void ConfigureConfiguration(WebApplicationBuilder builder)
         {
+            builder.Configuration.AddJsonFile("appsettings.json", false, true);
 #if DEBUG            
             builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
 #endif

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -24,7 +24,5 @@
   <ItemGroup>
     <ProjectReference Include="..\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj" />
   </ItemGroup>
-
-  <ProjectExtensions><VisualStudio><UserProperties appsettings_1override_1local_1json__JsonSchema="https://www.json-wf.org.uk/json-wf-schema-1.0.json" /></VisualStudio></ProjectExtensions>
 
 </Project>

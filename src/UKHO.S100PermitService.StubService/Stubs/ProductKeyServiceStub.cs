@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using UKHO.S100PermitService.StubService.Configuration;
+using WireMock.Matchers;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -8,6 +9,10 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class ProductKeyServiceStub : IStub
     {
+        public const string ContentType = "Content-Type";
+        public const string ApplicationType = "application/json";
+        private const string ResponseFileDirectory = @"StubData\PKS";
+
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
         public ProductKeyServiceStub(ProductKeyServiceConfiguration productKeyServiceConfiguration)
@@ -17,12 +22,68 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
-            server
-                .Given(Request.Create().WithPath(_productKeyServiceConfiguration.Url).UsingGet())
+            server //401
+                 .Given(Request.Create()
+                 .WithPath(_productKeyServiceConfiguration.Url)
+                 .UsingPost()
+                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
+                 .RespondWith(Response.Create()
+                 .WithStatusCode(HttpStatusCode.Unauthorized)
+                 .WithHeader(ContentType, ApplicationType)
+                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-401.json")));
+
+            server //404 when invalid or non-existent cell passed
+                .Given(Request.Create()
+                .WithPath(_productKeyServiceConfiguration.Url)
+                .UsingPost()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
-                    .WithStatusCode(HttpStatusCode.OK)
-                    .WithHeader("Content-Type", "application/json")
-                    .WithBody("{ \"message\": \"PKS API Stub response\" }"));
+                .WithStatusCode(HttpStatusCode.NotFound)
+                .WithHeader(ContentType, ApplicationType)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-datanotfound-404.json")));
+
+            server //404 when cell is correct but data is not available on pks service
+                .Given(Request.Create()
+                .WithPath(_productKeyServiceConfiguration.Url)
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-404.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.NotFound)
+                .WithHeader(ContentType, ApplicationType)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-404.json")));
+
+            server //200
+                .Given(Request.Create()
+                .WithPath(_productKeyServiceConfiguration.Url)
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader(ContentType, ApplicationType)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200.json")));
+
+            server //400 when incorrect request passed
+                .Given(Request.Create()
+                .WithPath(_productKeyServiceConfiguration.Url)
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-400.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.BadRequest)
+                .WithHeader(ContentType, ApplicationType)
+                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()));
+        }
+
+        private static string GetJsonData(string filePath)
+        {
+            using var fileStream = new StreamReader(filePath);
+            return fileStream.ReadToEnd();
         }
     }
 }

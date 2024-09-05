@@ -24,7 +24,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
-        public async Task WhenGetPermitIsCalledReturnsOKResponse()
+        public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = await _permitController.GeneratePermits(007);
 
