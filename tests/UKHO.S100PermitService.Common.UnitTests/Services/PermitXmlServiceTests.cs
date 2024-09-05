@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 products = new List<products>().ToArray()
 
             };
-            var result = _fakePermitXmlService.MapPermit(DateTimeOffset.Parse("2024-09-02+01:00"), "fakeDataServerIdentifier", "fakeDataServerName", "fakeUserPermit", 1, new List<products>());
+            var result = _fakePermitXmlService.MapDataToPermit(DateTimeOffset.Parse("2024-09-02+01:00"), "fakeDataServerIdentifier", "fakeDataServerName", "fakeUserPermit", 1, new List<products>());
 
             result.header.dataServerName.Should().Be(expectedResult.header.dataServerName);
             result.header.dataServerIdentifier.Should().Be(expectedResult.header.dataServerIdentifier);
@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 },
                 products = products.ToArray()
             };
-            var result = _fakePermitXmlService.MapPermit(DateTimeOffset.Parse("2024-09-02+05:30"), "fakeDataServerIdentifier", "fakeDataServerName", "fakeUserPermit", 1, products);
+            var result = _fakePermitXmlService.MapDataToPermit(DateTimeOffset.Parse("2024-09-02+05:30"), "fakeDataServerIdentifier", "fakeDataServerName", "fakeUserPermit", 1, products);
 
             result.products[0].id.Should().Be(expectedResult.products[0].id);
             result.products[0].datasetPermit[0].issueDate.Should().Be(expectedResult.products[0].datasetPermit[0].issueDate);

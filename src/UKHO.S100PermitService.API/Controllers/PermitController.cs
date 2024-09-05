@@ -53,9 +53,9 @@ namespace UKHO.S100PermitService.API.Controllers
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
             var tempPath = Path.Combine(Path.GetTempPath(), "Master", $"PERMIT.xml");
 
-            _logger.LogInformation(EventIds.PermitMapStart.ToEventId(), "Permit Map call started");
-            var permit = _permitXmlService.MapPermit(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
-            _logger.LogInformation(EventIds.PermitMapEnd.ToEventId(), "Permit Map call completed");
+            _logger.LogInformation(EventIds.MapDataToPermitStart.ToEventId(), "MapDataToPermit call started");
+            var permit = _permitXmlService.MapDataToPermit(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
+            _logger.LogInformation(EventIds.MapDataToPermitEnd.ToEventId(), "MapDataToPermit call completed");
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _xmlHelper.GetPermitXmlString(permit);

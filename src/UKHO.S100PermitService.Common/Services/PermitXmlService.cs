@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
 
-        public Permit MapPermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit,decimal version, List<products> products)
+        public Permit MapDataToPermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit,decimal version, List<products> products)
         {
             var productsList = new List<products>();
             productsList.AddRange(products);

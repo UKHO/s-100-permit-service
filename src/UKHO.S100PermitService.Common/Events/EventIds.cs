@@ -21,14 +21,14 @@
         GeneratePermitEnd = 840003,
 
         /// <summary>
-        /// 840004 - Permit Mapping call started.
+        /// 840004 - Mapping data to permit call started.
         /// </summary>
-        PermitMapStart = 840004,
+        MapDataToPermitStart = 840004,
 
         /// <summary>
-        /// 840005 - Permit Mapping call end.
+        /// 840005 - Mapping data to permit call end.
         /// </summary>
-        PermitMapEnd = 840005,
+        MapDataToPermitEnd = 840005,
 
         /// <summary>
         /// 840006 - Xml serialization call started.
