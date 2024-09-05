@@ -25,8 +25,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         public void ConfigureStub(WireMockServer server)
         {
             server
-                .Given
-                (Request.Create()
+                .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
@@ -36,8 +35,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
-                .Given
-                (Request.Create()
+                .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
@@ -47,7 +45,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
         {
-            int licenceId = ExtractLicenceId(request);
+            var licenceId = ExtractLicenceId(request);
 
             var responseMessage = new ResponseMessage
             {
@@ -58,7 +56,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             };
 
             string filePath;
-            switch (licenceId)
+            switch(licenceId)
             {
                 case int n when n >= 1 && n <= 5:
                     filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceId-{licenceId}.json");
