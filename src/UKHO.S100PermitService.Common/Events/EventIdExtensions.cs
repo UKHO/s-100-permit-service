@@ -1,8 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using UKHO.S100PermitService.Common.Enum;
 
-namespace UKHO.S100PermitService.Common.Utilities
+namespace UKHO.S100PermitService.Common.Events
 {
     [ExcludeFromCodeCoverage]
     public static class EventIdExtensions

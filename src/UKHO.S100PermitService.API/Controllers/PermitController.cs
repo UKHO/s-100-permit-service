@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UKHO.S100PermitService.Common.Enum;
-using UKHO.S100PermitService.Common.Utilities;
+using UKHO.S100PermitService.Common.Events;
 
 namespace UKHO.S100PermitService.API.Controllers
 {

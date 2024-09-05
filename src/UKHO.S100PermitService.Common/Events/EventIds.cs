@@ -1,9 +1,9 @@
-﻿namespace UKHO.S100PermitService.Common.Enum
+﻿namespace UKHO.S100PermitService.Common.Events
 {
     /// <summary>
     /// Event Ids
     /// </summary>
-    public enum EventIds
+    public enum EventIds 
     {
         /// <summary>
         /// 840001 - An unhandled exception occurred while processing the request.
@@ -19,5 +19,5 @@
         /// 840003 - Generate Permit API call end.
         /// </summary>
         GeneratePermitEnd = 840003
-    }   
+    }
 }
