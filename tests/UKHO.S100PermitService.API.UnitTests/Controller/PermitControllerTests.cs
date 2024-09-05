@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Enum;
+using UKHO.S100PermitService.Common.Utilities;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {

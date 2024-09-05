@@ -16,9 +16,9 @@ using UKHO.S100PermitService.Common.Configuration;
 namespace UKHO.S100PermitService.API
 {
     [ExcludeFromCodeCoverage]
-    public static class Program
+    internal static class Program
     {
-        public static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
