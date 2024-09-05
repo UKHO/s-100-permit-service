@@ -1,26 +1,38 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using UKHO.S100PermitService.Common;
+﻿using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.Middleware
-{
-    [ExcludeFromCodeCoverage]
-    public static class CorrelationIdMiddleware
+{    
+    public class CorrelationIdMiddleware
     {
-        public static IApplicationBuilder UseCorrelationIdMiddleware(this IApplicationBuilder builder)
+        private readonly RequestDelegate _next;
+
+        public CorrelationIdMiddleware(RequestDelegate next)
         {
-            return builder.Use(async (context, func) =>
+            _next = next;
+        }
+
+        public async Task InvokeAsync(HttpContext httpContext)
+        {
+            var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
+
+            if(string.IsNullOrEmpty(correlationId))
             {
-                var correlationId = context.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
+                correlationId = Guid.NewGuid().ToString();
+                httpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
+            }
 
-                if(string.IsNullOrEmpty(correlationId))
-                {
-                    correlationId = Guid.NewGuid().ToString();
-                    context.Request.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
-                }
-                context.Response.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
+            httpContext.Response.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
 
-                await func();
-            });
+            var state = new Dictionary<string, object>
+            {
+                [Constants.XCorrelationIdHeaderKey] = correlationId!,
+            };
+
+            var logger = httpContext.RequestServices.GetRequiredService<ILogger<CorrelationIdMiddleware>>();
+            using(logger.BeginScope(state))
+            {
+                await _next(httpContext);
+            }
         }
     }
 }

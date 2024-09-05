@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using UKHO.S100PermitService.Common.Enum;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.API.Controllers
     [Route("api/[controller]")]
     [ApiController]
     public class PermitController : BaseController<PermitController>
-    {       
+    {
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitXmlService _permitXmlService;
         private readonly IXmlHelper _xmlHelper;
@@ -28,11 +28,11 @@ namespace UKHO.S100PermitService.API.Controllers
             _fileSystemHelper = fileSystemHelper;
         }
 
-        [HttpPost]     
+        [HttpPost]
         [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started | _X-Correlation-ID:{correlationId}", CommonHelper.CorrelationID);
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
             var productsList = new List<products>();
             productsList.Add(new products()
@@ -67,7 +67,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             await Task.CompletedTask;
 
-            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end | _X-Correlation-ID:{correlationId}", CommonHelper.CorrelationID);
+            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 
             return Ok();
         }
