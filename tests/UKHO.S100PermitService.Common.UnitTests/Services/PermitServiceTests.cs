@@ -1,9 +1,9 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Utilities;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {

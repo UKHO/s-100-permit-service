@@ -2,9 +2,9 @@
 using FluentAssertions;
 using System.IO.Abstractions;
 using UKHO.S100PermitService.Common.Models;
-using UKHO.S100PermitService.Common.Utilities;
+using UKHO.S100PermitService.Common.IO;
 
-namespace UKHO.S100PermitService.Common.UnitTests.Utilities
+namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
     [TestFixture]
     public class PermitReaderWriterTests

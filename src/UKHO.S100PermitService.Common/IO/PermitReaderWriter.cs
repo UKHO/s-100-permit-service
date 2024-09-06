@@ -5,7 +5,7 @@ using System.IO.Abstractions;
 using UKHO.S100PermitService.Common.Models;
 using System.Diagnostics.CodeAnalysis;
 
-namespace UKHO.S100PermitService.Common.Utilities
+namespace UKHO.S100PermitService.Common.IO
 {
     public class PermitReaderWriter : IPermitReaderWriter
     {

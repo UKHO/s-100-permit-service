@@ -13,8 +13,8 @@ using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Utilities;
 
 namespace UKHO.S100PermitService.API
 {

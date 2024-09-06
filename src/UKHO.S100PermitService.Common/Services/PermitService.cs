@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
-using UKHO.S100PermitService.Common.Utilities;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -13,13 +13,13 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IPermitReaderWriter _permitReaderWriter;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger) 
+                                ILogger<PermitService> logger)
         {
             _permitReaderWriter = permitReaderWriter;
             _logger = logger;
         }
 
-        public void CreatePermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit,decimal version, List<Products> products)
+        public void CreatePermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)
         {
             var productsList = new List<Products>();
             productsList.AddRange(products);

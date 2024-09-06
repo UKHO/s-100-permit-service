@@ -1,6 +1,6 @@
 ﻿using UKHO.S100PermitService.Common.Models;
 
-namespace UKHO.S100PermitService.Common.Utilities
+namespace UKHO.S100PermitService.Common.IO
 {
     public interface IPermitReaderWriter
     {
