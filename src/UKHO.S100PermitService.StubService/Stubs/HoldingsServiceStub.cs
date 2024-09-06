@@ -13,6 +13,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     public class HoldingsServiceStub : IStub
     {
         private const string ResponseFileDirectory = @"StubData\Holdings";
+
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
 
@@ -30,7 +31,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
-                .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
+                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
@@ -73,8 +74,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
             }
 
             responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
-            responseMessage.AddHeader("Content-Type", Constants.ApplicationType);
-            responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
+            responseMessage.AddHeader(Constants.ContentType, Constants.ApplicationType);
+            responseMessage.AddHeader(Constants.CorrelationId, Guid.NewGuid().ToString());
 
             return responseMessage;
         }
