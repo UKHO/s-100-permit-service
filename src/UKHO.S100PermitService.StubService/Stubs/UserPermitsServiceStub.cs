@@ -75,7 +75,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             }
 
             responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
-            responseMessage.AddHeader("Content-Type", ConstantsHelper.ApplicationType);
+            responseMessage.AddHeader("Content-Type", Constants.ApplicationType);
             responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
 
             return responseMessage;
