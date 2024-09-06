@@ -6,8 +6,8 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Utilities;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {
@@ -17,19 +17,17 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private PermitController _permitController;
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
-        private IPermitXmlService _fakePermitXmlService;
-        private IXmlHelper _fakeXmlHelper;
-        private IFileSystemHelper _fakeFileSystemHelper;
+        private IPermitService _fakePermitService;
+        private IPermitReaderWriter _fakePermitReaderWriter;
 
         [SetUp]
         public void Setup()
         {
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();            
             _fakeLogger = A.Fake<ILogger<PermitController>>();
-            _fakePermitXmlService = A.Fake<IPermitXmlService>();
-            _fakeXmlHelper = A.Fake<IXmlHelper>();
-            _fakeFileSystemHelper = A.Fake<IFileSystemHelper>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitXmlService,_fakeXmlHelper,_fakeFileSystemHelper);
+            _fakePermitService = A.Fake<IPermitService>();
+            _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter);
         }
 
         [Test]

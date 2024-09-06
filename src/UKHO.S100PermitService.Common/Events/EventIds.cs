@@ -21,14 +21,14 @@
         GeneratePermitEnd = 840003,
 
         /// <summary>
-        /// 840004 - Mapping data to permit call started.
+        /// 840004 - Create permit call started.
         /// </summary>
-        MapDataToPermitStart = 840004,
+        CreatePermitStart = 840004,
 
         /// <summary>
-        /// 840005 - Mapping data to permit call end.
+        /// 840005 - Create permit call end.
         /// </summary>
-        MapDataToPermitEnd = 840005,
+        CreatePermitEnd = 840005,
 
         /// <summary>
         /// 840006 - Xml serialization call started.
@@ -48,6 +48,11 @@
         /// <summary>
         /// 840009 - File creation call end.
         /// </summary>
-        FileCreationEnd = 840009
+        FileCreationEnd = 840009,
+
+        /// <summary>
+        /// 840010 - Empty permit xml is received.
+        /// </summary>
+        EmptyPermitXml = 840010,
     }
 }
