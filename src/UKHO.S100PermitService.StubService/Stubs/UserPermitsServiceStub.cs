@@ -12,10 +12,10 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class UserPermitsServiceStub : IStub
     {
-        private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
-        private const string ApplicationType = "application/json";
         private const string ResponseFileDirectory = @"StubData\UserPermits";
+
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
+        private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
 
         public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
@@ -43,9 +43,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithCallback(SetResponseFromLicenseId));
         }
 
-        private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
+        private ResponseMessage SetResponseFromLicenseId(IRequestMessage requestMessage)
         {
-            var licenceId = ExtractLicenceId(request);
+            var licenceId = ExtractLicenceId(requestMessage);
 
             var responseMessage = new ResponseMessage
             {
@@ -75,15 +75,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
             }
 
             responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
-            responseMessage.AddHeader("Content-Type", ApplicationType);
+            responseMessage.AddHeader("Content-Type", CommonHelper.ApplicationType);
             responseMessage.AddHeader("X-Correlation-ID", Guid.NewGuid().ToString());
 
             return responseMessage;
         }
 
-        private static int ExtractLicenceId(IRequestMessage request)
+        private static int ExtractLicenceId(IRequestMessage requestMessage)
         {
-            var value = request.AbsolutePath.Split('/')[2];
+            var value = requestMessage.AbsolutePath.Split('/')[2];
             return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
     }

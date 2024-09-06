@@ -60,7 +60,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests
         }
 
         [Test]
-        public void WhenConfigurationsAreLoadedThenTheyAreNotMissing()
+        public void WhenConfigurationsAreLoaded_ThenTheyAreNotMissing()
         {
             var stubConfiguration = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
             var holdingsServiceConfiguration = _serviceProvider.GetService<IOptions<HoldingsServiceConfiguration>>()?.Value;
