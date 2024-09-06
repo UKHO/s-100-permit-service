@@ -1,6 +1,6 @@
 ﻿namespace UKHO.S100PermitService.StubService
 {
-    public static class Constants
+    public static class HttpHeaderConstants
     {
         public const string ApplicationType = "application/json";
 

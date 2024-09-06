@@ -27,8 +27,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                  .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                  .RespondWith(Response.Create()
                  .WithStatusCode(HttpStatusCode.Unauthorized)
-                 .WithHeader(Constants.ContentType, Constants.ApplicationType)
-                 .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
+                 .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                 .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
                  .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-401.json")));
 
             server //404 when invalid or non-existent cell passed
@@ -38,8 +38,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.NotFound)
-                .WithHeader(Constants.ContentType, Constants.ApplicationType)
-                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-datanotfound-404.json")));
 
             server //404 when cell is correct but data is not available on pks service
@@ -50,8 +50,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.NotFound)
-                .WithHeader(Constants.ContentType, Constants.ApplicationType)
-                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-404.json")));
 
             server //200
@@ -62,8 +62,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader(Constants.ContentType, Constants.ApplicationType)
-                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200.json")));
 
             server //400 when incorrect request passed
@@ -74,8 +74,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.BadRequest)
-                .WithHeader(Constants.ContentType, Constants.ApplicationType)
-                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString()));
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString()));
         }
 
         private static string GetJsonData(string filePath)

@@ -31,8 +31,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
-                .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
-                .WithHeader(Constants.ContentType, Constants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
@@ -75,8 +75,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
             }
 
             responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
-            responseMessage.AddHeader(Constants.ContentType, Constants.ApplicationType);
-            responseMessage.AddHeader(Constants.CorrelationId, Guid.NewGuid().ToString());
+            responseMessage.AddHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType);
+            responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString());
 
             return responseMessage;
         }
