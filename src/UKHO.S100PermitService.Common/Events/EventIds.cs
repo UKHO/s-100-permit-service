@@ -18,6 +18,41 @@
         /// <summary>
         /// 840003 - Generate Permit API call end.
         /// </summary>
-        GeneratePermitEnd = 840003
+        GeneratePermitEnd = 840003,
+
+        /// <summary>
+        /// 840004 - Create permit call started.
+        /// </summary>
+        CreatePermitStart = 840004,
+
+        /// <summary>
+        /// 840005 - Create permit call end.
+        /// </summary>
+        CreatePermitEnd = 840005,
+
+        /// <summary>
+        /// 840006 - Xml serialization call started.
+        /// </summary>
+        XmlSerializationStart = 840006,
+
+        /// <summary>
+        /// 840007 - Xml serialization call end.
+        /// </summary>
+        XmlSerializationEnd = 840007,
+
+        /// <summary>
+        /// 840008 - File creation call started.
+        /// </summary>
+        FileCreationStart = 840008,
+
+        /// <summary>
+        /// 840009 - File creation call end.
+        /// </summary>
+        FileCreationEnd = 840009,
+
+        /// <summary>
+        /// 840010 - Empty permit xml is received.
+        /// </summary>
+        EmptyPermitXml = 840010,
     }
 }
