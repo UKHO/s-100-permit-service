@@ -32,6 +32,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader(Constants.CorrelationId, Guid.NewGuid().ToString())
+                .WithHeader(Constants.ContentType, Constants.ApplicationType)
                 .WithBodyFromFile(Path.Combine(_responseFileDirectoryPath, "response-401.json")));
 
             server
