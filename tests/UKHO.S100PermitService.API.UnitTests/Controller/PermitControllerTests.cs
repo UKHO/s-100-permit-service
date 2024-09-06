@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {
@@ -15,13 +17,17 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private PermitController _permitController;
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
+        private IPermitService _fakePermitService;
+        private IPermitReaderWriter _fakePermitReaderWriter;
 
         [SetUp]
         public void Setup()
         {
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();            
             _fakeLogger = A.Fake<ILogger<PermitController>>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger);
+            _fakePermitService = A.Fake<IPermitService>();
+            _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter);
         }
 
         [Test]
