@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                  .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                  .RespondWith(Response.Create()
                  .WithStatusCode(HttpStatusCode.Unauthorized)
-                 .WithHeader(ContentType, CommonHelper.ApplicationType)
+                 .WithHeader(ContentType, ConstantsHelper.ApplicationType)
                  .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                  .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-401.json")));
 
@@ -39,7 +39,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.NotFound)
-                .WithHeader(ContentType, CommonHelper.ApplicationType)
+                .WithHeader(ContentType, ConstantsHelper.ApplicationType)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-datanotfound-404.json")));
 
@@ -51,7 +51,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.NotFound)
-                .WithHeader(ContentType, CommonHelper.ApplicationType)
+                .WithHeader(ContentType, ConstantsHelper.ApplicationType)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-404.json")));
 
@@ -63,7 +63,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader(ContentType, CommonHelper.ApplicationType)
+                .WithHeader(ContentType, ConstantsHelper.ApplicationType)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200.json")));
 
@@ -75,7 +75,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.BadRequest)
-                .WithHeader(ContentType, CommonHelper.ApplicationType)
+                .WithHeader(ContentType, ConstantsHelper.ApplicationType)
                 .WithHeader("X-Correlation-ID", Guid.NewGuid().ToString()));
         }
 
