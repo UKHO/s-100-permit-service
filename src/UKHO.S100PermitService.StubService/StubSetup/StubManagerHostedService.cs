@@ -21,6 +21,7 @@ namespace UKHO.S100PermitService.StubService.StubSetup
         {
             RegisterStub(_stubFactory.CreateHoldingsServiceStub());
             RegisterStub(_stubFactory.CreateProductKeyServiceStub());
+            RegisterStub(_stubFactory.CreateUserPermitsServiceStub());
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

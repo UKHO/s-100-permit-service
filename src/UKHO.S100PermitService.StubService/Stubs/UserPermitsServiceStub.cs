@@ -10,23 +10,23 @@ using WireMock.Util;
 
 namespace UKHO.S100PermitService.StubService.Stubs
 {
-    public class HoldingsServiceStub : IStub
+    public class UserPermitsServiceStub : IStub
     {
-        private const string ResponseFileDirectory = @"StubData\Holdings";
+        private const string ResponseFileDirectory = @"StubData\UserPermits";
 
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
-        private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
+        private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
 
-        public HoldingsServiceStub(HoldingsServiceConfiguration holdingsServiceConfiguration)
+        public UserPermitsServiceStub(UserPermitsServiceConfiguration userPermitsServiceConfiguration)
         {
-            _holdingsServiceConfiguration = holdingsServiceConfiguration ?? throw new ArgumentNullException(nameof(holdingsServiceConfiguration));
+            _userPermitsServiceConfiguration = userPermitsServiceConfiguration ?? throw new ArgumentNullException(nameof(userPermitsServiceConfiguration));
         }
 
         public void ConfigureStub(WireMockServer server)
         {
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
@@ -37,15 +37,16 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create().WithCallback(SetResponseFromLicenseId));
+                .RespondWith(Response.Create()
+                .WithCallback(SetResponseFromLicenseId));
         }
 
-        private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
+        private ResponseMessage SetResponseFromLicenseId(IRequestMessage requestMessage)
         {
-            var licenceId = ExtractLicenceId(request);
+            var licenceId = ExtractLicenceId(requestMessage);
 
             var responseMessage = new ResponseMessage
             {
@@ -59,7 +60,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             switch(licenceId)
             {
                 case int n when n >= 1 && n <= 5:
-                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceId-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;
 
@@ -81,9 +82,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
             return responseMessage;
         }
 
-        private static int ExtractLicenceId(IRequestMessage request)
+        private static int ExtractLicenceId(IRequestMessage requestMessage)
         {
-            var value = request.AbsolutePath.Split('/')[2];
+            var value = requestMessage.AbsolutePath.Split('/')[2];
             return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
     }
