@@ -57,6 +57,7 @@ stages:
     displayName: "Stryker Mutator"
     condition: ${{ eq(parameters.DisableStryker, false) }}
     dependsOn: []
+    jobs:
       - job: Stryker      
         workspace:
           clean: all        
