@@ -13,7 +13,7 @@ parameters:
     default: false
 
   - name: DisableStryker
-    displayName: "Disable Stryker test mutation"
+    displayName: "Disable Stryker Test Mutation"
     type: boolean
     default: false
     
