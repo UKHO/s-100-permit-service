@@ -462,3 +462,50 @@ stages:
                 - template: Deployment/templates/continuous-deployment-app.yml
                   parameters:
                     AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+  
+  - stage: IATDeploy
+    dependsOn:  Devdeploy
+    displayName: "IATdeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))    
+    variables:
+      - group: "S-100-PG-IAT"
+      - group: "S-100-PG-IAT-TF"
+      - group: "S-100-PG-IAT-KV"
+    jobs:
+      - deployment: IATDeployTerraform
+        displayName: "IAT - Deploy Terraform"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+
+      - deployment: IATDeployApp
+        dependsOn: IATDeployTerraform
+        displayName: "IAT - Deploy Dotnet App"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
+          - name : ResourceGroup
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
