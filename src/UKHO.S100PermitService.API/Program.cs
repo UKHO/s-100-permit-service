@@ -100,7 +100,11 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            var azureADConfiguration = new AzureADConfiguration();
+            builder.Configuration.Bind("AzureADConfiguration", azureADConfiguration);
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();

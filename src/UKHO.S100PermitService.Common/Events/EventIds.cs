@@ -54,5 +54,10 @@
         /// 840010 - Empty permit xml is received.
         /// </summary>
         EmptyPermitXml = 840010,
+
+        /// <summary>
+        /// 840011 - Permit service Exception.
+        /// </summary>
+        PermitServiceException = 840011
     }
 }

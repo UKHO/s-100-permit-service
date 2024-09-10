@@ -1,7 +1,9 @@
-﻿using UKHO.S100PermitService.Common;
+﻿using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.Middleware
-{    
+{
+    [ExcludeFromCodeCoverage]
     public class CorrelationIdMiddleware
     {
         private readonly RequestDelegate _next;

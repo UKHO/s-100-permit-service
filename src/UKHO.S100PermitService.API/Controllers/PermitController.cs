@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.API.Controllers
             _permitReaderWriter = permitReaderWriter;
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
