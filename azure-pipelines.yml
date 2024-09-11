@@ -328,6 +328,10 @@ stages:
       - group: "S-100-PG-Dev"
       - group: "S-100-PG-Dev-TF"
       - group: "S-100-PG-Dev-KV"
+      - name: "AzureADConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureADConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
     jobs:
       - deployment: DevDeployTerraform
         displayName: "Dev - Deploy Terraform"
@@ -377,6 +381,10 @@ stages:
       - group: "S-100-PG-vNextIAT"
       - group: "S-100-PG-vNextIAT-TF"
       - group: "S-100-PG-vNextIAT-KV"
+      - name: "AzureADConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureADConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
     jobs:
       - deployment: vNextIATDeployTerraform
         displayName: "vNextIAT - Deploy Terraform"
@@ -424,6 +432,10 @@ stages:
       - group: "S-100-PG-vNextE2E"
       - group: "S-100-PG-vNextE2E-TF"
       - group: "S-100-PG-vNextE2E-KV"
+      - name: "AzureADConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureADConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
     jobs:
       - deployment: vNextE2EDeployTerraform
         displayName: "vNextE2E - Deploy Terraform"
