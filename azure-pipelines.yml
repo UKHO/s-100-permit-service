@@ -196,7 +196,7 @@ stages:
               ArtifactName: codecoveragereport
 
           - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold exceeded"            
+            displayName: "Code coverage fails if threshold not meet"            
             inputs:
               checkCoverage: true
               coverageFailOption: 'fixed'
