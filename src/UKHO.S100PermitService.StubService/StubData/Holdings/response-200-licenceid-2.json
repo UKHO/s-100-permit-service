@@ -5,8 +5,8 @@
     "expiryDate": "2026-01-31T23:59:00Z",
     "cells": [
       {
-        "cellCode": "1",
-        "cellTitle": "1",
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
         "latestEditionNumber": "1",
         "latestUpdateNumber": "11"
       }
@@ -18,8 +18,8 @@
     "expiryDate": "2026-01-31T23:59:00Z",
     "cells": [
       {
-        "cellCode": "2",
-        "cellTitle": "2",
+        "cellCode": "102NO32904820801012.h5",
+        "cellTitle": "102NO32904820801012",
         "latestEditionNumber": "2",
         "latestUpdateNumber": "12"
       }
