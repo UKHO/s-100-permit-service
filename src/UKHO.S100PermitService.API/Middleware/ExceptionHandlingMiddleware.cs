@@ -17,38 +17,38 @@ namespace UKHO.S100PermitService.API.Middleware
             _logger = logger;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext httpContext)
         {
             try
             {
-                await _next(context);
+                await _next(httpContext);
             }
             catch(PermitServiceException ex)
             {
-                await HandleExceptionAsync(context, ex, ex.EventId.Id);
+                await HandleExceptionAsync(httpContext, ex, ex.EventId.Id);
             }
             catch(Exception ex)
             {
-                await HandleExceptionAsync(context, ex, EventIds.UnhandledException.ToEventId().Id);
+                await HandleExceptionAsync(httpContext, ex, EventIds.UnhandledException.ToEventId().Id);
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception ex, int eventId)
+        private async Task HandleExceptionAsync(HttpContext httpContext, Exception ex, int eventId)
         {
-            var correlationId = context.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
+            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
             _logger.LogError(new EventId(eventId), ex, "Message: {ex.Message}", ex.Message);
 
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-
+            var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
             var problemDetails = new ProblemDetails
             {
-                Status = context.Response.StatusCode,
+                Status = httpContext.Response.StatusCode,
                 Title = "Unhandled controller exception",
                 Extensions = { ["CorrelationId"] = correlationId }
             };
 
-            await context.Response.WriteAsJsonAsync(problemDetails);
+            await httpContext.Response.WriteAsJsonAsync(problemDetails);
         }
     }
 }
