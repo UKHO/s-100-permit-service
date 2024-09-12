@@ -5,6 +5,7 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -13,7 +14,9 @@ using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -57,9 +60,9 @@ namespace UKHO.S100PermitService.API
         private static void ConfigureConfiguration(WebApplicationBuilder builder)
         {
             builder.Configuration.AddJsonFile("appsettings.json", false, true);
-#if DEBUG            
-            builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
-#endif
+////#if DEBUG            
+////            builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
+////#endif
             builder.Configuration.AddEnvironmentVariables();
 
             var configuration = builder.Configuration;
@@ -97,14 +100,23 @@ namespace UKHO.S100PermitService.API
             });
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
             builder.Services.AddApplicationInsightsTelemetry();
-
+            builder.Services.AddDistributedMemoryCache();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddHttpClient();
+
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<PksApiConfiguration>(builder.Configuration.GetSection("PKSApiConfiguration"));
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IAuthProductKeyServiceTokenProvider, AuthTokenProvider>();
+
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
+            builder.Services.AddScoped<IPksService, PksService>();
+
+            builder.Services.AddTransient<IPksApiClient, PksApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

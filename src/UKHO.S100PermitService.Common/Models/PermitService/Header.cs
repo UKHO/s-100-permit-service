@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace UKHO.S100PermitService.Common.Models
+namespace UKHO.S100PermitService.Common.Models.PermitService
 {
     [ExcludeFromCodeCoverage]
     [Serializable()]

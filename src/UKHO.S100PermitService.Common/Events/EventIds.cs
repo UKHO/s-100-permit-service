@@ -89,5 +89,20 @@
         /// 840017 - Caching access token to call external api completed.
         /// </summary>
         CachingExternalEndPointTokenCompleted = 840017,
+
+        /// <summary>
+        /// 840018 - Get permit key from product key service started
+        /// </summary>
+        GetPermitKeyStarted = 840018,
+
+        /// <summary>
+        /// 840019 - Get permit key from product key service completed
+        /// </summary>
+        GetPermitKeyCompleted = 840019,
+
+        /// <summary>
+        /// 840020 - Exception occurred while get permit key from product key service
+        /// </summary>
+        GetPermitKeyException = 840020,
     }
 }

@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
-using UKHO.S100PermitService.Common.Models;
+using UKHO.S100PermitService.Common.Models.PermitService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services

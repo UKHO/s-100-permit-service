@@ -2,8 +2,8 @@
 using System.Xml.Serialization;
 using System.Xml;
 using System.IO.Abstractions;
-using UKHO.S100PermitService.Common.Models;
 using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common.Models.PermitService;
 
 namespace UKHO.S100PermitService.Common.IO
 {

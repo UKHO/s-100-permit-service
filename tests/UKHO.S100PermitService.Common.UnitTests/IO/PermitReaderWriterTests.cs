@@ -1,8 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using System.IO.Abstractions;
-using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models.PermitService;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
