@@ -355,8 +355,6 @@ stages:
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -404,8 +402,6 @@ stages:
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -453,8 +449,6 @@ stages:
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -502,8 +496,6 @@ stages:
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
