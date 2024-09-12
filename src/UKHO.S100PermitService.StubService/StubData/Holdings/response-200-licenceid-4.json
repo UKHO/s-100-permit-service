@@ -3,12 +3,64 @@
     "productCode": "P1231",
     "productTitle": "P1231",
     "expiryDate": "2026-01-31T23:59:00Z",
-    "cells": []
+    "cells": [
+      {
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
   },
   {
     "productCode": "P1232",
     "productTitle": "P1232",
     "expiryDate": "2026-01-31T23:59:00Z",
-    "cells": []
+    "cells": [
+      {
+        "cellCode": "102NO32904820801012.h5",
+        "cellTitle": "102NO32904820801012",
+        "latestEditionNumber": "2",
+        "latestUpdateNumber": "12"
+      }
+    ]
+  },
+  {
+    "productCode": "P1233",
+    "productTitle": "P1233",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "104US00_CHES_TYPE1_20210630_0600.h5",
+        "cellTitle": "104US00_CHES_TYPE1_20210630_0600",
+        "latestEditionNumber": "3",
+        "latestUpdateNumber": "13"
+      },
+      {
+        "cellCode": "104US00_ches_dcf8_20190703T00Z.h5",
+        "cellTitle": "104US00_ches_dcf8_20190703T00Z",
+        "latestEditionNumber": "3",
+        "latestUpdateNumber": "14"
+      }
+    ]
+  },
+  {
+    "productCode": "P1234",
+    "productTitle": "P1234",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "111US00_CHES_TYPE1_20210630_0600.h5",
+        "cellTitle": "111US00_CHES_TYPE1_20210630_0600",
+        "latestEditionNumber": "4",
+        "latestUpdateNumber": "14"
+      },
+      {
+        "cellCode": "111US00_ches_dcf8_20190703T00Z.h5",
+        "cellTitle": "111US00_ches_dcf8_20190703T00Z",
+        "latestEditionNumber": "4",
+        "latestUpdateNumber": "15"
+      }
+    ]
   }
 ]

@@ -13,6 +13,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     public class UserPermitsServiceStub : IStub
     {
         private const string ResponseFileDirectory = @"StubData\UserPermits";
+        private const string ProductStandard = "/s100";
 
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
         private readonly UserPermitsServiceConfiguration _userPermitsServiceConfiguration;
@@ -26,7 +27,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*" + ProductStandard, true))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
@@ -37,7 +38,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*" + ProductStandard, true))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
@@ -60,7 +61,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             switch(licenceId)
             {
                 case int n when n >= 1 && n <= 5:
-                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceId-{licenceId}.json");
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;
 
