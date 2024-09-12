@@ -1,6 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
-using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -11,6 +8,9 @@ using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
@@ -44,9 +44,10 @@ namespace UKHO.S100PermitService.API
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "UKHO S100 Permit Service APIs");
                 c.RoutePrefix = "swagger";
-            });           
+            });
 
-            app.UseCorrelationIdMiddleware();            
+            app.UseCorrelationIdMiddleware();
+            app.UseExceptionHandlingMiddleware();
             app.UseHeaderPropagation();
             app.UseRouting();
 
@@ -54,6 +55,7 @@ namespace UKHO.S100PermitService.API
 
             app.MapControllers();
             app.UseAuthorization();
+
             app.Run();
         }
 
@@ -72,13 +74,13 @@ namespace UKHO.S100PermitService.API
             {
                 var secretClient = new SecretClient(new Uri(kvServiceUri), new DefaultAzureCredential(new DefaultAzureCredentialOptions()));
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-            }             
+            }
         }
 
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
             var configuration = builder.Configuration;
-            
+
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
@@ -98,8 +100,9 @@ namespace UKHO.S100PermitService.API
             {
                 options.Headers.Add(Constants.XCorrelationIdHeaderKey);
             });
+
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry();
+            builder.Services.AddApplicationInsightsTelemetry(options);
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
