@@ -72,16 +72,16 @@
     <None Update="web.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceId-5.json">
+    <None Update="StubData\UserPermits\response-200-licenceid-5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceId-4.json">
+    <None Update="StubData\UserPermits\response-200-licenceid-4.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceId-3.json">
+    <None Update="StubData\UserPermits\response-200-licenceid-3.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceId-2.json">
+    <None Update="StubData\UserPermits\response-200-licenceid-2.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-404.json">
@@ -90,7 +90,7 @@
     <None Update="StubData\UserPermits\response-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceId-1.json">
+    <None Update="StubData\UserPermits\response-200-licenceid-1.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
