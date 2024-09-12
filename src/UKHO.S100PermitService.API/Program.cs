@@ -5,6 +5,8 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -51,6 +53,7 @@ namespace UKHO.S100PermitService.API
             ConfigureLogging(app);
 
             app.MapControllers();
+            app.UseAuthorization();
             app.Run();
         }
 
@@ -104,6 +107,25 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
             var azureADConfiguration = new AzureADConfiguration();
             builder.Configuration.Bind("AzureADConfiguration", azureADConfiguration);
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                   .AddJwtBearer("AzureAD", options =>
+                   {
+                       options.Audience = azureADConfiguration.ClientId;
+                       options.Authority = $"{azureADConfiguration.MicrosoftOnlineLoginUrl}{azureADConfiguration.TenantId}";
+                   });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes("AzureAD")
+                .Build();
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy("PermitServiceUser", policy => policy.RequireRole("PermitServiceUser"));
+            });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddScoped<IPermitService, PermitService>();

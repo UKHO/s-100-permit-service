@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
@@ -8,6 +9,7 @@ namespace UKHO.S100PermitService.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PermitController : BaseController<PermitController>
     {
         private readonly ILogger<PermitController> _logger;
@@ -27,6 +29,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
         [HttpGet]
         [Route("/permits/{licenceId}")]
+        [Authorize(Policy = "PermitServiceUser")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
