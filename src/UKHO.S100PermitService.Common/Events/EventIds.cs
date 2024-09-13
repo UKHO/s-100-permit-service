@@ -89,5 +89,20 @@
         /// 840017 - Caching access token to call external api completed.
         /// </summary>
         CachingExternalEndPointTokenCompleted = 840017,
+
+        /// <summary>
+        /// 840018 - Get holdings data to Holdings Service started.
+        /// </summary>
+        GetHoldingsDataToHoldingsService = 840018,
+
+        /// <summary>
+        /// 840019 - Request to get holdings data to Holdings Service completed.
+        /// </summary>
+        GetHoldingsDataToHoldingsCompleted = 840019,
+
+        /// <summary>
+        /// 840020 - Get holdings data to Holdings Service failed.
+        /// </summary>
+       GetHoldingsDataToHoldingsFailed = 840020,
     }
 }

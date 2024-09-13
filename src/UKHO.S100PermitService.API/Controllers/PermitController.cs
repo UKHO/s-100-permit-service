@@ -13,16 +13,19 @@ namespace UKHO.S100PermitService.API.Controllers
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
         private readonly IPermitReaderWriter _permitReaderWriter;
+        private readonly IHoldingsService _holdingsService;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
                                     IPermitService permitService,
-                                    IPermitReaderWriter permitReaderWriter)
+                                    IPermitReaderWriter permitReaderWriter,
+                                    IHoldingsService holdingsService)
         : base(httpContextAccessor)
         {
             _logger = logger;
             _permitService = permitService;
             _permitReaderWriter = permitReaderWriter;
+            _holdingsService = holdingsService;
         }
 
         [HttpPost]
@@ -30,6 +33,8 @@ namespace UKHO.S100PermitService.API.Controllers
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
+
+            //List<HoldingsServiceResponse> holdingsServiceResponse = await _holdingsService.GetHoldingsData(licenceId);
 
             var productsList = new List<Products>();
             productsList.Add(new Products()
