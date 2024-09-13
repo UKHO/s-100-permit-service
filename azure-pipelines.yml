@@ -11,6 +11,11 @@ parameters:
     displayName: "Disable OWASP Dependency Checking"
     type: boolean
     default: false
+
+  - name: DisableStryker
+    displayName: "Disable Stryker Test Mutation"
+    type: boolean
+    default: false
     
 trigger:
   - main
@@ -42,8 +47,63 @@ variables:
     value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.9.2"
   - name: DeploymentPool
     value: "Mare Nectaris"
+  - name: CoverageThresholdLimit
+    value: "90"
+
 
 stages:
+
+  - stage: Stryker_Mutator
+    displayName: "Stryker Mutator"
+    condition: ${{ eq(parameters.DisableStryker, false) }}
+    dependsOn: []
+    jobs:
+      - job: Stryker      
+        workspace:
+          clean: all        
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: '$(Build.SourcesDirectory)'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Install Stryker'
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: 'install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools'
+
+          - task: Powershell@2
+            displayName: 'Run Stryker Permit Service API UnitTests'
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS API Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service API Mutation Report'
+
+          - task: Powershell@2
+            displayName: "Run Stryker Permit Service Common UnitTests"
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS Common Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service Common Mutation Report'
+
   - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
     displayName: "Build (DependencyChecker, Dotnet Build & Restore , Dotnet Test and Publish Artifact )"
     dependsOn: []
@@ -149,6 +209,14 @@ stages:
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
+
+          - task: BuildQualityChecks@9
+            displayName: "Code coverage fails if threshold not meet"            
+            inputs:
+              checkCoverage: true
+              coverageFailOption: 'fixed'
+              coverageType: 'lines'
+              coverageThreshold: '$(CoverageThresholdLimit)'
 
       - job: BuildAndPublishAPI
         workspace:
