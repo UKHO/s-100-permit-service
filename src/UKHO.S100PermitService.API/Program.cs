@@ -106,7 +106,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddHttpClient();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
-            builder.Services.Configure<ProductkeyServiceApiConfiguration>(builder.Configuration.GetSection("PKSApiConfiguration"));
+            builder.Services.Configure<ProductkeyServiceApiConfiguration>(builder.Configuration.GetSection("ProductkeyServiceApiConfiguration"));
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IAuthProductKeyServiceTokenProvider, AuthTokenProvider>();
