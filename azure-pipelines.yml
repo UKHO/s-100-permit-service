@@ -40,7 +40,7 @@ variables:
   - name: UKHOAssemblyProduct
     value: "S-100 Permit Service"
   - name: UKHOAssemblyCopyright
-    value: "Copyright © UK Hydrographic Office"
+    value: "Copyright Â© UK Hydrographic Office"
   - name: WindowsPool
     value: "NautilusBuild"
   - name: Container
@@ -423,8 +423,6 @@ stages:
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -440,7 +438,7 @@ stages:
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))    
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     variables:
       - group: "S-100-PG-vNextIAT"
       - group: "S-100-PG-vNextIAT-TF"
@@ -472,8 +470,8 @@ stages:
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
           clean: all
         strategy:
@@ -487,7 +485,7 @@ stages:
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     variables:
       - group: "S-100-PG-vNextE2E"
       - group: "S-100-PG-vNextE2E-TF"
@@ -519,8 +517,8 @@ stages:
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
           clean: all
         strategy:
@@ -530,3 +528,50 @@ stages:
                 - template: Deployment/templates/continuous-deployment-app.yml
                   parameters:
                     AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+  
+  - stage: IATDeploy
+    dependsOn:  Devdeploy
+    displayName: "IATdeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    variables:
+      - group: "S-100-PG-IAT"
+      - group: "S-100-PG-IAT-TF"
+      - group: "S-100-PG-IAT-KV"
+    jobs:
+      - deployment: IATDeployTerraform
+        displayName: "IAT - Deploy Terraform"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+
+      - deployment: IATDeployApp
+        dependsOn: IATDeployTerraform
+        displayName: "IAT - Deploy Dotnet App"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
