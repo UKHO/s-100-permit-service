@@ -21,22 +21,22 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\request-200.json">
+    <None Update="StubData\ProductKeyService\request-200.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\request-400.json">
+    <None Update="StubData\ProductKeyService\request-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\request-404.json">
+    <None Update="StubData\ProductKeyService\request-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\response-200.json">
+    <None Update="StubData\ProductKeyService\response-200.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\response-401.json">
+    <None Update="StubData\ProductKeyService\response-401.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\response-404.json">
+    <None Update="StubData\ProductKeyService\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\Holdings\response-200-licenceid-1.json">
@@ -63,7 +63,7 @@
     <None Update="StubData\Holdings\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\PKS\response-datanotfound-404.json">
+    <None Update="StubData\ProductKeyService\response-datanotfound-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-200-licenceid-1.json">

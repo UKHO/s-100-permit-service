@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 {
     public class ProductKeyServiceStub : IStub
     {
-        private const string ResponseFileDirectory = @"StubData\PKS";
+        private const string ResponseFileDirectory = @"StubData\ProductKeyService";
 
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 

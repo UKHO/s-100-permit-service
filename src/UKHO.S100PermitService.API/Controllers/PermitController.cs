@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.API.Controllers
                                     ILogger<PermitController> logger,
                                     IPermitService permitService,
                                     IPermitReaderWriter permitReaderWriter)
-        : base(httpContextAccessor)
+        : base(httpContextAccessor, logger)
         {
             _logger = logger;
             _permitService = permitService;
@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
-            await _permitService.CreatePermit(licenceId);
+            await _permitService.CreatePermit(licenceId, GetCurrentCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 

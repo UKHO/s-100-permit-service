@@ -1,20 +1,20 @@
 ﻿using Newtonsoft.Json;
 using System.Text;
-using UKHO.S100PermitService.Common.Models.Pks;
+using UKHO.S100PermitService.Common.Models.ProductkeyService;
 
 namespace UKHO.S100PermitService.Common.Helpers
 {
-    public class PksApiClient : IPksApiClient
+    public class ProductkeyServiceApiClient : IProductkeyServiceApiClient
     {
         private readonly HttpClient _httpClient;
 
-        public PksApiClient(IHttpClientFactory httpClientFactory)
+        public ProductkeyServiceApiClient(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
             _httpClient.Timeout = TimeSpan.FromMinutes(Convert.ToDouble(5));
         }
 
-        public async Task<HttpResponseMessage> GetPermitKeyAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest, string accessToken, string correlationId = null)
+        public async Task<HttpResponseMessage> GetPermitKeyAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest, string accessToken, string correlationId)
         {
             var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
 

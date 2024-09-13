@@ -60,9 +60,9 @@ namespace UKHO.S100PermitService.API
         private static void ConfigureConfiguration(WebApplicationBuilder builder)
         {
             builder.Configuration.AddJsonFile("appsettings.json", false, true);
-////#if DEBUG            
-////            builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
-////#endif
+#if DEBUG
+            builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
+#endif
             builder.Configuration.AddEnvironmentVariables();
 
             var configuration = builder.Configuration;
@@ -106,7 +106,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddHttpClient();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
-            builder.Services.Configure<PksApiConfiguration>(builder.Configuration.GetSection("PKSApiConfiguration"));
+            builder.Services.Configure<ProductkeyServiceApiConfiguration>(builder.Configuration.GetSection("PKSApiConfiguration"));
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IAuthProductKeyServiceTokenProvider, AuthTokenProvider>();
@@ -114,9 +114,9 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
-            builder.Services.AddScoped<IPksService, PksService>();
+            builder.Services.AddScoped<IProductkeyService, ProductkeyService>();
 
-            builder.Services.AddTransient<IPksApiClient, PksApiClient>();
+            builder.Services.AddTransient<IProductkeyServiceApiClient, ProductkeyServiceApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

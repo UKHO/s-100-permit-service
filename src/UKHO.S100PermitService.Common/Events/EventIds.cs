@@ -104,5 +104,10 @@
         /// 840020 - Exception occurred while get permit key from product key service
         /// </summary>
         GetPermitKeyException = 840020,
+
+        /// <summary>
+        /// 805012 - Request sent to the server is incorrect or corrupt.
+        /// </summary>
+        BadRequest = 840021
     }
 }

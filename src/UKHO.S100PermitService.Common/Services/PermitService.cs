@@ -2,7 +2,7 @@
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.PermitService;
-using UKHO.S100PermitService.Common.Models.Pks;
+using UKHO.S100PermitService.Common.Models.ProductkeyService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -12,19 +12,20 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IPksService _pksService;
+        private readonly IProductkeyService _productkeyService;
+
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
-                                IPksService pksService)
+                                IProductkeyService productkeyService)
         {
-            _permitReaderWriter = permitReaderWriter;
-            _logger = logger;
-            _pksService = pksService;
+            _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _productkeyService = productkeyService ?? throw new ArgumentNullException(nameof(productkeyService));
         }
 
-        public async Task CreatePermit(int licenceId)
+        public async Task CreatePermit(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit call started");
+            _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             List<ProductKeyServiceRequest> productKeyServiceRequest =
             [
@@ -40,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Services
                 },
             ];
 
-            var pksData = await _pksService.GetPermitKeyAsync(productKeyServiceRequest);
+            var pksResponseData = await _productkeyService.GetPermitKeyAsync(productKeyServiceRequest, correlationId);
 
             var productsList = new List<Products>
             {
@@ -64,7 +65,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
 
-            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit call completed");
+            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)
@@ -81,23 +82,22 @@ namespace UKHO.S100PermitService.Common.Services
                     Userpermit = userPermit,
                     Version = version
                 },
-                Products = productsList.ToArray()
+                Products = [.. productsList]
             };
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
             _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
-            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Xml file creation started");
             if(!string.IsNullOrEmpty(permitXml))
             {
                 _permitReaderWriter.WritePermit(permitXml);
+                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
             }
             else
             {
                 _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
             }
-            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Xml file creation completed");
         }
     }
 }
