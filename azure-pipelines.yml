@@ -370,7 +370,7 @@ stages:
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'],'refs/heads/develop')))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     variables:
       - group: "S-100-PG-vNextIAT"
       - group: "S-100-PG-vNextIAT-TF"
@@ -417,7 +417,7 @@ stages:
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'],'refs/heads/develop')))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     variables:
       - group: "S-100-PG-vNextE2E"
       - group: "S-100-PG-vNextE2E-TF"
@@ -464,7 +464,7 @@ stages:
   - stage: IATDeploy
     dependsOn:  Devdeploy
     displayName: "IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main')))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     variables:
       - group: "S-100-PG-IAT"
       - group: "S-100-PG-IAT-TF"
