@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
@@ -6,6 +7,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.API.Middleware
 {
+    [ExcludeFromCodeCoverage]
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
@@ -25,34 +27,32 @@ namespace UKHO.S100PermitService.API.Middleware
             }
             catch(PermitServiceException permitServiceException)
             {
-                await HandleExceptionAsync(httpContext, permitServiceException, permitServiceException.EventId);
+                await HandleExceptionAsync(httpContext, permitServiceException, permitServiceException.EventId, permitServiceException.Message, permitServiceException.MessageArguments);
             }
             catch(Exception exception)
             {
-                await HandleExceptionAsync(httpContext, exception, EventIds.UnhandledException.ToEventId());
+                await HandleExceptionAsync(httpContext, exception, EventIds.UnhandledException.ToEventId(), exception.Message);
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception, EventId eventId)
+        private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception, EventId eventId, string message, params object[] messageArgs)
         {
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            if(exception is PermitServiceException permitServiceException)
-            {
-                _logger.LogError(eventId, exception, permitServiceException.Message, permitServiceException.MessageArguments);
-            }
-            else
-            {
-                _logger.LogError(eventId, exception, "Message: {ex.Message}", exception.Message);
-            }
+            _logger.LogError(eventId, exception, message, messageArgs);
 
             var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
             var problemDetails = new ProblemDetails
             {
                 Status = httpContext.Response.StatusCode,
-                Title = "Unhandled controller exception",
-                Extensions = { ["CorrelationId"] = correlationId }
+                Extensions =
+                {
+                    ["correlationId"] = correlationId,
+                    ["eventId"] = eventId.Id,
+                    ["eventName"] = eventId.Name,
+                    ["message"] = string.Format(message, messageArgs)
+                }
             };
 
             await httpContext.Response.WriteAsJsonAsync(problemDetails);
