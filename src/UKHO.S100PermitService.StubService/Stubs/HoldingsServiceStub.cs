@@ -13,6 +13,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     public class HoldingsServiceStub : IStub
     {
         private const string ResponseFileDirectory = @"StubData\Holdings";
+        private const string ProductStandard = "/s100";
 
         private readonly string _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
         private readonly HoldingsServiceConfiguration _holdingsServiceConfiguration;
@@ -26,7 +27,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*" + ProductStandard, true))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
@@ -37,7 +38,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*"))
+                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*" + ProductStandard, true))
                 .UsingGet()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create().WithCallback(SetResponseFromLicenseId));

@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             server //401
                  .Given(Request.Create()
-                 .WithPath(_productKeyServiceConfiguration.Url)
+                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                  .UsingPost()
                  .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                  .RespondWith(Response.Create()
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //404 when invalid or non-existent cell passed
                 .Given(Request.Create()
-                .WithPath(_productKeyServiceConfiguration.Url)
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //404 when cell is correct but data is not available on pks service
                 .Given(Request.Create()
-                .WithPath(_productKeyServiceConfiguration.Url)
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-404.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
@@ -56,7 +56,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //200
                 .Given(Request.Create()
-                .WithPath(_productKeyServiceConfiguration.Url)
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
@@ -68,7 +68,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
             server //400 when incorrect request passed
                 .Given(Request.Create()
-                .WithPath(_productKeyServiceConfiguration.Url)
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-400.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
