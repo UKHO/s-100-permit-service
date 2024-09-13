@@ -23,22 +23,29 @@ namespace UKHO.S100PermitService.API.Middleware
             {
                 await _next(httpContext);
             }
-            catch(PermitServiceException ex)
+            catch(PermitServiceException permitServiceException)
             {
-                await HandleExceptionAsync(httpContext, ex, ex.EventId.Id);
+                await HandleExceptionAsync(httpContext, permitServiceException, permitServiceException.EventId);
             }
-            catch(Exception ex)
+            catch(Exception exception)
             {
-                await HandleExceptionAsync(httpContext, ex, EventIds.UnhandledException.ToEventId().Id);
+                await HandleExceptionAsync(httpContext, exception, EventIds.UnhandledException.ToEventId());
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext httpContext, Exception ex, int eventId)
+        private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception, EventId eventId)
         {
             httpContext.Response.ContentType = "application/json";
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            _logger.LogError(new EventId(eventId), ex, "Message: {ex.Message}", ex.Message);
+            if(exception is PermitServiceException permitServiceException)
+            {
+                _logger.LogError(eventId, exception, permitServiceException.Message, permitServiceException.MessageArguments);
+            }
+            else
+            {
+                _logger.LogError(eventId, exception, "Message: {ex.Message}", exception.Message);
+            }
 
             var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
             var problemDetails = new ProblemDetails

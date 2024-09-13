@@ -6,9 +6,12 @@ namespace UKHO.S100PermitService.Common.Exceptions
     {
         public EventId EventId { get; set; }
 
-        public PermitServiceException(EventId eventId) : base()
+        public object[] MessageArguments { get; }
+
+        public PermitServiceException(EventId eventId, string message, params object[] messageArguments) : base(message)
         {
             EventId = eventId;
+            MessageArguments = messageArguments ?? Array.Empty<object>();
         }
     }
 }

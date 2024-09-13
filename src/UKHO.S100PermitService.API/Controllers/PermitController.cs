@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
@@ -34,9 +33,6 @@ namespace UKHO.S100PermitService.API.Controllers
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
-
-            //throw new InvalidOperationException("This is an unhandled exception.");
-            throw new PermitServiceException(EventIds.GeneratePermitStarted.ToEventId());
 
             var productsList = new List<Products>();
             productsList.Add(new Products()
