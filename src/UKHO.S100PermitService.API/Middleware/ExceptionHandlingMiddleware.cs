@@ -46,12 +46,12 @@ namespace UKHO.S100PermitService.API.Middleware
             {
                 Status = httpContext.Response.StatusCode,
                 Extensions =
-            {
-                ["correlationId"] = correlationId,
-                ["eventId"] = eventId.Id,
-                ["eventName"] = eventId.Name,
-                ["message"] = string.Format(message, messageArgs)
-            }
+                {
+                    ["correlationId"] = correlationId,
+                    ["eventId"] = eventId.Id,
+                    ["eventName"] = eventId.Name,
+                    ["message"] = string.Format(message, messageArgs)
+                }
             };
 
             await httpContext.Response.WriteAsJsonAsync(problemDetails);
