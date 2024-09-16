@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         }
 
         [Test]
-        public async Task WhenICallPermitServiceEndpointWithNoRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
+        public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var token = await _tokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
             var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenceId);
