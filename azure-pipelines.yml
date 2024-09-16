@@ -372,6 +372,27 @@ stages:
                 - template: Deployment/templates/continuous-deployment-app.yml
                   parameters:
                     AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+  
+      - job: FunctionalTests
+        dependsOn:
+        - DevDeployTerraform
+        - DevDeployApp
+        pool: $(DeploymentPool)
+        variables:
+      - name: "TokenConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "TokenConfiguration.ClientId"
+        value: $(EntraID.AutoTest.ApplicationId)
+      - name: "TokenConfiguration.ClientIdNoAuth"
+        value: $(EntraID.AutoTestNoAuth.ApplicationId)
+
+        displayName: "Dev Functional Automated Tests"
+        workspace:
+         clean: all
+        steps:
+          - template: Deployment/templates/continuous-testing.yml
+            parameters:
+              AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
