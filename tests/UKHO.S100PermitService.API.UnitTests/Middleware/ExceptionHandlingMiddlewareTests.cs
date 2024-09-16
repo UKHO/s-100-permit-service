@@ -17,24 +17,25 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
     public class ExceptionHandlingMiddlewareTests
     {
         private RequestDelegate _fakeNextMiddleware;
-        private ExceptionHandlingMiddleware _middleware;
         private HttpContext _fakeHttpContext;
         private ILogger<ExceptionHandlingMiddleware> _fakeLogger;
+        private ExceptionHandlingMiddleware _middleware;
 
         [SetUp]
         public void SetUp()
         {
             _fakeNextMiddleware = A.Fake<RequestDelegate>();
             _fakeLogger = A.Fake<ILogger<ExceptionHandlingMiddleware>>();
-            _middleware = new ExceptionHandlingMiddleware(_fakeNextMiddleware, _fakeLogger);
             _fakeHttpContext = new DefaultHttpContext();
+
+            _middleware = new ExceptionHandlingMiddleware(_fakeNextMiddleware, _fakeLogger);
         }
 
         [Test]
         public async Task WhenExceptionIsOfTypeException_ThenLogsErrorWithUnhandledExceptionEventId()
         {
             var memoryStream = new MemoryStream();
-            _fakeHttpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, "fakeCorrelationId");
+            _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
             _fakeHttpContext.Response.Body = memoryStream;
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new Exception("fake exception"));
 
@@ -63,7 +64,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
         public async Task WhenExceptionIsOfTypePermitServiceException_ThenLogsErrorWithPermitServiceExceptionEventId()
         {
             var memoryStream = new MemoryStream();
-            _fakeHttpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, "fakeCorrelationId");
+            _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
             _fakeHttpContext.Response.Body = memoryStream;
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new PermitServiceException(EventIds.PermitServiceException.ToEventId(), "fakemessage"));
 

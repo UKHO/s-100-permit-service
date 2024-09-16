@@ -40,7 +40,7 @@ namespace UKHO.S100PermitService.API.Middleware
 
             _logger.LogError(eventId, exception, message, messageArgs);
 
-            var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
+            var correlationId = httpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
             var problemDetails = new ProblemDetails
             {
                 Status = httpContext.Response.StatusCode,

@@ -15,19 +15,19 @@ namespace UKHO.S100PermitService.API.Middleware
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
-            var correlationId = httpContext.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
+            var correlationId = httpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault();
 
             if(string.IsNullOrEmpty(correlationId))
             {
                 correlationId = Guid.NewGuid().ToString();
-                httpContext.Request.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
+                httpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
 
-            httpContext.Response.Headers.Append(Constants.XCorrelationIdHeaderKey, correlationId);
+            httpContext.Response.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
 
             var state = new Dictionary<string, object>
             {
-                [Constants.XCorrelationIdHeaderKey] = correlationId!,
+                [PermitServiceConstants.XCorrelationIdHeaderKey] = correlationId!,
             };
 
             var logger = httpContext.RequestServices.GetRequiredService<ILogger<CorrelationIdMiddleware>>();

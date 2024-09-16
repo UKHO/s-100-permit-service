@@ -98,7 +98,7 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddHeaderPropagation(options =>
             {
-                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
+                options.Headers.Add(PermitServiceConstants.XCorrelationIdHeaderKey);
             });
 
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
@@ -109,8 +109,8 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
 
-            var azureAdConfiguration = new AzureADConfiguration();
-            builder.Configuration.Bind("AzureADConfiguration", azureAdConfiguration);
+            var azureAdConfiguration = new AzureAdConfiguration();
+            builder.Configuration.Bind("AzureAdConfiguration", azureAdConfiguration);
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer("AzureAD", options =>
                    {
@@ -128,7 +128,7 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddAuthorization(options =>
             {
-                options.AddPolicy("PermitServiceUser", policy => policy.RequireRole("PermitServiceUser"));
+                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -153,7 +153,7 @@ namespace UKHO.S100PermitService.API
                         additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                         additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                         additionalValues["_X-Correlation-ID"] =
-                            httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                            httpContextAccessor.HttpContext.Request.Headers?[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
                     }
                 }
 
