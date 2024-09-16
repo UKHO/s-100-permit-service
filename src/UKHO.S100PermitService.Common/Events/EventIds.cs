@@ -89,5 +89,10 @@
         /// 840017 - Caching access token to call external api completed.
         /// </summary>
         CachingExternalEndPointTokenCompleted = 840017,
+
+        /// <summary>
+        /// 805012 - Request sent to the server is incorrect or corrupt.
+        /// </summary>
+        BadRequest = 840018
     }
 }
