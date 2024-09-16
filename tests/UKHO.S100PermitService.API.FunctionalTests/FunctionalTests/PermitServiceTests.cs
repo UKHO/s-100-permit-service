@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
             var token = await _tokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientId!, _tokenConfiguration.ClientSecret!);
-            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenseId);
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
@@ -35,14 +35,14 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithNoRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var token = await _tokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
-            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenseId);
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }
 
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
         {
-            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, _psApiConfiguration.InvalidToken, _psApiConfiguration.ValidLicenseId);
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, _psApiConfiguration.InvalidToken, _psApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)401);
         }
 

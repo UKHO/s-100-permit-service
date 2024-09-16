@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
 {
-    public class TestConfiguration
+    public static class TestConfiguration
     {
         public static IConfigurationRoot LoadConfiguration()
         {

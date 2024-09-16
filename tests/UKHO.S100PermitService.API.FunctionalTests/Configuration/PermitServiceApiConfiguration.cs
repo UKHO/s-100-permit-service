@@ -4,6 +4,6 @@
     {
         public string? BaseUrl { get; set; }
         public string? InvalidToken { get; set; }
-        public int ValidLicenseId { get; set; }
+        public int ValidLicenceId { get; set; }
     }
 }
