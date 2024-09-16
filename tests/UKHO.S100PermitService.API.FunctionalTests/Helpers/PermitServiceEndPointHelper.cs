@@ -1,6 +1,6 @@
 ﻿namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
 {
-    public class PermitServiceEndPointHelper
+    public static class PermitServiceEndPointHelper
     {
         private static readonly HttpClient _httpClient = new();
         private static string? _uri;

@@ -8,7 +8,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
     {
         private readonly ServiceProvider? _serviceProvider;
 
-        public ServiceProvider? GetServiceProvider()
+        protected ServiceProvider? GetServiceProvider()
         {
             return _serviceProvider;
         }
