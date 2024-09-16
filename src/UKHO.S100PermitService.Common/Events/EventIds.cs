@@ -93,7 +93,7 @@
         /// <summary>
         /// 805018 - Request sent to the server is incorrect or corrupt.
         /// </summary>
-        BadRequest = 840018
+        BadRequest = 840018,
 
         /// <summary>
         /// 840019 - Request for GetUserPermit endpoint from user permit service started

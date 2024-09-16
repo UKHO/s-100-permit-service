@@ -11,12 +11,14 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-
+        private readonly IUserPermitService _userPermitService;
         public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger)
+                                ILogger<PermitService> logger,
+                                IUserPermitService userPermitService)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
         }
 
         public async Task CreatePermit(int licenceId, string correlationId)
@@ -41,6 +43,9 @@ namespace UKHO.S100PermitService.Common.Services
                 ]
                 }
             };
+
+            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId);
+
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
