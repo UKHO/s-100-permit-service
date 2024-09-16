@@ -385,7 +385,8 @@ stages:
         value: $(EntraID.AutoTest.ApplicationId)
       - name: "TokenConfiguration.ClientIdNoAuth"
         value: $(EntraID.AutoTestNoAuth.ApplicationId)
-
+      - name : KeyVaultSettings.ServiceUri
+        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         displayName: "Dev Functional Automated Tests"
         workspace:
          clean: all
