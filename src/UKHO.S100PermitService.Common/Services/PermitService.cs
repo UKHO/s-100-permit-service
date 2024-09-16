@@ -11,17 +11,21 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
+       // private readonly IHoldingsService _holdingsService;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+           // _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
         }
 
         public async Task CreatePermit(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
+
+            //await _holdingsService.GetHoldingsData(licenceId);
 
             var productsList = new List<Products>
             {

@@ -2,6 +2,6 @@
 {
     public class HoldingsServiceRequest
     {
-        public string licenceId { get; set; }
+        public string LicenceId { get; set; }
     }
 }

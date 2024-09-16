@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             string bodyJson;
             string uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(Holdingurl, licenceId);
-            string accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
+            string accessToken = "123"; //await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
 
             HttpResponseMessage httpResponseMessage = await _holdingsApiClient.GetHoldingsDataAsync(uri, licenceId, accessToken);
 
@@ -54,8 +54,8 @@ namespace UKHO.S100PermitService.Common.Services
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetHoldingsDataToHoldingsFailed.ToEventId(), "Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Product Key Service.", httpResponseMessage.StatusCode.ToString(), bodyJson);
-                            throw new Exception("Bad Request");
+                            _logger.LogError(EventIds.GetHoldingsDataToHoldingsFailed.ToEventId(), "Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Holdings Service.", httpResponseMessage.StatusCode.ToString(), bodyJson);
+                            throw new Exception("Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Holdings Service.");
                         }
 
                         _logger.LogError(EventIds.GetHoldingsDataToHoldingsFailed.ToEventId(), "Failed to get holdings data | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());

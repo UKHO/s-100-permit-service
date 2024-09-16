@@ -91,18 +91,23 @@
         CachingExternalEndPointTokenCompleted = 840017,
 
         /// <summary>
-        /// 840018 - Get holdings data to Holdings Service started.
+        /// 840018 - Request sent to the server is incorrect or corrupt.
         /// </summary>
-        GetHoldingsDataToHoldingsService = 840018,
+        BadRequest = 840018,
 
         /// <summary>
-        /// 840019 - Request to get holdings data to Holdings Service completed.
+        /// 840019 - Get holdings data to Holdings Service started.
         /// </summary>
-        GetHoldingsDataToHoldingsCompleted = 840019,
+        GetHoldingsDataToHoldingsService = 840019,
 
         /// <summary>
-        /// 840020 - Get holdings data to Holdings Service failed.
+        /// 840020 - Request to get holdings data to Holdings Service completed.
         /// </summary>
-       GetHoldingsDataToHoldingsFailed = 840020,
+        GetHoldingsDataToHoldingsCompleted = 840020,
+
+        /// <summary>
+        /// 840021 - Get holdings data to Holdings Service failed.
+        /// </summary>
+       GetHoldingsDataToHoldingsFailed = 840021
     }
 }
