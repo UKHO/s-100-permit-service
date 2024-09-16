@@ -27,7 +27,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
             var token = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientId!, _tokenConfiguration.ClientSecret!);
-            Console.WriteLine("token : " + token);
             var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, token, _permitServiceApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
@@ -36,7 +35,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var token = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
-            Console.WriteLine("token : " + token);
             var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, token, _permitServiceApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }

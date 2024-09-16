@@ -16,12 +16,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
             var configurationRoot = configBuilder.Build();
             var keyVaultUri = configurationRoot["KeyVaultSettings:ServiceUri"]!;
 
-            //if(!string.IsNullOrWhiteSpace(keyVaultUri))
-            //{
-            //    var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
-            //    configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-            //    configurationRoot = configBuilder.Build(); // Rebuild configuration to include KeyVault secrets
-            //}
+            if(!string.IsNullOrWhiteSpace(keyVaultUri))
+            {
+                var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+                configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                configurationRoot = configBuilder.Build(); // Rebuild configuration to include KeyVault secrets
+            }
             return configurationRoot;
         }
 
