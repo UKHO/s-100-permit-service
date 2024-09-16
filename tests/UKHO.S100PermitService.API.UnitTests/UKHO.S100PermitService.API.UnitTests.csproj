@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\UKHO.S100PermitService.API\UKHO.S100PermitService.API.csproj" />
+    <ProjectReference Include="..\..\src\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

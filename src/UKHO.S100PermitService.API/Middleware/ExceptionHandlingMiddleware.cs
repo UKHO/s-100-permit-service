@@ -7,7 +7,6 @@ using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.API.Middleware
 {
-    [ExcludeFromCodeCoverage]
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
