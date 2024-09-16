@@ -91,23 +91,23 @@
         CachingExternalEndPointTokenCompleted = 840017,
 
         /// <summary>
-        /// 840018 - Get permit key from product key service started
+        /// 840018 - Request sent to the server is incorrect or corrupt.
         /// </summary>
-        GetPermitKeyStarted = 840018,
+        BadRequest = 840018,
 
         /// <summary>
-        /// 840019 - Get permit key from product key service completed
+        /// 840019 - Get permit key from product key service started
         /// </summary>
-        GetPermitKeyCompleted = 840019,
+        GetPermitKeyStarted = 840019,
 
         /// <summary>
-        /// 840020 - Exception occurred while get permit key from product key service
+        /// 840020 - Get permit key from product key service completed
         /// </summary>
-        GetPermitKeyException = 840020,
+        GetPermitKeyCompleted = 840020,
 
         /// <summary>
-        /// 805012 - Request sent to the server is incorrect or corrupt.
+        /// 840021 - Exception occurred while get permit key from product key service
         /// </summary>
-        BadRequest = 840021
+        GetPermitKeyException = 840021
     }
 }

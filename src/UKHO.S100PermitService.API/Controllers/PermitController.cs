@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
@@ -11,20 +10,17 @@ namespace UKHO.S100PermitService.API.Controllers
     {
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
-        private readonly IPermitReaderWriter _permitReaderWriter;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
-                                    IPermitService permitService,
-                                    IPermitReaderWriter permitReaderWriter)
+                                    IPermitService permitService)
         : base(httpContextAccessor, logger)
         {
             _logger = logger;
             _permitService = permitService;
-            _permitReaderWriter = permitReaderWriter;
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
