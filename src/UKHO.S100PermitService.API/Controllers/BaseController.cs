@@ -7,8 +7,7 @@ namespace UKHO.S100PermitService.API.Controllers
     public abstract class BaseController<T> : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        protected readonly ILogger<T> _logger;
-        protected new HttpContext HttpContext => _httpContextAccessor.HttpContext!;
+        private readonly ILogger<T> _logger;
 
         protected BaseController(IHttpContextAccessor httpContextAccessor, ILogger<T> logger)
         {
@@ -26,7 +25,7 @@ namespace UKHO.S100PermitService.API.Controllers
             else
             {
                 correlationId = Guid.Empty.ToString();
-                _logger.LogError(EventIds.BadRequest.ToEventId(), null, "_X-Correlation-ID is invalid");
+                _logger.LogError(EventIds.BadRequest.ToEventId(), null, "X-Correlation-ID is invalid");
             }
             return correlationId;
         }
