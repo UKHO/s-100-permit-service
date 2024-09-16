@@ -4,6 +4,6 @@ namespace UKHO.S100PermitService.Common.Helpers
 {
     public interface IProductkeyServiceApiClient
     {
-        Task<HttpResponseMessage> GetPermitKeyAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest, string accessToken, string correlationId = null);
+        Task<HttpResponseMessage> GetPermitKeyAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest, string accessToken, string correlationId);
     }
 }

@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IAuthProductKeyServiceTokenProvider _fakeAuthPksTokenProvider;
         private IProductkeyServiceApiClient _fakeProductkeyServiceApiClient;
         private IProductkeyService _productkeyService;
-        private const string CorrelationId = "fc771eb4-926b-4965-8de9-8b37288d3bd0";
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         private const string RequestError = "{\"correlationId\":\"fc771eb4-926b-4965-8de9-8b37288d3bd0\",\"errors\":[{\"source\":\"GetProductKey\",\"description\":\"Key not found for ProductName: test101 and Edition: 1.\"}]}";
 
         [SetUp]
@@ -67,7 +67,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StringContent(JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
                 });
 
-            var response = await _productkeyService.GetPermitKeyAsync([new() { ProductName = "test101", Edition = "1" }], CorrelationId);
+            var response = await _productkeyService.GetPermitKeyAsync([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
             response.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
 
@@ -89,7 +89,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(HttpStatusCode.BadRequest)]
         [TestCase(HttpStatusCode.NotFound)]
-        public async Task WhenRequestsInvalidValidData_ThenThrowException(HttpStatusCode httpStatusCode)
+        public async Task WhenRequestsInvalidOrNonExistentData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeProductkeyServiceApiClient.GetPermitKeyAsync
                     (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored))
@@ -103,7 +103,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StringContent(RequestError)
                 });
 
-            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], CorrelationId)).Should().ThrowAsync<Exception>();
+            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -139,7 +139,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], CorrelationId)).Should().ThrowAsync<Exception>();
+            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
