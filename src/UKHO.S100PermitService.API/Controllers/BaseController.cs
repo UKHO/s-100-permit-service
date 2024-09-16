@@ -7,8 +7,7 @@ namespace UKHO.S100PermitService.API.Controllers
     public abstract class BaseController<T> : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        protected readonly ILogger<T> _logger;
-        protected new HttpContext HttpContext => _httpContextAccessor.HttpContext!;
+        private readonly ILogger<T> _logger;
 
         protected BaseController(IHttpContextAccessor httpContextAccessor, ILogger<T> logger)
         {

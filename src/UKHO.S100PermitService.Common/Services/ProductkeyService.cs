@@ -29,7 +29,8 @@ namespace UKHO.S100PermitService.Common.Services
         /// <summary>
         /// Get permit key from Product Key Service
         /// </summary>
-        /// <param name="productKeyServiceRequest">ProductKeyServiceRequest</param>
+        /// <param name="productKeyServiceRequest"></param>
+        /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
         public async Task<List<ProductKeyServiceResponse>> GetPermitKeyAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
