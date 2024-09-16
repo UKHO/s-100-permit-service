@@ -109,13 +109,13 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
 
-            var azureADConfiguration = new AzureADConfiguration();
-            builder.Configuration.Bind("AzureADConfiguration", azureADConfiguration);
+            var azureAdConfiguration = new AzureADConfiguration();
+            builder.Configuration.Bind("AzureADConfiguration", azureAdConfiguration);
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer("AzureAD", options =>
                    {
-                       options.Audience = azureADConfiguration.ClientId;
-                       options.Authority = $"{azureADConfiguration.MicrosoftOnlineLoginUrl}{azureADConfiguration.TenantId}";
+                       options.Audience = azureAdConfiguration.ClientId;
+                       options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
                    });
 
             builder.Services.AddAuthorization(options =>
