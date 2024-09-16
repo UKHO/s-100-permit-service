@@ -82,7 +82,7 @@ stages:
               workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests'
               targetType: 'inline'
               pwsh: true
-              script: '$(Agent.BuildDirectory)/tools/dotnet-stryker --project-file-name UKHO.S100PermitService.API.UnitTests.csproj'
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
 
           - task: PublishMutationReport@0
             displayName: 'Publish Strkyer Mutator PS API Report'
