@@ -3,5 +3,7 @@
     public class PermitServiceApiConfiguration
     {
         public string? BaseUrl { get; set; }
+        public string? InvalidToken { get; set; }
+        public int ValidLicenseId { get; set; }
     }
 }

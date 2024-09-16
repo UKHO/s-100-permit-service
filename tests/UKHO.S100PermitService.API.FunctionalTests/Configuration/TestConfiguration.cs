@@ -1,20 +1,41 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
 {
     public class TestConfiguration
     {
-        protected IConfigurationRoot _configurationRoot;
-        public PermitServiceApiConfiguration PermitServiceConfig { get; private set; }
-
-        public TestConfiguration()
+        public static IConfigurationRoot LoadConfiguration()
         {
-            PermitServiceConfig = new PermitServiceApiConfiguration();
+            var configBuilder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false);
 
-            _configurationRoot = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", false)
-                .Build();
-            _configurationRoot.Bind("PermitServiceApiConfiguration", PermitServiceConfig);
+            var configurationRoot = configBuilder.Build();
+            var keyVaultUri = configurationRoot["KeyVaultSettings:ServiceUri"]!;
+
+            if(!string.IsNullOrWhiteSpace(keyVaultUri))
+            {
+                var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential());
+                configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+                configurationRoot = configBuilder.Build(); // Rebuild configuration to include KeyVault secrets
+            }
+            return configurationRoot;
+        }
+
+        public static ServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var configurationRoot = LoadConfiguration();
+
+            services.Configure<PermitServiceApiConfiguration>(configurationRoot.GetSection("PermitServiceApiConfiguration"));
+            services.Configure<TokenConfiguration>(configurationRoot.GetSection("TokenConfiguration"));
+
+            return services.BuildServiceProvider();
         }
     }
 }

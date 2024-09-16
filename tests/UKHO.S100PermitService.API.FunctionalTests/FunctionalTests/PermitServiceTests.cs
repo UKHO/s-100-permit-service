@@ -1,13 +1,55 @@
-﻿using NUnit.Framework;
+﻿using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using NUnit.Framework;
+using System.Net;
+using UKHO.S100PermitService.API.FunctionalTests.Configuration;
+using UKHO.S100PermitService.API.FunctionalTests.Helpers;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 {
-    public class PermitServiceTests
+    public class PermitServiceTests : TestBase
     {
-        [Test]
-        public async Task DummyTest()
+        private AuthTokenProvider _tokenProvider;
+        private TokenConfiguration? _tokenConfiguration;
+        private PermitServiceApiConfiguration _psApiConfiguration;
+
+        [OneTimeSetUp]
+        public void OneTimeSetup()
         {
-            await Task.CompletedTask;
+            _tokenProvider = new AuthTokenProvider();
+            var _serviceProvider = GetServiceProvider();
+            _tokenConfiguration = _serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
+            _psApiConfiguration = _serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
+        {
+            var token = await _tokenProvider.GetPSToken(_tokenConfiguration!.ClientId!, _tokenConfiguration.ClientSecret!);
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenseId);
+            response.StatusCode.Should().Be((HttpStatusCode)200);
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointWithRequiredRoleMissingToken_ThenForbiddenStatusCode403IsReturned()
+        {
+            var token = await _tokenProvider.GetPSToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, token, _psApiConfiguration.ValidLicenseId);
+            response.StatusCode.Should().Be((HttpStatusCode)403);
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
+        {
+            var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_psApiConfiguration!.BaseUrl, _psApiConfiguration.InvalidToken, _psApiConfiguration.ValidLicenseId);
+            response.StatusCode.Should().Be((HttpStatusCode)401);
+        }
+
+        [OneTimeTearDown]
+        public void OneTimeTearDown()
+        {
+            Cleanup();
         }
     }
 }
