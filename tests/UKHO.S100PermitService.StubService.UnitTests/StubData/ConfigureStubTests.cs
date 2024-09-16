@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
         [Test]
         public void WhenConfigureProductKeyServiceStub_ThenEnsureRequiredNumberOfJsonFilesAreInPlace()
         {
-            var ResponseFileDirectory = @"StubData\PKS";
+            var ResponseFileDirectory = @"StubData\ProductKeyService";
             var _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
 
             var jsonFiles = Directory.GetFiles(_responseFileDirectoryPath, "*.json");
