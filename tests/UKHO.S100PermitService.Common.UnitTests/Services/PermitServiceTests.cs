@@ -13,6 +13,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
+        private IUserPermitService _fakeUserPermitService;
 
         private PermitService permitService;
 
@@ -21,18 +22,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
-
-            permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger);
+            _fakeUserPermitService = A.Fake<IUserPermitService>();
+    
+            permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeUserPermitService);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeUserPermitService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
+            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null);
+            nullUserPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitService");
         }
 
         [Test]
