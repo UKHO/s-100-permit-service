@@ -10,20 +10,14 @@ namespace UKHO.S100PermitService.API.Controllers
     {
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
-        private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IHoldingsService _holdingsService;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
-                                    IPermitService permitService,
-                                    IPermitReaderWriter permitReaderWriter,
-                                    IHoldingsService holdingsService)
-        : base(httpContextAccessor)
+                                    IPermitService permitService)
+        : base(httpContextAccessor, logger)
         {
             _logger = logger;
             _permitService = permitService;
-            _permitReaderWriter = permitReaderWriter;
-            _holdingsService = holdingsService;
         }
 
         [HttpGet]
