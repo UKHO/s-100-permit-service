@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
-using UKHO.S100PermitService.Common.Models;
+using UKHO.S100PermitService.Common.Models.PermitService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -15,11 +15,40 @@ namespace UKHO.S100PermitService.Common.Services
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger)
         {
-            _permitReaderWriter = permitReaderWriter;
-            _logger = logger;
+            _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public void CreatePermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)
+        public async Task CreatePermit(int licenceId, string correlationId)
+        {
+            _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
+
+            var productsList = new List<Products>
+            {
+                new()
+                {
+                    Id = "ID",
+                    DatasetPermit =
+                [
+                    new() {
+                        IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
+                        EditionNumber = 1,
+                        EncryptedKey = "encryptedkey",
+                        Expiry = DateTime.Now,
+                        Filename = "filename",
+
+                    }
+                ]
+                }
+            };
+            var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
+
+            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
+
+            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+        }
+
+        private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)
         {
             var productsList = new List<Products>();
             productsList.AddRange(products);
@@ -33,23 +62,22 @@ namespace UKHO.S100PermitService.Common.Services
                     Userpermit = userPermit,
                     Version = version
                 },
-                Products = productsList.ToArray()
+                Products = [.. productsList]
             };
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
             _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
-            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Xml file creation started");
             if(!string.IsNullOrEmpty(permitXml))
             {
                 _permitReaderWriter.WritePermit(permitXml);
+                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
             }
             else
             {
                 _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
             }
-            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Xml file creation completed");
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace UKHO.S100PermitService.Common.Models
+namespace UKHO.S100PermitService.Common.Models.PermitService
 {
 
     // NOTE: Generated code may require at least .NET Framework 4.5 or .NET Core/Standard 2.0.

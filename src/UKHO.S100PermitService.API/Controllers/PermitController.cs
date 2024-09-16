@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.IO;
-using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
@@ -13,22 +11,19 @@ namespace UKHO.S100PermitService.API.Controllers
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
         private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IUserPermitService _userPermitService;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
                                     IPermitService permitService,
-                                    IPermitReaderWriter permitReaderWriter,
-                                    IUserPermitService userPermitService)
+                                    IPermitReaderWriter permitReaderWriter)
         : base(httpContextAccessor)
         {
             _logger = logger;
             _permitService = permitService;
             _permitReaderWriter = permitReaderWriter;
-            _userPermitService = userPermitService;
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
@@ -50,10 +45,6 @@ namespace UKHO.S100PermitService.API.Controllers
                     }
                 }
             });
-
-            
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId);
-
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit call started");

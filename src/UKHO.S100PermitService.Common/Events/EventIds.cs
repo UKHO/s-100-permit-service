@@ -91,6 +91,7 @@
         CachingExternalEndPointTokenCompleted = 840017,
 
         /// <summary>
+<<<<<<< HEAD
         /// 840018 - Request for GetUserPermit endpoint from user permit service started
         /// </summary>
         GetUserPermitStarted = 840018,
@@ -104,5 +105,10 @@
         /// 840020 - Exception occurred while processing request for GetUserPermit endpoint from user permit service
         /// </summary>
         GetUserPermitException = 840020
+=======
+        /// 805012 - Request sent to the server is incorrect or corrupt.
+        /// </summary>
+        BadRequest = 840018
+>>>>>>> dev/ad-auth-token-provider
     }
 }
