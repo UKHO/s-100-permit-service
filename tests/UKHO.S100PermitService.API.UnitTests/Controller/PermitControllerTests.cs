@@ -19,6 +19,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;
         private IPermitReaderWriter _fakePermitReaderWriter;
+        private IUserPermitService _fakeUserPermitService;
 
         [SetUp]
         public void Setup()
@@ -27,7 +28,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             _fakeLogger = A.Fake<ILogger<PermitController>>();
             _fakePermitService = A.Fake<IPermitService>();
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter);
+            _fakeUserPermitService = A.Fake<IUserPermitService>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter, _fakeUserPermitService);
         }
 
         [Test]

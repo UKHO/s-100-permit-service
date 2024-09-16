@@ -13,16 +13,19 @@ namespace UKHO.S100PermitService.API.Controllers
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
         private readonly IPermitReaderWriter _permitReaderWriter;
+        private readonly IUserPermitService _userPermitService;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
                                     IPermitService permitService,
-                                    IPermitReaderWriter permitReaderWriter)
+                                    IPermitReaderWriter permitReaderWriter,
+                                    IUserPermitService userPermitService)
         : base(httpContextAccessor)
         {
             _logger = logger;
             _permitService = permitService;
             _permitReaderWriter = permitReaderWriter;
+            _userPermitService = userPermitService;
         }
 
         [HttpPost]
@@ -47,6 +50,10 @@ namespace UKHO.S100PermitService.API.Controllers
                     }
                 }
             });
+
+            
+            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId);
+
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit call started");

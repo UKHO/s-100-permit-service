@@ -10,6 +10,6 @@ namespace UKHO.S100PermitService.API.Controllers
         protected BaseController(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
-        }       
+        }
     }
 }

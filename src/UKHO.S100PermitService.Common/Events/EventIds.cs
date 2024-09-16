@@ -89,5 +89,20 @@
         /// 840017 - Caching access token to call external api completed.
         /// </summary>
         CachingExternalEndPointTokenCompleted = 840017,
+
+        /// <summary>
+        /// 840018 - Request for GetUserPermit endpoint from user permit service started
+        /// </summary>
+        GetUserPermitStarted = 840018,
+
+        /// <summary>
+        /// 840019 - Request for GetUserPermit endpoint from user permit service completed
+        /// </summary>
+        GetUserPermitCompleted = 840019,
+
+        /// <summary>
+        /// 840020 - Exception occurred while processing request for GetUserPermit endpoint from user permit service
+        /// </summary>
+        GetUserPermitException = 840020
     }
 }

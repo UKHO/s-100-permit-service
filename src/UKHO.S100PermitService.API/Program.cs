@@ -13,7 +13,9 @@ using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -97,14 +99,23 @@ namespace UKHO.S100PermitService.API
             });
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
             builder.Services.AddApplicationInsightsTelemetry();
+            builder.Services.AddDistributedMemoryCache();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddHttpClient();
+
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<UserPermitServiceApiConfiguration>(builder.Configuration.GetSection("UserPermitServiceApiConfiguration"));
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IAuthUserPermitServiceTokenProvider, AuthTokenProvider>();
+
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
-            builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
+            builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();            
+            builder.Services.AddScoped<IUserPermitService, UserPermitService>();
+            builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)
