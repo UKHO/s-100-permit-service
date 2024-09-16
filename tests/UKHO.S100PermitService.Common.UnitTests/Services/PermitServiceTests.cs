@@ -13,26 +13,27 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
-        private IProductkeyService _productkeyService;
-        private PermitService permitService;
+        private IProductkeyService _fakeProductkeyService;
+
+        private PermitService _permitService;
 
         [SetUp]
         public void Setup()
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
-            _productkeyService = A.Fake<IProductkeyService>();
+            _fakeProductkeyService = A.Fake<IProductkeyService>();
 
-            permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _productkeyService);
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductkeyService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _productkeyService);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductkeyService);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _productkeyService);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductkeyService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
             Action nullProductkeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null);
@@ -44,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -96,7 +97,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 
