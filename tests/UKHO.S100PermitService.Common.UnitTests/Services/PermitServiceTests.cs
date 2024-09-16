@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IPermitReaderWriter _fakePermitReaderWriter;
         private IUserPermitService _fakeUserPermitService;
 
-        private PermitService permitService;
+        private PermitService _permitService;
 
         [SetUp]
         public void Setup()
@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -97,7 +97,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 

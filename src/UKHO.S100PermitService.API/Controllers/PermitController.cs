@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.API.Controllers
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
                                     IPermitService permitService)
-        : base(httpContextAccessor, logger)
+        : base(httpContextAccessor)
         {
             _logger = logger;
             _permitService = permitService;
