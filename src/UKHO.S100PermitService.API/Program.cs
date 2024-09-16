@@ -98,11 +98,6 @@ namespace UKHO.S100PermitService.API
                 options.Headers.Add(Constants.XCorrelationIdHeaderKey);
             });
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-<<<<<<< HEAD
-            builder.Services.AddApplicationInsightsTelemetry();
-            builder.Services.AddDistributedMemoryCache();
-=======
->>>>>>> dev/ad-auth-token-provider
 
             builder.Services.AddApplicationInsightsTelemetry();
             builder.Services.AddDistributedMemoryCache();
@@ -111,15 +106,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddHttpClient();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
-<<<<<<< HEAD
             builder.Services.Configure<UserPermitServiceApiConfiguration>(builder.Configuration.GetSection("UserPermitServiceApiConfiguration"));
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IAuthUserPermitServiceTokenProvider, AuthTokenProvider>();
-=======
-
-            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
->>>>>>> dev/ad-auth-token-provider
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();

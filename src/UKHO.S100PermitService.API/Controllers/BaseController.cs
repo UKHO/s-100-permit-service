@@ -13,22 +13,6 @@ namespace UKHO.S100PermitService.API.Controllers
         protected BaseController(IHttpContextAccessor httpContextAccessor, ILogger<T> logger)
         {
             _httpContextAccessor = httpContextAccessor;
-            _logger = logger;
-        }
-
-        protected string GetCurrentCorrelationId()
-        {
-            var correlationId = _httpContextAccessor.HttpContext!.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault();
-            if(Guid.TryParse(correlationId, out var correlationIdGuid))
-            {
-                correlationId = correlationIdGuid.ToString();
-            }
-            else
-            {
-                correlationId = Guid.Empty.ToString();
-                _logger.LogError(EventIds.BadRequest.ToEventId(), null, "_X-Correlation-ID is invalid");
-            }
-            return correlationId;
-        }
+        }       
     }
 }
