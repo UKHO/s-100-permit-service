@@ -40,7 +40,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
-            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermitAsync(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -92,7 +92,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
-            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermitAsync(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 
