@@ -22,6 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IAuthUserPermitServiceTokenProvider _fakeAuthUserPermitServiceTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
         private UserPermitService _userPermitService;
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
         [SetUp]
         public void SetUp()
@@ -55,6 +56,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             const int LicenceId = 1;
             const string AccessToken = "access-token";
+
             var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermitServiceResponse.UserPermit { Title = "Port Radar", UPN = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
@@ -69,7 +71,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var response = await _userPermitService.GetUserPermitAsync(LicenceId);
+            var response = await _userPermitService.GetUserPermitAsync(LicenceId, _fakeCorrelationId);
 
             Assert.IsNotNull(response);
             response.Equals(userPermitServiceResponse);
@@ -109,7 +111,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId));
+            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -149,7 +151,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId));
+            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

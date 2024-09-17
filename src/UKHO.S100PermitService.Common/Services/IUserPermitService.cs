@@ -4,6 +4,6 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public interface IUserPermitService
     {
-        Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId);
+        Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, string correlationId);
     }
 }

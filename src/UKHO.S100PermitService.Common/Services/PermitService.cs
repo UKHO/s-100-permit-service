@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.Services
                 }
             };
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId);
+            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, correlationId);
 
             var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
