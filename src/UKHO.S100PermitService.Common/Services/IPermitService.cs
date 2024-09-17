@@ -2,6 +2,6 @@
 {
     public interface IPermitService
     {
-     Task CreatePermit(int licenceId, string correlationId);
+        Task CreatePermitAsync(int licenceId, string correlationId);
     }
 }

@@ -26,7 +26,7 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
-            await _permitService.CreatePermit(licenceId, GetCurrentCorrelationId());
+            await _permitService.CreatePermitAsync(licenceId, GetCurrentCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 

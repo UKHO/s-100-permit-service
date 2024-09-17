@@ -35,7 +35,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             {
                 BaseAddress = new Uri("http://test.com")
             };
-            httpClient.DefaultRequestHeaders.Add("X-Correlation-ID", "1234");
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 

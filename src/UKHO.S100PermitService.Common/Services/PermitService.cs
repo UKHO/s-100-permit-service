@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productkeyService = productkeyService ?? throw new ArgumentNullException(nameof(productkeyService));
         }
 
-        public async Task CreatePermit(int licenceId, string correlationId)
+        public async Task CreatePermitAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
