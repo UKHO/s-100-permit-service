@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId)
         {
-            _logger.LogInformation(EventIds.GetUserPermitStarted.ToEventId(), "Request to get user permits from UserPermitService started.");
+            _logger.LogInformation(EventIds.GetUserPermitStarted.ToEventId(), "Request to get user permits from UserPermitService started");
 
             string bodyJson;
             string uri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
@@ -50,16 +50,16 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                 default:
                     {
-                        if(httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+                        if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for UserPermitService.", httpResponseMessage.StatusCode.ToString(), bodyJson);
-                            throw new Exception("Bad Request");
+                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}| Errors : {ErrorDetails}", httpResponseMessage.StatusCode.ToString(), bodyJson);
+                            throw new Exception();
                         }
 
-                        _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
-                        throw new Exception("Failed to get user permits");
+                        _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        throw new Exception();
                     }
             }
         }

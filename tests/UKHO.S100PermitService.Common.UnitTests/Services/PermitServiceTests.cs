@@ -14,7 +14,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
         private IUserPermitService _fakeUserPermitService;
-
         private PermitService _permitService;
 
         [SetUp]
@@ -23,8 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
             _fakeUserPermitService = A.Fake<IUserPermitService>();
-    
-            permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService);
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService);
         }
 
         [Test]
