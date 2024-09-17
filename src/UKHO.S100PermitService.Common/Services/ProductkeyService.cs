@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<ProductKeyServiceResponse>> GetPermitKeyAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
+        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
         {
             _logger.LogInformation(EventIds.GetPermitKeyStarted.ToEventId(), "Request to get permit key from Product Key Service started");
 
@@ -41,7 +41,9 @@ namespace UKHO.S100PermitService.Common.Services
             string uri = _productkeyServiceApiConfiguration.Value.BaseUrl + KeysEnc;
             string accessToken = await _authPksTokenProvider.GetManagedIdentityAuthAsync(_productkeyServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _productkeyServiceApiClient.GetPermitKeyAsync(uri, productKeyServiceRequest, accessToken, correlationId);
+            var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
+
+            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri, HttpMethod.Post, payloadJson, accessToken, correlationId);
 
             switch(httpResponseMessage.IsSuccessStatusCode)
             {

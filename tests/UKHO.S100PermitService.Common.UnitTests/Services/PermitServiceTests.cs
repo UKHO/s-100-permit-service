@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.PermitService;
+using UKHO.S100PermitService.Common.Models.ProductkeyService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
@@ -14,6 +15,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
         private IProductkeyService _fakeProductkeyService;
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
         private PermitService _permitService;
 
@@ -44,8 +46,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
+            A.CallTo(() => _fakeProductkeyService.PostProductKeyServiceRequest(A<List<ProductKeyServiceRequest>>.Ignored,A<string>.Ignored))
+                                            .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -96,8 +100,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenEmptyPermitXml_ThenFileIsNotCreated()
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
+            A.CallTo(() => _fakeProductkeyService.PostProductKeyServiceRequest(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored))
+                                         .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermit(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 

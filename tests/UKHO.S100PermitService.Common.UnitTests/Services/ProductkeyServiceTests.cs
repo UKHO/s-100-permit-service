@@ -55,19 +55,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenRequestsValidData_ThenProductKeyServiceReturnsValidResponse()
         {
-            A.CallTo(() => _fakeProductkeyServiceApiClient.GetPermitKeyAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Returns(new HttpResponseMessage()
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    RequestMessage = new HttpRequestMessage()
-                    {
-                        RequestUri = new Uri("http://test.com")
-                    },
-                    Content = new StringContent(JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
-                });
+            A.CallTo(() => _fakeProductkeyServiceApiClient.CallProductkeyServiceApiAsync
+                    (A<string>.Ignored, A<HttpMethod>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                            .Returns(new HttpResponseMessage()
+                            {
+                                StatusCode = HttpStatusCode.OK,
+                                RequestMessage = new HttpRequestMessage()
+                                {
+                                    RequestUri = new Uri("http://test.com")
+                                },
+                                Content = new StringContent(JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
+                            });
 
-            var response = await _productkeyService.GetPermitKeyAsync([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId);
+            var response = await _productkeyService.PostProductKeyServiceRequest([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
             response.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
 
@@ -91,19 +91,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.NotFound)]
         public async Task WhenRequestsInvalidOrNonExistentData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakeProductkeyServiceApiClient.GetPermitKeyAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Returns(new HttpResponseMessage()
-                {
-                    StatusCode = httpStatusCode,
-                    RequestMessage = new HttpRequestMessage()
-                    {
-                        RequestUri = new Uri("http://test.com")
-                    },
-                    Content = new StringContent(RequestError)
-                });
+            A.CallTo(() => _fakeProductkeyServiceApiClient.CallProductkeyServiceApiAsync
+                    (A<string>.Ignored, A<HttpMethod>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                            .Returns(new HttpResponseMessage()
+                            {
+                                StatusCode = httpStatusCode,
+                                RequestMessage = new HttpRequestMessage()
+                                {
+                                    RequestUri = new Uri("http://test.com")
+                                },
+                                Content = new StringContent(RequestError)
+                            });
 
-            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
+            await FluentActions.Invoking(async () => await _productkeyService.PostProductKeyServiceRequest([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -127,19 +127,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.UnsupportedMediaType, "UnsupportedMediaType")]
         public async Task WhenProductKeyServiceResponseOtherThanOk_ThenThrowException(HttpStatusCode httpStatusCode, string content)
         {
-            A.CallTo(() => _fakeProductkeyServiceApiClient.GetPermitKeyAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Returns(new HttpResponseMessage()
-                {
-                    StatusCode = httpStatusCode,
-                    RequestMessage = new HttpRequestMessage()
-                    {
-                        RequestUri = new Uri("http://test.com")
-                    },
-                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
-                });
+            A.CallTo(() => _fakeProductkeyServiceApiClient.CallProductkeyServiceApiAsync
+                    (A<string>.Ignored, A<HttpMethod>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                                .Returns(new HttpResponseMessage()
+                                {
+                                    StatusCode = httpStatusCode,
+                                    RequestMessage = new HttpRequestMessage()
+                                    {
+                                        RequestUri = new Uri("http://test.com")
+                                    },
+                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
+                                });
 
-            await FluentActions.Invoking(async () => await _productkeyService.GetPermitKeyAsync([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
+            await FluentActions.Invoking(async () => await _productkeyService.PostProductKeyServiceRequest([], _fakeCorrelationId)).Should().ThrowAsync<Exception>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

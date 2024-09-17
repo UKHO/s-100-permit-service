@@ -11,9 +11,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
     [TestFixture]
     public class ProductkeyServiceApiClientTests
     {
-        private IProductkeyServiceApiClient? _productkeyServiceApiClient;
         private IHttpClientFactory _fakeHttpClientFactory;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
+
+        private IProductkeyServiceApiClient? _productkeyServiceApiClient;
 
         [SetUp]
         public void SetUp()
@@ -24,7 +25,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [Test]
         public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOKResponse()
         {
-            var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
+            var productKeyServiceRequestData = JsonConvert.SerializeObject(new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } });
 
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                                     JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>()
@@ -34,12 +35,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             {
                 BaseAddress = new Uri("http://test.com")
             };
+            httpClient.DefaultRequestHeaders.Add("X-Correlation-ID", "1234");
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
             _productkeyServiceApiClient = new ProductkeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productkeyServiceApiClient.GetPermitKeyAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId);
+            var result = _productkeyServiceApiClient.CallProductkeyServiceApiAsync("http://test.com", HttpMethod.Post, productKeyServiceRequestData, "testToken", _fakeCorrelationId);
 
             var deSerializedResult = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -69,7 +71,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productkeyServiceApiClient = new ProductkeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productkeyServiceApiClient.GetPermitKeyAsync("http://test.com", [], string.Empty, _fakeCorrelationId);
+            var result = _productkeyServiceApiClient.CallProductkeyServiceApiAsync("http://test.com", HttpMethod.Post, "", string.Empty, _fakeCorrelationId);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }

@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Services
                 },
             ];
 
-            var pksResponseData = await _productkeyService.GetPermitKeyAsync(productKeyServiceRequest, correlationId);
+            var pksResponseData = await _productkeyService.PostProductKeyServiceRequest(productKeyServiceRequest, correlationId);
 
             var productsList = new List<Products>
             {
