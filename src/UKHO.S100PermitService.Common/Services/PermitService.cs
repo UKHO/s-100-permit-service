@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.Common.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public async Task CreatePermit(int licenceId, string correlationId)
+        public async Task CreatePermitAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
