@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
         private readonly IAuthHoldingsServiceTokenProvider _authHoldingsServiceTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
-        private const string Holdingurl = "holdings/{0}/s100";
+        private const string HoldingUrl = "holdings/{0}/s100";
 
         public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IAuthHoldingsServiceTokenProvider authHoldingsServiceTokenProvider, IHoldingsApiClient holdingsApiClient)
         {
@@ -26,15 +26,16 @@ namespace UKHO.S100PermitService.Common.Services
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
         }
 
-        public async Task<List<HoldingsServiceResponse>> GetHoldingsData(int licenceId)
+        public async Task<List<HoldingsServiceResponse>> GetHoldings(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsService.ToEventId(), "Get holdings data to Holdings Service started.");
+            _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsService.ToEventId(),
+                "Get holdings data to Holdings Service started.");
 
             string bodyJson;
-            string uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(Holdingurl, licenceId);
-            string accessToken = "123"; //await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
+            var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingUrl, licenceId);
+            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
 
-            HttpResponseMessage httpResponseMessage = await _holdingsApiClient.GetHoldingsDataAsync(uri, licenceId, accessToken);
+            var httpResponseMessage = await _holdingsApiClient.GetHoldingsDataAsync(uri, licenceId, accessToken, correlationId);
 
             switch(httpResponseMessage.IsSuccessStatusCode)
             {
@@ -44,7 +45,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                         _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsCompleted.ToEventId(), "Request to get holdings data to Holdings Service completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
 
-                        List<HoldingsServiceResponse> holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
+                        var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
 
                         return holdingsServiceResponse;
                     }

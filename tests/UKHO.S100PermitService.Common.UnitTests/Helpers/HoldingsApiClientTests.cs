@@ -13,6 +13,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
     {
         private HoldingsApiClient? _holdingsApiClient;
         private IHttpClientFactory _fakeHttpClientFactory;
+        private readonly string _correlationId = Guid.NewGuid().ToString();
+        const string FakeUri = "http://test.com";
 
         [SetUp]
         public void Setup()
@@ -25,7 +27,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [Test]
         public void WhenValidHoldingsServiceDataIsPassed_ThenReturnsOKResponse()
         {
-            HttpMessageHandler messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
+            var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                 ResponseValid, HttpStatusCode.OK);
 
             var httpClient = new HttpClient(messageHandler)
@@ -37,30 +39,30 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
 
-            Task<HttpResponseMessage> result = _holdingsApiClient.GetHoldingsDataAsync("http://test.com", 1, "asdfsa");
+            var result = _holdingsApiClient.GetHoldingsDataAsync(FakeUri, 1, "asdfsa", _correlationId);
 
-            List<HoldingsServiceResponse> deSerializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            var deserializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
-            deSerializedResult.Count.Should().BeGreaterThanOrEqualTo(1);
+            deserializedResult.Count.Should().BeGreaterThanOrEqualTo(1);
         }
 
         [Test]
         public void WhenInvalidHoldingsServiceDataIsPassed_ThenReturnsUnauthorizedResponse()
         {
-            HttpMessageHandler messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<HoldingsServiceResponse>() { new() }), HttpStatusCode.Unauthorized);
+            var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
+                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
 
             var httpClient = new HttpClient(messageHandler)
             {
-                BaseAddress = new Uri("http://test.com")
+                BaseAddress = new Uri(FakeUri)
             };
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
             _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
 
-            Task<HttpResponseMessage> result = _holdingsApiClient.GetHoldingsDataAsync("http://test.com", 8, null);
+            var result = _holdingsApiClient.GetHoldingsDataAsync(FakeUri, 8, null, _correlationId);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }

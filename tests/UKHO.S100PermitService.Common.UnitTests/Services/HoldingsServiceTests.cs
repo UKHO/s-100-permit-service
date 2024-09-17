@@ -20,7 +20,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<HoldingsServiceApiConfiguration> _fakeHoldingsServiceApiConfiguration;
         private IAuthHoldingsServiceTokenProvider _fakeAuthHoldingsServiceTokenProvider;
         private IHoldingsApiClient _fakeHoldingsApiClient;
-        private IHoldingsService _fakeHoldingsService;
+        private IHoldingsService _holdingsService;
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
         [SetUp]
         public void Setup()
@@ -30,7 +31,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeAuthHoldingsServiceTokenProvider = A.Fake<IAuthHoldingsServiceTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
 
-            _fakeHoldingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient);
+            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient);
         }
 
         private const string ResponseValid = "[\r\n  {\r\n    \"productCode\": \"P1231\",\r\n    \"productTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
@@ -63,7 +64,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenHoldingsServiceRequestsValidData_ThenReturnHoldingsServiceValidResponse()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(new HttpResponseMessage()
                 {
                     StatusCode = HttpStatusCode.OK,
@@ -74,7 +75,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StringContent(ResponseValid)
                 });
 
-            List<HoldingsServiceResponse> response = await _fakeHoldingsService.GetHoldingsData(1);
+            List<HoldingsServiceResponse> response = await _holdingsService.GetHoldings(1, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -96,7 +97,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenHoldingsServiceRequestsInvalidData_ThenReturnsException()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
-                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored))
+                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                  .Returns(new HttpResponseMessage()
                  {
                      StatusCode = HttpStatusCode.BadRequest,
@@ -107,7 +108,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                      Content = new StringContent("Bad Request", Encoding.UTF8, "application/json")
                  });
 
-            Assert.ThrowsAsync<Exception>(() => _fakeHoldingsService.GetHoldingsData(9));
+            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldings(9, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -131,18 +132,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored))
-                .Returns(new HttpResponseMessage()
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
-                    RequestMessage = new HttpRequestMessage()
+                    RequestMessage = new HttpRequestMessage
                     {
                         RequestUri = new Uri("http://localhost:5000/holdings/test/s100")
                     },
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            Assert.ThrowsAsync<Exception>(() => _fakeHoldingsService.GetHoldingsData(23));
+            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldings(23, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"

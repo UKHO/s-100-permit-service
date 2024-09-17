@@ -2,6 +2,6 @@
 {
     public interface IHoldingsApiClient
     {
-        Task<HttpResponseMessage> GetHoldingsDataAsync(string uri, int licenceId, string accessToken);
+        Task<HttpResponseMessage> GetHoldingsDataAsync(string uri, int licenceId, string accessToken, string correlationId);
     }
 }

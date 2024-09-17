@@ -11,21 +11,22 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-       // private readonly IHoldingsService _holdingsService;
+        private readonly IHoldingsService _holdingsService;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger)
+                                ILogger<PermitService> logger,
+                                IHoldingsService holdingsService)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-           // _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
+            _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
         }
 
         public async Task CreatePermit(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
-            //await _holdingsService.GetHoldingsData(licenceId);
+            var holdingsServiceResponse = await _holdingsService.GetHoldings(licenceId, correlationId);
 
             var productsList = new List<Products>
             {
@@ -45,9 +46,9 @@ namespace UKHO.S100PermitService.Common.Services
                 ]
                 }
             };
-            var upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
+            const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
-            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upn, 1.0m, productsList);
+            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, 1.0m, productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
         }
@@ -56,9 +57,9 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var productsList = new List<Products>();
             productsList.AddRange(products);
-            var permit = new Permit()
+            var permit = new Permit
             {
-                Header = new Header()
+                Header = new Header
                 {
                     IssueDate = issueDate.ToString(DateFormat),
                     DataServerIdentifier = dataServerIdentifier,

@@ -4,6 +4,6 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public interface IHoldingsService
     {
-        Task<List<HoldingsServiceResponse>> GetHoldingsData(int licenceId);
+        Task<List<HoldingsServiceResponse>> GetHoldings(int licenceId, string correlationId);
     }
 }

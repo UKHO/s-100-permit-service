@@ -12,7 +12,7 @@ namespace UKHO.S100PermitService.Common.Helpers
             _httpClient.Timeout = TimeSpan.FromMinutes(Convert.ToDouble(5));
         }
 
-        public async Task<HttpResponseMessage> GetHoldingsDataAsync(string uri, int licenceId, string accessToken)
+        public async Task<HttpResponseMessage> GetHoldingsDataAsync(string uri, int licenceId, string accessToken, string correlationId)
         {
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
             httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, "application/json");
@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService.Common.Helpers
             if(accessToken != null)
             {
                 httpRequestMessage.SetBearerToken(accessToken);
-                //httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
+                httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
