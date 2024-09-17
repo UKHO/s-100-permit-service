@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
         }
 
-        public async Task CreatePermit(int licenceId, string correlationId)
+        public async Task CreatePermitAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
