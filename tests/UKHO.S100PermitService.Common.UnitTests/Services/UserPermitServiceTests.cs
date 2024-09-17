@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<UserPermitServiceApiConfiguration> _fakeUserPermitServiceApiConfiguration;
         private IAuthUserPermitServiceTokenProvider _fakeAuthUserPermitServiceTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
-        private IUserPermitService _userPermitService;
+        private UserPermitService _userPermitService;
 
         [SetUp]
         public void SetUp()
@@ -53,8 +53,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenValidLicenceId_ThenUserPermitServiceReturns200OKResponse()
         {
-            int licenceId = 1;
-            string accessToken = "access-token";
+            const int LicenceId = 1;
+            const string AccessToken = "access-token";
             var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermitServiceResponse.UserPermit { Title = "Port Radar", UPN = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
@@ -63,13 +63,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             };
 
             A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
-                .Returns(accessToken);
+                .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
                 (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var response = await _userPermitService.GetUserPermitAsync(licenceId);
+            var response = await _userPermitService.GetUserPermitAsync(LicenceId);
 
             Assert.IsNotNull(response);
             response.Equals(userPermitServiceResponse);
@@ -92,10 +92,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(HttpStatusCode.BadRequest, "BadRequest")]
         [TestCase(HttpStatusCode.NotFound, "NotFound")]
-        public async Task WhenInvalidLicenceId_ThenUserPermitServiceReturnsException(HttpStatusCode statusCode, string content)
+        public Task WhenInvalidLicenceId_ThenUserPermitServiceReturnsException(HttpStatusCode statusCode, string content)
         {
-            int licenceId = 0;
-            string accessToken = "access-token";
+            const int LicenceId = 0;
+            const string AccessToken = "access-token";
 
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -103,13 +103,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             };
 
             A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
-                .Returns(accessToken);
+                .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(licenceId));
+            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -124,17 +124,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.GetUserPermitException.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}| Errors : {ErrorDetails}"
             ).MustHaveHappenedOnceExactly();
+
+            return Task.CompletedTask;
         }
 
         [Test]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public async Task WhenInvalidLicenceId_ThenUserPermitServiceReturns400BadRequestResponse(HttpStatusCode statusCode, string content)
+        public Task WhenInvalidLicenceId_ThenUserPermitServiceReturns400BadRequestResponse(HttpStatusCode statusCode, string content)
         {
-            int licenceId = 0;
-            //string uri = "http://localhost:5000/userpermits/0/s100"; 
-            string accessToken = "access-token";
+            const int LicenceId = 0;
+            const string AccessToken = "access-token";
 
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -142,13 +143,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             };
 
             A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
-                .Returns(accessToken);
+                .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(licenceId));
+            Assert.ThrowsAsync<Exception>(() => _userPermitService.GetUserPermitAsync(LicenceId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -163,6 +164,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.GetUserPermitException.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
+
+            return Task.CompletedTask;
         }
     }
 }
