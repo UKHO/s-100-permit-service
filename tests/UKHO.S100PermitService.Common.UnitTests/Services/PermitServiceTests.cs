@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductkeyService.PostProductKeyServiceRequest(A<List<ProductKeyServiceRequest>>.Ignored,A<string>.Ignored))
                                             .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermit(1, _fakeCorrelationId);
+            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -103,7 +103,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductkeyService.PostProductKeyServiceRequest(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored))
                                          .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermit(1, _fakeCorrelationId);
+            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 
