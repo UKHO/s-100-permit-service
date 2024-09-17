@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
             {
                 if(_tokenConfiguration!.IsRunningOnLocalMachine)
                 {
-                    var debugApp = PublicClientApplicationBuilder.Create(clientId).
+                    IPublicClientApplication debugApp = PublicClientApplicationBuilder.Create(clientId).
                                                         WithRedirectUri("http://localhost").Build();
 
                     //Acquiring token through user interaction
@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
                 }
                 else
                 {
-                    var app = ConfidentialClientApplicationBuilder.Create(clientId)
+                    IConfidentialClientApplication app = ConfidentialClientApplicationBuilder.Create(clientId)
                                                                   .WithClientSecret(clientSecret)
                                                                   .WithAuthority(new Uri($"{_tokenConfiguration?.MicrosoftOnlineLoginUrl}{_tokenConfiguration?.TenantId}"))
                                                                   .Build();
