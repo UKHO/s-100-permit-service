@@ -22,6 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IHoldingsApiClient _fakeHoldingsApiClient;
         private IHoldingsService _holdingsService;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
+        const string FakeUri = "http://test.com";
 
         [SetUp]
         public void Setup()
@@ -70,7 +71,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     StatusCode = HttpStatusCode.OK,
                     RequestMessage = new HttpRequestMessage()
                     {
-                        RequestUri = new Uri("http://localhost:5000/holdings/1/s100")
+                        RequestUri = new Uri(FakeUri)
                     },
                     Content = new StringContent(ResponseValid)
                 });
@@ -103,7 +104,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                      StatusCode = HttpStatusCode.BadRequest,
                      RequestMessage = new HttpRequestMessage()
                      {
-                         RequestUri = new Uri("http://localhost:5000/holdings/test/s100")
+                         RequestUri = new Uri(FakeUri)
                      },
                      Content = new StringContent("Bad Request", Encoding.UTF8, "application/json")
                  });
@@ -138,7 +139,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     StatusCode = statusCode,
                     RequestMessage = new HttpRequestMessage
                     {
-                        RequestUri = new Uri("http://localhost:5000/holdings/test/s100")
+                        RequestUri = new Uri(FakeUri)
                     },
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
