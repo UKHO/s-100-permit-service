@@ -56,7 +56,7 @@
         EmptyPermitXml = 840010,
 
         /// <summary>
-        /// 840011 - Permit service Exception.
+        /// 840011 - Permit service exception.
         /// </summary>
         PermitServiceException = 840011
     }

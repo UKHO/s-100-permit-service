@@ -20,7 +20,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
+
             _fakePermitService = new PermitService(_fakePermitReaderWriter, _fakeLogger);
+        }
+
+        [Test]
+        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        {
+            Action nullPermitService = () => new PermitService(null, _fakeLogger);
+            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
+
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null);
+            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
         }
 
         [Test]
@@ -111,16 +122,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.EmptyPermitXml.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Empty permit xml is received"
            ).MustHaveHappened();
-        }
-
-        [Test]
-        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
-        {
-            Action nullPermitService = () => new PermitService(null, _fakeLogger);
-            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
-
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
         }
     }
 }

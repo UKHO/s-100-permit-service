@@ -27,7 +27,21 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             _fakeLogger = A.Fake<ILogger<PermitController>>();
             _fakePermitService = A.Fake<IPermitService>();
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
+
             _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter);
+        }
+
+        [Test]
+        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        {
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakePermitReaderWriter);
+            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakePermitReaderWriter);
+            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
+
+            Action nullPermitReaderWriter = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, null);
+            nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
         }
 
         [Test]
@@ -51,20 +65,5 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
            ).MustHaveHappenedOnceExactly();
         }
-
-        [Test]
-        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
-        {
-            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakePermitReaderWriter);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
-
-            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakePermitReaderWriter);
-            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
-
-            Action nullPermitReaderWriter = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, null);
-            nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
-
-        }
-
     }
 }
