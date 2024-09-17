@@ -92,9 +92,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(HttpStatusCode.BadRequest, "BadRequest")]
         [TestCase(HttpStatusCode.NotFound, "NotFound")]
-        public Task WhenInvalidLicenceId_ThenUserPermitServiceReturnsException(HttpStatusCode statusCode, string content)
+        public Task WhenLicenceIdNotFound_ThenUserPermitServiceReturnsException404WithErrorDetails(HttpStatusCode statusCode, string content)
         {
             const int LicenceId = 0;
             const string AccessToken = "access-token";
@@ -131,10 +130,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
+        [TestCase(HttpStatusCode.BadRequest, "BadRequest")]
+        [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public Task WhenInvalidLicenceId_ThenUserPermitServiceReturns400BadRequestResponse(HttpStatusCode statusCode, string content)
+        public Task WhenUserPermitServiceResponseOtherThanOk_ThenThrowExceptionWithoutErrorDetails(HttpStatusCode statusCode, string content)
         {
             const int LicenceId = 0;
             const string AccessToken = "access-token";

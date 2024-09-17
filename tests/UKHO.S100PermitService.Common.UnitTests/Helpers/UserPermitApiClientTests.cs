@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         }
 
         [Test]
-        public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOKResponse()
+        public void WhenValidDataIsPassed_ThenUserPermitServiceReturnsOKResponse()
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                 ValidResponse, HttpStatusCode.OK);
@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [TestCase(HttpStatusCode.InternalServerError)]
         [TestCase(HttpStatusCode.ServiceUnavailable)]
         [TestCase(HttpStatusCode.UnsupportedMediaType)]
-        public void WhenProductKeyServiceResponseOtherThanOk(HttpStatusCode httpStatusCode)
+        public void WhenUserPermitServiceResponseOtherThanOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                 JsonConvert.SerializeObject(new UserPermitServiceResponse() { }), httpStatusCode);

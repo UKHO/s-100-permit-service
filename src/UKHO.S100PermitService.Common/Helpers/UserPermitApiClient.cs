@@ -17,11 +17,13 @@ namespace UKHO.S100PermitService.Common.Helpers
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
             httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, "application/json");
 
-            if(!string.IsNullOrEmpty(accessToken))
+            if(string.IsNullOrEmpty(accessToken))
             {
-                httpRequestMessage.SetBearerToken(accessToken);
-                httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
+                return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
             }
+
+            httpRequestMessage.SetBearerToken(accessToken);
+            httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
         }

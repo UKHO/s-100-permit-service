@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                 default:
                     {
-                        if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+                        if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
