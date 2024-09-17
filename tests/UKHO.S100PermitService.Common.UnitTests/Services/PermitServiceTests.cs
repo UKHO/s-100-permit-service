@@ -14,8 +14,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
         private IHoldingsService _fakeHoldingsService;
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
-        private PermitService permitService;
+        private PermitService _permitService;
 
         [SetUp]
         public void Setup()
@@ -24,7 +25,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeLogger = A.Fake<ILogger<PermitService>>();
             _fakeHoldingsService = A.Fake<IHoldingsService>();
 
-            permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService);
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService);
         }
 
         [Test]
@@ -45,7 +46,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -97,7 +98,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
-            await permitService.CreatePermit(1, "fc771eb4-926b-4965-8de9-8b37288d3bd0");
+            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 

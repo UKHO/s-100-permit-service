@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Services
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
         }
 
-        public async Task CreatePermit(int licenceId, string correlationId)
+        public async Task CreatePermitAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
