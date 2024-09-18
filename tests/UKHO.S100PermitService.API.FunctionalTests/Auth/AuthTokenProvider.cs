@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
         {
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
-            string[] scopes = [$"{clientId}/.default"];
+            string[] scopes = [$"{_tokenConfiguration?.ClientId}/.default"];
             if(_token == null)
             {
                 if(_tokenConfiguration!.IsRunningOnLocalMachine)

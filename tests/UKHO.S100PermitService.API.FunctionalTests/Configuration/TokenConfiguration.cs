@@ -3,6 +3,7 @@
     public class TokenConfiguration
     {
         public string? ClientId { get; set; }
+        public string? ClientIdWithAuth { get; set; }
         public string? ClientIdNoAuth { get; set; }
         public string? TenantId { get; set; }
         public string? MicrosoftOnlineLoginUrl { get; set; }

@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
-            var token = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientId!, _tokenConfiguration.ClientSecret!);
+            var token = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
             var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, token, _permitServiceApiConfiguration.ValidLicenceId);
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
