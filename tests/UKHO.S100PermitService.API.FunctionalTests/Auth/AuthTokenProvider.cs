@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using UKHO.S100PermitService.API.FunctionalTests.Configuration;
 
-namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
+namespace UKHO.S100PermitService.API.FunctionalTests.Auth
 {
     public class AuthTokenProvider : TestBase
     {
@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
             {
                 if(_tokenConfiguration!.IsRunningOnLocalMachine)
                 {
-                    IPublicClientApplication debugApp = PublicClientApplicationBuilder.Create(clientId).
+                    var debugApp = PublicClientApplicationBuilder.Create(clientId).
                                                         WithRedirectUri("http://localhost").Build();
 
                     //Acquiring token through user interaction
@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
                 }
                 else
                 {
-                    IConfidentialClientApplication app = ConfidentialClientApplicationBuilder.Create(clientId)
+                    var app = ConfidentialClientApplicationBuilder.Create(clientId)
                                                                   .WithClientSecret(clientSecret)
                                                                   .WithAuthority(new Uri($"{_tokenConfiguration?.MicrosoftOnlineLoginUrl}{_tokenConfiguration?.TenantId}"))
                                                                   .Build();
