@@ -7,7 +7,7 @@
         public class UserPermit
         {
             public string Title { get; set; }
-            public string UPN { get; set; }
+            public string Upn { get; set; }
         }
     }
 }
