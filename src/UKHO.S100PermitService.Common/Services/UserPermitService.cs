@@ -50,11 +50,11 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                 default:
                     {
-                        if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
+                        if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}| Errors : {ErrorDetails}", httpResponseMessage.StatusCode.ToString(), bodyJson);
+                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode} | Errors : {ErrorDetails}", httpResponseMessage.StatusCode.ToString(), bodyJson);
                             throw new Exception();
                         }
 
