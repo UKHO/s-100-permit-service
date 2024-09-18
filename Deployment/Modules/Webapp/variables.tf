@@ -39,4 +39,6 @@ variable "stub_app_settings" {
   type = map(string)
 }
 
-
+variable "subnet_id" {
+  type = string
+}
