@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
         private readonly IAuthHoldingsServiceTokenProvider _authHoldingsServiceTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
-        private const string HoldingUrl = "holdings/{0}/s100";
+        private const string HoldingUrl = "/holdings/{0}/s100";
 
         public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IAuthHoldingsServiceTokenProvider authHoldingsServiceTokenProvider, IHoldingsApiClient holdingsApiClient)
         {
