@@ -30,6 +30,6 @@ variable "tags" {
 
 }
 variable "name_manufacturerkv" {
-  type = map(string)
+  
 }
 
