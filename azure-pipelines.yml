@@ -448,6 +448,8 @@ stages:
           - name: "TokenConfiguration.TenantId"
             value: $(EntraID.TenantId)
           - name: "TokenConfiguration.ClientId"
+            value: $(EntraID.ApplicationId)
+          - name: "TokenConfiguration.ClientIdWithAuth"
             value: $(EntraID.AutoTest.ApplicationId)
           - name: "TokenConfiguration.ClientIdNoAuth"
             value: $(EntraID.AutoTestNoAuth.ApplicationId)
