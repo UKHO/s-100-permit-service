@@ -7,7 +7,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
 {
     public class AuthTokenProvider : TestBase
     {
-        private string? _token;
         private TokenConfiguration? _tokenConfiguration;
 
         public async Task<string> GetPermitServiceToken(string clientId, string clientSecret)
@@ -15,7 +14,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             string[] scopes = [$"{_tokenConfiguration?.ClientId}/.default"];
-            if(_token == null)
+            string? token = null;
+            if(token == null)
             {
                 if(_tokenConfiguration!.IsRunningOnLocalMachine)
                 {
@@ -26,7 +26,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
                     var tokenTask = await debugApp.AcquireTokenInteractive(scopes)
                                                                    .WithAuthority($"{_tokenConfiguration?.MicrosoftOnlineLoginUrl}{_tokenConfiguration?.TenantId}", true)
                                                                    .ExecuteAsync();
-                    _token = tokenTask.AccessToken;
+                    token = tokenTask.AccessToken;
                 }
                 else
                 {
@@ -36,10 +36,10 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
                                                                   .Build();
 
                     var tokenTask = await app.AcquireTokenForClient(scopes).ExecuteAsync();
-                    _token = tokenTask.AccessToken;
+                    token = tokenTask.AccessToken;
                 }
             }
-            return _token;
+            return token;
         }
     }
 }
