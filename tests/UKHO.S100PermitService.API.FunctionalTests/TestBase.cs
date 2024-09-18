@@ -2,7 +2,7 @@
 using NUnit.Framework;
 using UKHO.S100PermitService.API.FunctionalTests.Configuration;
 
-namespace UKHO.S100PermitService.API.FunctionalTests.Helpers
+namespace UKHO.S100PermitService.API.FunctionalTests
 {
     public class TestBase
     {

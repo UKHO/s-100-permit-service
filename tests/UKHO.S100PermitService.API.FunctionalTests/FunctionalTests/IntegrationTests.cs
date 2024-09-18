@@ -4,7 +4,7 @@ using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using System.Net;
 using UKHO.S100PermitService.API.FunctionalTests.Configuration;
-using UKHO.S100PermitService.API.FunctionalTests.Helpers;
+using UKHO.S100PermitService.API.FunctionalTests.Factories;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 {
@@ -20,11 +20,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         }
 
         [Test]
-        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceIdAsInteger_ThenInteralServerError500IsReturned()
+        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceIdAsInteger_ThenInternalServerError500IsReturned()
         {
             foreach (var licenceId in _permitServiceApiConfiguration!.InvalidLicenceIds!)
             {
-                var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, null, licenceId.ToString());
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, null, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)500);
             }  
         }
@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             foreach(var licenceId in _permitServiceApiConfiguration!.NonIntegerLicenceIds!)
             {
-                var response = await PermitServiceEndPointHelper.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, null, licenceId);
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, null, licenceId);
                 response.StatusCode.Should().Be((HttpStatusCode)400);
             }
         }
