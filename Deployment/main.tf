@@ -52,6 +52,7 @@ module "webapp_service" {
 module "key_vault" {
   source              = "./Modules/KeyVault"
   name                = local.key_vault_name
+  name_manufacturerkv = local.key_vault_manufacturerkv
   resource_group_name = azurerm_resource_group.rg.name
   env_name            = local.env_name
   tenant_id           = module.webapp_service.web_app_tenant_id
