@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenHoldingsServiceRequestsValidData_ThenReturnHoldingsServiceValidResponse()
         {
-            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(new HttpResponseMessage()
                 {
@@ -76,7 +76,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StringContent(ResponseValid)
                 });
 
-            List<HoldingsServiceResponse> response = await _holdingsService.GetHoldings(1, _fakeCorrelationId);
+            List<HoldingsServiceResponse> response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -97,7 +97,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenHoldingsServiceRequestsInvalidData_ThenReturnsException()
         {
-            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                      (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                  .Returns(new HttpResponseMessage()
                  {
@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                      Content = new StringContent("Bad Request", Encoding.UTF8, "application/json")
                  });
 
-            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldings(9, _fakeCorrelationId));
+            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(9, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -132,7 +132,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
         public async Task WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
-            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsDataAsync
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
@@ -144,7 +144,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldings(23, _fakeCorrelationId));
+            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"

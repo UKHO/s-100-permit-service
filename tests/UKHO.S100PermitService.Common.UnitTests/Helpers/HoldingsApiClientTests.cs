@@ -39,7 +39,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
 
-            var result = _holdingsApiClient.GetHoldingsDataAsync(FakeUri, 1, "asdfsa", _correlationId);
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", _correlationId);
 
             var deserializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
 
-            var result = _holdingsApiClient.GetHoldingsDataAsync(FakeUri, 8, null, _correlationId);
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, null, _correlationId);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }

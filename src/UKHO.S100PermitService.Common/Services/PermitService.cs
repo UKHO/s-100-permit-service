@@ -26,7 +26,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldings(licenceId, correlationId);
+            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, correlationId);
 
             var productsList = new List<Products>
             {

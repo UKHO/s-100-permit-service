@@ -26,7 +26,7 @@ namespace UKHO.S100PermitService.Common.Services
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
         }
 
-        public async Task<List<HoldingsServiceResponse>> GetHoldings(int licenceId, string correlationId)
+        public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsService.ToEventId(),
                 "Get holdings data to Holdings Service started.");
@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Services
             var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingUrl, licenceId);
             var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
 
-            var httpResponseMessage = await _holdingsApiClient.GetHoldingsDataAsync(uri, licenceId, accessToken, correlationId);
+            var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri, licenceId, accessToken, correlationId);
 
             switch(httpResponseMessage.IsSuccessStatusCode)
             {
