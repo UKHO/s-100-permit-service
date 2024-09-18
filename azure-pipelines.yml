@@ -11,6 +11,11 @@ parameters:
     displayName: "Disable OWASP Dependency Checking"
     type: boolean
     default: false
+
+  - name: DisableStryker
+    displayName: "Disable Stryker Test Mutation"
+    type: boolean
+    default: false
     
 trigger:
   - main
@@ -35,15 +40,70 @@ variables:
   - name: UKHOAssemblyProduct
     value: "S-100 Permit Service"
   - name: UKHOAssemblyCopyright
-    value: "Copyright © UK Hydrographic Office"
+    value: "Copyright Â© UK Hydrographic Office"
   - name: WindowsPool
     value: "NautilusBuild"
   - name: Container
     value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.9.2"
   - name: DeploymentPool
     value: "Mare Nectaris"
+  - name: CoverageThresholdLimit
+    value: "90"
+
 
 stages:
+
+  - stage: Stryker_Mutator
+    displayName: "Stryker Mutator"
+    condition: ${{ eq(parameters.DisableStryker, false) }}
+    dependsOn: []
+    jobs:
+      - job: Stryker      
+        workspace:
+          clean: all        
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: '$(Build.SourcesDirectory)'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Install Stryker'
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: 'install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools'
+
+          - task: Powershell@2
+            displayName: 'Run Stryker Permit Service API UnitTests'
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS API Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service API Mutation Report'
+
+          - task: Powershell@2
+            displayName: "Run Stryker Permit Service Common UnitTests"
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS Common Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service Common Mutation Report'
+
   - stage: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
     displayName: "Build (DependencyChecker, Dotnet Build & Restore , Dotnet Test and Publish Artifact )"
     dependsOn: []
@@ -149,6 +209,14 @@ stages:
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
+
+          - task: BuildQualityChecks@9
+            displayName: "Code coverage fails if threshold not meet"            
+            inputs:
+              checkCoverage: true
+              coverageFailOption: 'fixed'
+              coverageType: 'lines'
+              coverageThreshold: '$(CoverageThresholdLimit)'
 
       - job: BuildAndPublishAPI
         workspace:
@@ -355,8 +423,6 @@ stages:
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.ResourceGroup'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
@@ -372,7 +438,7 @@ stages:
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))    
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     variables:
       - group: "S-100-PG-vNextIAT"
       - group: "S-100-PG-vNextIAT-TF"
@@ -404,8 +470,8 @@ stages:
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
           clean: all
         strategy:
@@ -419,7 +485,7 @@ stages:
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/develop')))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     variables:
       - group: "S-100-PG-vNextE2E"
       - group: "S-100-PG-vNextE2E-TF"
@@ -451,8 +517,8 @@ stages:
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
           - name : STUB_WEB_APP_NAME
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : ResourceGroup
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.ResourceGroup'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
         workspace:
           clean: all
         strategy:
@@ -462,3 +528,50 @@ stages:
                 - template: Deployment/templates/continuous-deployment-app.yml
                   parameters:
                     AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+  
+  - stage: IATDeploy
+    dependsOn:  Devdeploy
+    displayName: "IATdeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    variables:
+      - group: "S-100-PG-IAT"
+      - group: "S-100-PG-IAT-TF"
+      - group: "S-100-PG-IAT-KV"
+    jobs:
+      - deployment: IATDeployTerraform
+        displayName: "IAT - Deploy Terraform"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+
+      - deployment: IATDeployApp
+        dependsOn: IATDeployTerraform
+        displayName: "IAT - Deploy Dotnet App"
+        environment: "S100PG-IAT"
+        pool: $(DeploymentPool)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"

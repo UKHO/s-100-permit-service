@@ -29,6 +29,7 @@ variable "sku_name" {
   default = {
             "dev"       =  "P1v2"            
             "vni"       =  "P1v3"
-            "vne"       =  "P1v3"            
+            "vne"       =  "P1v3"
+            "iat"       =  "P1v3"
             }
 }
