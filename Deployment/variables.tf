@@ -14,7 +14,7 @@ locals {
   web_app_name       = "${local.service_name}-${local.env_name}-api"
   stub_web_app_name  = "${local.service_name}-${local.env_name}-stub"
   key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"
-  key_vault_manufacturerkv    = "${local.service_name}-ukho-${local.env_name}-manufacturerkv"
+  key_vault_midkv    = "${local.service_name}-ukho-${local.env_name}-midkv"
   tags = {
     SERVICE                   = "S100 Permit Service"
     ENVIRONMENT               = local.env_name
