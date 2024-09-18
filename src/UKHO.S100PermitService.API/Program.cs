@@ -1,14 +1,16 @@
-using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
-using System.Reflection;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
+using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
@@ -42,15 +44,18 @@ namespace UKHO.S100PermitService.API
             {
                 c.SwaggerEndpoint("/swagger/v1/swagger.json", "UKHO S100 Permit Service APIs");
                 c.RoutePrefix = "swagger";
-            });           
+            });
 
-            app.UseCorrelationIdMiddleware();            
+            app.UseCorrelationIdMiddleware();
+            app.UseExceptionHandlingMiddleware();
             app.UseHeaderPropagation();
             app.UseRouting();
 
             ConfigureLogging(app);
 
             app.MapControllers();
+            app.UseAuthorization();
+
             app.Run();
         }
 
@@ -69,13 +74,13 @@ namespace UKHO.S100PermitService.API
             {
                 var secretClient = new SecretClient(new Uri(kvServiceUri), new DefaultAzureCredential(new DefaultAzureCredentialOptions()));
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-            }             
+            }
         }
 
         private static void ConfigureServices(WebApplicationBuilder builder)
         {
             var configuration = builder.Configuration;
-            
+
             builder.Services.AddLogging(loggingBuilder =>
             {
                 loggingBuilder.AddConfiguration(configuration.GetSection("Logging"));
@@ -93,14 +98,38 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddHeaderPropagation(options =>
             {
-                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
+                options.Headers.Add(PermitServiceConstants.XCorrelationIdHeaderKey);
             });
+
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
-            builder.Services.AddApplicationInsightsTelemetry();
+            builder.Services.AddApplicationInsightsTelemetry(options);
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+
+            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                   .AddJwtBearer("AzureAd", options =>
+                   {
+                       options.Audience = azureAdConfiguration.ClientId;
+                       options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
+                   });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes("AzureAd")
+                .Build();
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
@@ -123,7 +152,7 @@ namespace UKHO.S100PermitService.API
                         additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                         additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                         additionalValues["_X-Correlation-ID"] =
-                            httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                            httpContextAccessor.HttpContext.Request.Headers?[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
                     }
                 }
 

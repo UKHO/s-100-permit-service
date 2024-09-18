@@ -1,7 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
+    [ExcludeFromCodeCoverage]
     public abstract class BaseController<T> : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -10,6 +12,6 @@ namespace UKHO.S100PermitService.API.Controllers
         protected BaseController(IHttpContextAccessor httpContextAccessor)
         {
             _httpContextAccessor = httpContextAccessor;
-        }       
+        }
     }
 }

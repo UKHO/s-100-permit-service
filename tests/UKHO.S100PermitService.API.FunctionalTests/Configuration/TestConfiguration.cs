@@ -1,20 +1,30 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
 {
-    public class TestConfiguration
+    public static class TestConfiguration
     {
-        protected IConfigurationRoot _configurationRoot;
-        public PermitServiceApiConfiguration PermitServiceConfig { get; private set; }
-
-        public TestConfiguration()
+        public static IConfigurationRoot LoadConfiguration()
         {
-            PermitServiceConfig = new PermitServiceApiConfiguration();
+            var configBuilder = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: false);
 
-            _configurationRoot = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", false)
-                .Build();
-            _configurationRoot.Bind("PermitServiceApiConfiguration", PermitServiceConfig);
+            var configurationRoot = configBuilder.Build();
+            return configurationRoot;
+        }
+
+        public static ServiceProvider ConfigureServices()
+        {
+            var services = new ServiceCollection();
+            services.AddOptions();
+
+            var configurationRoot = LoadConfiguration();
+
+            services.Configure<PermitServiceApiConfiguration>(configurationRoot.GetSection("PermitServiceApiConfiguration"));
+            services.Configure<TokenConfiguration>(configurationRoot.GetSection("TokenConfiguration"));
+
+            return services.BuildServiceProvider();
         }
     }
 }
