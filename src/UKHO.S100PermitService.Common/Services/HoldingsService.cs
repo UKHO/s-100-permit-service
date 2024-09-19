@@ -29,11 +29,12 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId(),
-                "Request to get holdings to Holdings Service started");
-
             string bodyJson;
             var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingsUrl, licenceId);
+
+            _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
+                "Request to HoldingsService GET {RequestUri} started.", uri);
+
             var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri, licenceId, accessToken, correlationId);
@@ -44,7 +45,8 @@ namespace UKHO.S100PermitService.Common.Services
                     {
                         bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId(), "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
+                            "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri, httpResponseMessage.StatusCode.ToString());
 
                         var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
                         return holdingsServiceResponse;
@@ -55,13 +57,14 @@ namespace UKHO.S100PermitService.Common.Services
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            throw new PermitServiceException(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(),
-                                "Failed to get holdings from Holdings Service | StatusCode : {0} | Errors : {1}",
-                                httpResponseMessage.StatusCode.ToString(), bodyJson);
+                            throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
+                                "Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.",
+                                uri, httpResponseMessage.StatusCode.ToString(), bodyJson);
                         }
 
-                        _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
-                        throw new Exception("Failed to get holding data");
+                        throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
+                            "Request to HoldingsService GET {0} failed. Status Code: {1}.",
+                            uri, httpResponseMessage.StatusCode.ToString());
                     }
             }
         }

@@ -90,17 +90,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId()
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode}"
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -125,9 +125,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
+                    ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -151,23 +151,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
+            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
-              && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+              && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                  ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
+                  ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
               ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode}"
-            ).MustHaveHappenedOnceExactly();
         }
     }
 }

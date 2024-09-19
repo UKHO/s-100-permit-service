@@ -101,18 +101,18 @@
         BadRequest = 840019,
 
         /// <summary>
-        /// 840020 - Request to get holdings to Holdings Service started
+        /// 840020 - Holdings service get holdings request started
         /// </summary>
-        GetHoldingsToHoldingsServiceStarted = 840020,
+        HoldingsServiceGetHoldingsRequestStarted = 840020,
 
         /// <summary>
-        /// 840021 - Request to get holdings to Holdings Service completed
+        /// 840021 - Holdings service get holdings request completed
         /// </summary>
-        GetHoldingsToHoldingsServiceCompleted = 840021,
+        HoldingsServiceGetHoldingsRequestCompleted = 840021,
 
         /// <summary>
-        /// 840022 - Get holdings data to Holdings Service failed
+        /// 840022 - Holdings service get holdings request failed
         /// </summary>
-        GetHoldingsToHoldingsServiceFailed = 840022
+        HoldingsServiceGetHoldingsRequestFailed = 840022
     }
 }
