@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.GetUserPermitStarted.ToEventId(), "Request to get user permits from UserPermitService started | _X-Correlation-ID : {CorrelationId}", correlationId);
+            _logger.LogInformation(EventIds.GetUserPermitStarted.ToEventId(), "Request to get user permits from UserPermitService started", correlationId);
 
             string bodyJson;
             var uri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.Common.Services
                     {
                         bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.GetUserPermitCompleted.ToEventId(), "Request to get user permits from UserPermitService  completed | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
+                        _logger.LogInformation(EventIds.GetUserPermitCompleted.ToEventId(), "Request to get user permits from UserPermitService completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
 
                         var userPermitServiceResponse = JsonConvert.DeserializeObject<UserPermitServiceResponse>(bodyJson);
 
@@ -54,11 +54,11 @@ namespace UKHO.S100PermitService.Common.Services
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode} | Errors : {ErrorDetails} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), bodyJson, correlationId);
+                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode} | Errors : {ErrorDetails}", httpResponseMessage.StatusCode.ToString(), bodyJson);
                             throw new Exception();
                         }
 
-                        _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
+                        _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
                         throw new Exception();
                     }
             }
