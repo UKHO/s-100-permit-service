@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
         private readonly IAuthHoldingsServiceTokenProvider _authHoldingsServiceTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
-        private const string HoldingUrl = "/holdings/{0}/s100";
+        private const string HoldingsUrl = "/holdings/{0}/s100";
 
         public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IAuthHoldingsServiceTokenProvider authHoldingsServiceTokenProvider, IHoldingsApiClient holdingsApiClient)
         {
@@ -33,8 +33,8 @@ namespace UKHO.S100PermitService.Common.Services
                 "Request to get holdings to Holdings Service started");
 
             string bodyJson;
-            var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingUrl, licenceId);
-            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
+            var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingsUrl, licenceId);
+            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
 
             var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri, licenceId, accessToken, correlationId);
 
