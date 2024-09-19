@@ -32,12 +32,12 @@ namespace UKHO.S100PermitService.Common.Services
             var productsList = GetProductsList();
             const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
-            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, 1.0m, productsList);
+            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
         }
 
-        private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)
+        private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
         {
             var productsList = new List<Products>();
             productsList.AddRange(products);
