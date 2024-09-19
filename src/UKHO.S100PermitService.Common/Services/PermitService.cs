@@ -29,12 +29,12 @@ namespace UKHO.S100PermitService.Common.Services
 
             List<ProductKeyServiceRequest> productKeyServiceRequest =
             [
-                new ProductKeyServiceRequest()
+                new()
                 {
                     ProductName = "101GB40079ABCDEFG.000",
                     Edition = "1"
                 },
-                new ProductKeyServiceRequest()
+                new()
                 {
                     ProductName = "102NO32904820801012.h5",
                     Edition = "2"

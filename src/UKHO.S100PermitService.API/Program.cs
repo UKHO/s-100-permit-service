@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<ProductkeyServiceApiConfiguration>(builder.Configuration.GetSection("ProductkeyServiceApiConfiguration"));
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            builder.Services.AddSingleton<IAuthProductKeyServiceTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();

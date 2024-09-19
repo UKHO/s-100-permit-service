@@ -19,36 +19,37 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<ProductkeyService> _fakeLogger;
         private IOptions<ProductkeyServiceApiConfiguration> _fakeProductkeyServiceApiConfiguration;
-        private IAuthProductKeyServiceTokenProvider _fakeAuthPksTokenProvider;
+        private IProductKeyServiceAuthTokenProvider _fakeProductKeyServiceAuthTokenProvider;
         private IProductkeyServiceApiClient _fakeProductkeyServiceApiClient;
-        private IProductkeyService _productkeyService;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         private const string RequestError = "{\"correlationId\":\"fc771eb4-926b-4965-8de9-8b37288d3bd0\",\"errors\":[{\"source\":\"GetProductKey\",\"description\":\"Key not found for ProductName: test101 and Edition: 1.\"}]}";
+
+        private IProductkeyService _productkeyService;
 
         [SetUp]
         public void SetUp()
         {
             _fakeLogger = A.Fake<ILogger<ProductkeyService>>();
             _fakeProductkeyServiceApiConfiguration = Options.Create(new ProductkeyServiceApiConfiguration() { ClientId = "ClientId2", BaseUrl = "http://localhost:5000" });
-            _fakeAuthPksTokenProvider = A.Fake<IAuthProductKeyServiceTokenProvider>();
+            _fakeProductKeyServiceAuthTokenProvider = A.Fake<IProductKeyServiceAuthTokenProvider>();
             _fakeProductkeyServiceApiClient = A.Fake<IProductkeyServiceApiClient>();
 
-            _productkeyService = new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, _fakeAuthPksTokenProvider, _fakeProductkeyServiceApiClient);
+            _productkeyService = new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductkeyServiceApiClient);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullProductkeyServiceLogger = () => new ProductkeyService(null, _fakeProductkeyServiceApiConfiguration, _fakeAuthPksTokenProvider, _fakeProductkeyServiceApiClient);
+            Action nullProductkeyServiceLogger = () => new ProductkeyService(null, _fakeProductkeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductkeyServiceApiClient);
             nullProductkeyServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullProductkeyServiceApiConfiguration = () => new ProductkeyService(_fakeLogger, null, _fakeAuthPksTokenProvider, _fakeProductkeyServiceApiClient);
+            Action nullProductkeyServiceApiConfiguration = () => new ProductkeyService(_fakeLogger, null, _fakeProductKeyServiceAuthTokenProvider, _fakeProductkeyServiceApiClient);
             nullProductkeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productkeyServiceApiConfiguration");
 
-            Action nullAuthPksTokenProvider = () => new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, null, _fakeProductkeyServiceApiClient);
-            nullAuthPksTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("authPksTokenProvider");
+            Action nullProductKeyServiceAuthTokenProvider = () => new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, null, _fakeProductkeyServiceApiClient);
+            nullProductKeyServiceAuthTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceAuthTokenProvider");
 
-            Action nullProductkeyServiceApiClient = () => new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, _fakeAuthPksTokenProvider, null);
+            Action nullProductkeyServiceApiClient = () => new ProductkeyService(_fakeLogger, _fakeProductkeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, null);
             nullProductkeyServiceApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productkeyServiceApiClient");
         }
 
@@ -74,15 +75,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to get permit key from Product Key Service started"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to get permit key from Product Key Service completed | StatusCode : {StatusCode}"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -108,15 +109,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to get permit key from Product Key Service started"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyException.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to retrieve permit key for Product Key Service | StatusCode : {StatusCode}| Errors : {ErrorDetails}"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -144,15 +145,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to get permit key from Product Key Service started"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.GetPermitKeyException.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to retrieve permit key for Product Key Service | StatusCode : {StatusCode}"
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} failed | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
     }
