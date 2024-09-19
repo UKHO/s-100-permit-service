@@ -22,16 +22,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Handler
 
         public FakeHttpMessageHandler(HttpResponseMessage response)
         {
-          _response = response;
+            _response = response;
         }
 
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            var tcs = new TaskCompletionSource<HttpResponseMessage>();
-
-            tcs.SetResult(_response);
-
-            return tcs.Task;
+            var taskCompletionSource = new TaskCompletionSource<HttpResponseMessage>();
+            taskCompletionSource.SetResult(_response);
+            return taskCompletionSource.Task;
         }
     }
 }

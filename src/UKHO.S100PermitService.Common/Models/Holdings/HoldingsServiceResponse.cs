@@ -1,4 +1,4 @@
-﻿namespace UKHO.S100PermitService.Common.Models
+﻿namespace UKHO.S100PermitService.Common.Models.Holdings
 {
     public class HoldingsServiceResponse
     {

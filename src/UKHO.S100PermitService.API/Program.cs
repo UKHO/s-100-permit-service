@@ -4,6 +4,7 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -107,6 +108,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
@@ -132,19 +134,21 @@ namespace UKHO.S100PermitService.API
                 options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
+            var holdingsServiceApiConfiguration = builder.Configuration.GetSection("HoldingsServiceApiConfiguration").Get<HoldingsServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IAuthHoldingsServiceTokenProvider, AuthTokenProvider>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
-
-            builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(configuration.GetValue<string>("HoldingsServiceApiConfiguration:BaseUrl"));
-            });
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddSingleton<IAuthHoldingsServiceTokenProvider, AuthTokenProvider>();
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
+
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
         }
 

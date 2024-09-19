@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        protected string GetCurrentCorrelationId()
+        protected string GetCorrelationId()
         {
             return _httpContextAccessor.HttpContext!.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
         }

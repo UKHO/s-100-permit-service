@@ -9,7 +9,6 @@ namespace UKHO.S100PermitService.Common.Clients
         public HoldingsApiClient(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
-            _httpClient.Timeout = TimeSpan.FromMinutes(Convert.ToDouble(5));
         }
 
         public async Task<HttpResponseMessage> GetHoldingsAsync(string uri, int licenceId, string accessToken, string correlationId)

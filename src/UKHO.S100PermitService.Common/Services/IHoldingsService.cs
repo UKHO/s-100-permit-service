@@ -1,4 +1,4 @@
-﻿using UKHO.S100PermitService.Common.Models;
+﻿using UKHO.S100PermitService.Common.Models.Holdings;
 
 namespace UKHO.S100PermitService.Common.Services
 {

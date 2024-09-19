@@ -9,7 +9,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using UKHO.S100PermitService.Common.Models;
+using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [SetUp]
         public void Setup()
         {
-            _fakeHoldingsServiceApiConfiguration = Options.Create(new HoldingsServiceApiConfiguration() { ClientId = "ClientId2" });
+            _fakeHoldingsServiceApiConfiguration = Options.Create(new HoldingsServiceApiConfiguration { ClientId = "ClientId2", BaseUrl = FakeUri, RequestTimeoutInMinutes = 5 });
             _fakeHoldingsApiClient = A.Fake<IHoldingsApiClient>();
             _fakeAuthHoldingsServiceTokenProvider = A.Fake<IAuthHoldingsServiceTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
