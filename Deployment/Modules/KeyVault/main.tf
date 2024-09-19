@@ -6,9 +6,8 @@ resource "azurerm_key_vault" "kv" {
   resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
   tenant_id                   = var.tenant_id
-
-  sku_name = "standard"
-  tags = var.tags
+  sku_name                    = "standard"
+  tags                        = var.tags
 
 }
 
@@ -58,4 +57,65 @@ resource "azurerm_key_vault_secret" "passed_in_secrets" {
   tags         = var.tags
 
   depends_on = [azurerm_key_vault_access_policy.kv_access_terraform]
+}
+
+resource "azurerm_key_vault" "midkv" {
+  name                        = var.name_midkv
+  location                    = var.location
+  resource_group_name         = var.resource_group_name
+  enabled_for_disk_encryption = true
+  tenant_id                   = var.tenant_id
+  sku_name                    = "standard"
+  tags                        = var.tags
+
+  lifecycle {
+       prevent_destroy = true
+   }
+
+}
+
+#access policy for terraform script service account
+resource "azurerm_key_vault_access_policy" "midkv_access_terraform" {
+  key_vault_id = azurerm_key_vault.midkv.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azurerm_client_config.current.object_id
+
+  key_permissions = [
+    "Create",
+    "Get",
+  ]
+
+  secret_permissions = [
+    "Set",
+    "Get",
+    "Delete",
+    "Recover",
+    "Purge"
+  ]
+
+  lifecycle {
+       prevent_destroy = true
+   }
+}
+
+#access policy for read access (app service)
+resource "azurerm_key_vault_access_policy" "midkv_read_access" {
+  for_each     = var.read_access_objects
+  key_vault_id = azurerm_key_vault.midkv.id
+  tenant_id    = var.tenant_id
+  object_id    = each.value
+
+  key_permissions = [
+    "List",
+    "Get",
+  ]
+
+  secret_permissions = [
+    "List",
+    "Get"
+  ]
+
+  lifecycle {
+       prevent_destroy = true
+   }
 }

@@ -2,6 +2,8 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -47,12 +49,15 @@ namespace UKHO.S100PermitService.API
             });
 
             app.UseCorrelationIdMiddleware();
+            app.UseExceptionHandlingMiddleware();
             app.UseHeaderPropagation();
             app.UseRouting();
 
             ConfigureLogging(app);
 
             app.MapControllers();
+            app.UseAuthorization();
+
             app.Run();
         }
 
@@ -95,18 +100,38 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddHeaderPropagation(options =>
             {
-                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
+                options.Headers.Add(PermitServiceConstants.XCorrelationIdHeaderKey);
             });
-            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
 
-            builder.Services.AddApplicationInsightsTelemetry();
+            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddDistributedMemoryCache();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddHttpClient();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
-            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
+
+            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                   .AddJwtBearer("AzureAd", options =>
+                   {
+                       options.Audience = azureAdConfiguration.ClientId;
+                       options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
+                   });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes("AzureAd")
+                .Build();
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
@@ -139,7 +164,7 @@ namespace UKHO.S100PermitService.API
                         additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                         additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                         additionalValues["_X-Correlation-ID"] =
-                            httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                            httpContextAccessor.HttpContext.Request.Headers?[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
                     }
                 }
 

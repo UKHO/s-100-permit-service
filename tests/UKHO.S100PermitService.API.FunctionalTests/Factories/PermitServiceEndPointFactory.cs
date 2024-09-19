@@ -1,6 +1,6 @@
 ﻿namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
-    internal class PermitServiceEndPointFactory
+    public static class PermitServiceEndPointFactory
     {
         private static readonly HttpClient _httpClient = new();
         private static string? _uri;

@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
 
             await _middleware.InvokeAsync(_fakeHttpContext);
 
-            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(Constants.XCorrelationIdHeaderKey)).Returns(true);
+            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(PermitServiceConstants.XCorrelationIdHeaderKey)).Returns(true);
             A.CallTo(() => _fakeLogger.BeginScope(A<Dictionary<string, object>>.Ignored)).MustHaveHappenedOnceExactly();
         }
 
@@ -41,12 +41,12 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
         public async Task WhenCorrelationIdKeyExistsInHeader_ThenNextMiddlewareShouldBeInvokedWithSameCorrelationId()
         {
             var correlationId = Guid.NewGuid().ToString();
-            _fakeHttpContext.Request.Headers[Constants.XCorrelationIdHeaderKey] = correlationId;
+            _fakeHttpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey] = correlationId;
 
             await _middleware.InvokeAsync(_fakeHttpContext);
 
-            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(Constants.XCorrelationIdHeaderKey)).Returns(true);
-            A.CallTo(() => _fakeHttpContext.Response.Headers[Constants.XCorrelationIdHeaderKey]).Returns(correlationId);
+            A.CallTo(() => _fakeHttpContext.Response.Headers.ContainsKey(PermitServiceConstants.XCorrelationIdHeaderKey)).Returns(true);
+            A.CallTo(() => _fakeHttpContext.Response.Headers[PermitServiceConstants.XCorrelationIdHeaderKey]).Returns(correlationId);
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).MustHaveHappenedOnceExactly();
         }
     }

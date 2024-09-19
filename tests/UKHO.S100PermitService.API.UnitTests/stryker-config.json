@@ -1,0 +1,11 @@
+{
+  "stryker-config": {
+
+    "reporters": [
+      "html",
+      "progress"
+    ],
+    "project": "UKHO.S100PermitService.API.csproj",
+    "solution": "../../S100PermitService.sln"
+  }
+}

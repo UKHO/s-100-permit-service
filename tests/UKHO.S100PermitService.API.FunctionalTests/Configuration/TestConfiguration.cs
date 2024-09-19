@@ -33,6 +33,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
             var configurationRoot = LoadConfiguration();
 
             services.Configure<PermitServiceApiConfiguration>(configurationRoot.GetSection("PermitServiceApiConfiguration"));
+            services.Configure<TokenConfiguration>(configurationRoot.GetSection("TokenConfiguration"));
 
             return services.BuildServiceProvider();
         }

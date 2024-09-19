@@ -56,58 +56,63 @@
         EmptyPermitXml = 840010,
 
         /// <summary>
-        /// 840011 - Get access token to call external api started.
+        /// 840011 - Permit service exception.
         /// </summary>
-        GetAccessTokenStarted = 840011,
+        PermitServiceException = 840011,
 
         /// <summary>
-        /// 840012 - Cached access token to call external api found.
+        /// 840012 - Get access token to call external api started.
         /// </summary>
-        CachedAccessTokenFound = 840012,
+        GetAccessTokenStarted = 840012,
 
         /// <summary>
-        /// 840013 - Get new access token to call external api started.
+        /// 840013 - Cached access token to call external api found.
+        /// </summary>
+        CachedAccessTokenFound = 840013,
+
+        /// <summary>
+        /// 840014 - Get new access token to call external api started.
         /// </summary>
         GetNewAccessTokenStarted = 840013,
 
         /// <summary>
-        /// 840014 - Get new access token to call external api completed.
+        /// 840015 - Get new access token to call external api completed.
         /// </summary>
-        GetNewAccessTokenCompleted = 840014,
+        GetNewAccessTokenCompleted = 840015,
 
         /// <summary>
-        /// 840015 - Get access token to call external api completed.
+        /// 840016 - Get access token to call external api completed.
         /// </summary>
-        GetAccessTokenCompleted = 840015,
+        GetAccessTokenCompleted = 840016,
 
         /// <summary>
-        /// 840016 - Caching access token to call external api started .
+        /// 840017 - Caching access token to call external api started .
         /// </summary>
-        CachingExternalEndPointTokenStarted = 840016,
+        CachingExternalEndPointTokenStarted = 840017,
 
         /// <summary>
-        /// 840017 - Caching access token to call external api completed.
+        /// 840018 - Caching access token to call external api completed.
         /// </summary>
-        CachingExternalEndPointTokenCompleted = 840017,
+        CachingExternalEndPointTokenCompleted = 840018,
 
         /// <summary>
-        /// 840018 - Request sent to the server is incorrect or corrupt.
+        /// 840019 - Request sent to the server is incorrect or corrupt.
         /// </summary>
         BadRequest = 840018,
 
         /// <summary>
-        /// 840019 - Request to get holdings to Holdings Service started
+        /// 840020 - Request to get holdings to Holdings Service started
         /// </summary>
-        GetHoldingsToHoldingsServiceStarted = 840019,
+        GetHoldingsToHoldingsServiceStarted = 840020,
 
         /// <summary>
-        /// 840020 - Request to get holdings to Holdings Service completed
+        /// 840021 - Request to get holdings to Holdings Service completed
         /// </summary>
-        GetHoldingsToHoldingsServiceCompleted = 840020,
+        GetHoldingsToHoldingsServiceCompleted = 840021,
 
         /// <summary>
-        /// 840021 - Get holdings data to Holdings Service failed
+        /// 840022 - Get holdings data to Holdings Service failed
         /// </summary>
-        GetHoldingsToHoldingsServiceFailed = 840021
+        GetHoldingsToHoldingsServiceFailed = 840022
     }
 }
