@@ -19,7 +19,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
         private PermitController _permitController;
 
-
         [SetUp]
         public void Setup()
         {

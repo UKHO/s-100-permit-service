@@ -14,15 +14,15 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private readonly ILogger<UserPermitService> _logger;
         private readonly IOptions<UserPermitServiceApiConfiguration> _userPermitServiceApiConfiguration;
-        private readonly IAuthUserPermitServiceTokenProvider _authUserPermitServiceTokenProvider;
+        private readonly IUserPermitServiceAuthTokenProvider _userPermitServiceAuthTokenProvider;
         private readonly IUserPermitApiClient _userPermitApiClient;
         private const string UserPermitUrl = "/userpermits/{0}/s100";
 
-        public UserPermitService(ILogger<UserPermitService> logger, IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration, IAuthUserPermitServiceTokenProvider authUserPermitServiceTokenProvider, IUserPermitApiClient userPermitApiClient)
+        public UserPermitService(ILogger<UserPermitService> logger, IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration, IUserPermitServiceAuthTokenProvider userPermitServiceAuthTokenProvider, IUserPermitApiClient userPermitApiClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userPermitServiceApiConfiguration = userPermitServiceApiConfiguration ?? throw new ArgumentNullException(nameof(userPermitServiceApiConfiguration));
-            _authUserPermitServiceTokenProvider = authUserPermitServiceTokenProvider ?? throw new ArgumentNullException(nameof(authUserPermitServiceTokenProvider));
+            _userPermitServiceAuthTokenProvider = userPermitServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(userPermitServiceAuthTokenProvider));
             _userPermitApiClient = userPermitApiClient ?? throw new ArgumentNullException(nameof(userPermitApiClient));
         }
 
@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             string bodyJson;
             var requestUri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
-            var accessToken = await _authUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
 
             _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET {RequestUri} started", requestUri);
 

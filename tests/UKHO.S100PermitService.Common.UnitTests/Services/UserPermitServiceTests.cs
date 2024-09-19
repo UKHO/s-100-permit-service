@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<UserPermitService> _fakeLogger;
         private IOptions<UserPermitServiceApiConfiguration> _fakeUserPermitServiceApiConfiguration;
-        private IAuthUserPermitServiceTokenProvider _fakeAuthUserPermitServiceTokenProvider;
+        private IUserPermitServiceAuthTokenProvider _fakeUserPermitServiceAuthTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
         private UserPermitService _userPermitService;
 
@@ -33,25 +33,25 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeLogger = A.Fake<ILogger<UserPermitService>>();
             _fakeUserPermitServiceApiConfiguration = Options.Create(new UserPermitServiceApiConfiguration() { ClientId = "ClientId", BaseUrl = "http://localhost:5000" });
-            _fakeAuthUserPermitServiceTokenProvider = A.Fake<IAuthUserPermitServiceTokenProvider>();
+            _fakeUserPermitServiceAuthTokenProvider = A.Fake<IUserPermitServiceAuthTokenProvider>();
             _fakeUserPermitApiClient = A.Fake<IUserPermitApiClient>();
 
-            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeAuthUserPermitServiceTokenProvider, _fakeUserPermitApiClient);
+            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeAuthUserPermitServiceTokenProvider, _fakeUserPermitApiClient);
+            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient);
             nullUserPermitServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeAuthUserPermitServiceTokenProvider, _fakeUserPermitApiClient);
+            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient);
             nullUserPermitServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceApiConfiguration");
 
             Action nullAuthUserPermitServiceTokenProvider = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, null, _fakeUserPermitApiClient);
-            nullAuthUserPermitServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("authUserPermitServiceTokenProvider");
+            nullAuthUserPermitServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceAuthTokenProvider");
 
-            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeAuthUserPermitServiceTokenProvider, null);
+            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, null);
             nullUserPermitApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitApiClient");
         }
 
@@ -68,7 +68,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 Content = new StringContent(JsonConvert.SerializeObject(userPermitServiceResponse))
             };
 
-            A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
@@ -107,7 +107,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 Content = new StringContent(content, Encoding.UTF8, "application/json")
             };
 
-            A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
@@ -147,7 +147,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 Content = new StringContent(content, Encoding.UTF8, "application/json")
             };
 
-            A.CallTo(() => _fakeAuthUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
