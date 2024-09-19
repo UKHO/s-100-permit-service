@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.Services
             var uri = new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingsUrl, licenceId));
 
             _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
-                "Request to HoldingsService GET {RequestUri} started.", uri);
+                "Request to HoldingsService GET {RequestUri} started.", uri.AbsolutePath);
 
             var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri,
+                    "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
                     httpResponseMessage.StatusCode.ToString());
 
                 var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
@@ -56,12 +56,12 @@ namespace UKHO.S100PermitService.Common.Services
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
                     "Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.",
-                    uri, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
                 "Request to HoldingsService GET {0} failed. Status Code: {1}.",
-                uri, httpResponseMessage.StatusCode.ToString());
+                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }
 }
