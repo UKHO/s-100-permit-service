@@ -98,7 +98,7 @@
         /// <summary>
         /// 840019 - Request sent to the server is incorrect or corrupt.
         /// </summary>
-        BadRequest = 840018,
+        BadRequest = 840019,
 
         /// <summary>
         /// 840020 - Request to get holdings to Holdings Service started
