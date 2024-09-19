@@ -67,7 +67,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public async Task WhenValidLicenceId_ThenHoldingsServiceReturns200OKResponse()
+        public async Task WhenValidLicenceId_ThenHoldingsServiceReturns200OkResponse()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
