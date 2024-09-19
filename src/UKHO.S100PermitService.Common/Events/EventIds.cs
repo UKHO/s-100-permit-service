@@ -73,7 +73,7 @@
         /// <summary>
         /// 840014 - Get new access token to call external api started.
         /// </summary>
-        GetNewAccessTokenStarted = 840013,
+        GetNewAccessTokenStarted = 840014,
 
         /// <summary>
         /// 840015 - Get new access token to call external api completed.
