@@ -105,7 +105,6 @@ namespace UKHO.S100PermitService.API
 
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
             builder.Services.AddApplicationInsightsTelemetry(options);
-            builder.Services.AddDistributedMemoryCache();
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
 
