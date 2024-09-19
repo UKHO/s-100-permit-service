@@ -110,6 +110,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddEndpointsApiExplorer();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
