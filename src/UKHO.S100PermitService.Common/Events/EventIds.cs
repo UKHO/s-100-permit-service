@@ -96,18 +96,18 @@
         BadRequest = 840018,
 
         /// <summary>
-        /// 840019 - Request for GetUserPermit endpoint from user permit service started
+        /// 840019 - Request to UserPermitService GetUserPermit endpoint started
         /// </summary>
-        GetUserPermitStarted = 840019,
+        UserPermitServiceGetUserPermitsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Request for GetUserPermit endpoint from user permit service completed
+        /// 840020 - Request to UserPermitService GetUserPermit endpoint completed
         /// </summary>
-        GetUserPermitCompleted = 840020,
+        UserPermitServiceGetUserPermitsRequestCompleted = 840020,
 
         /// <summary>
-        /// 840021 - Exception occurred while processing request for GetUserPermit endpoint from user permit service
+        /// 840021 - Request to UserPermitService GetUserPermit endpoint failed
         /// </summary>
-        GetUserPermitException = 840021
+        UserPermitServiceGetUserPermitsRequestFailed = 840021
     }
 }

@@ -28,13 +28,13 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.GetUserPermitStarted.ToEventId(), "Request to get user permits from UserPermitService started", correlationId);
-
             string bodyJson;
-            var uri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
+            var requestUri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
             var accessToken = await _authUserPermitServiceTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(uri, licenceId, accessToken, correlationId);
+            _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET {RequestUri} started", requestUri);
+
+            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(requestUri, licenceId, accessToken, correlationId);
 
             switch(httpResponseMessage.IsSuccessStatusCode)
             {
@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.Common.Services
                     {
                         bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.GetUserPermitCompleted.ToEventId(), "Request to get user permits from UserPermitService completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET {RequestUri} completed. StatusCode: {StatusCode}", requestUri, httpResponseMessage.StatusCode.ToString());
 
                         var userPermitServiceResponse = JsonConvert.DeserializeObject<UserPermitServiceResponse>(bodyJson);
 
@@ -54,11 +54,11 @@ namespace UKHO.S100PermitService.Common.Services
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode} | Errors : {ErrorDetails}", httpResponseMessage.StatusCode.ToString(), bodyJson);
+                            _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {ErrorDetails}", requestUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
                             throw new Exception();
                         }
 
-                        _logger.LogError(EventIds.GetUserPermitException.ToEventId(), "Failed to retrieve user permits from UserPermitService | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode}", requestUri, httpResponseMessage.StatusCode.ToString());
                         throw new Exception();
                     }
             }
