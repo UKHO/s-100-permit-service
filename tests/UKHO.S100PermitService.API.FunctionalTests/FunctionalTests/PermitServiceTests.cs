@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private AuthTokenProvider? _authTokenProvider;
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
-        private string _authToken;
+        private string? _authToken;
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             }
         }
 
-            [OneTimeTearDown]
+        [OneTimeTearDown]
         public void OneTimeTearDown()
         {
             Cleanup();
