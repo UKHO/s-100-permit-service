@@ -61,7 +61,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             const int LicenceId = 1;
             const string AccessToken = "access-token";
 
-            var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermitServiceResponse.UserPermit { Title = "Port Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
+            var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermit { Title = "Port Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
