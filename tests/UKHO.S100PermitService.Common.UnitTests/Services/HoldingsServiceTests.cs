@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System.Net;
 using System.Text;
 using UKHO.S100PermitService.Common.Configuration;
@@ -23,6 +24,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IHoldingsService _holdingsService;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string FakeUri = "http://test.com";
+        const string AccessToken = "access-token";
+
+        private const string OkResponseContent = "[\r\n  {\r\n    \"productCode\": \"P1231\",\r\n    \"productTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
+        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Incorrect LicenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
 
         [SetUp]
         public void Setup()
@@ -34,8 +40,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient);
         }
-
-        private const string ResponseValid = "[\r\n  {\r\n    \"productCode\": \"P1231\",\r\n    \"productTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
@@ -62,67 +66,75 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public async Task WhenHoldingsServiceRequestsValidData_ThenReturnHoldingsServiceValidResponse()
+        public async Task WhenValidLicenceId_ThenHoldingsServiceReturns200OKResponse()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                .Returns(new HttpResponseMessage()
+                .Returns(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    RequestMessage = new HttpRequestMessage()
+                    RequestMessage = new HttpRequestMessage
                     {
                         RequestUri = new Uri(FakeUri)
                     },
-                    Content = new StringContent(ResponseValid)
+                    Content = new StringContent(OkResponseContent)
                 });
+            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
 
             List<HoldingsServiceResponse> response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
+            response.Equals(JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsService.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get holdings data to Holdings Service started."
+            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsCompleted.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to get holdings data to Holdings Service completed | StatusCode : {StatusCode}"
+            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}"
             ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
-        public async Task WhenHoldingsServiceRequestsInvalidData_ThenReturnsException()
+        [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
+        [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
+        public void WhenHoldigsNotFoundOrInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
         {
-            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
-                 .Returns(new HttpResponseMessage()
-                 {
-                     StatusCode = HttpStatusCode.BadRequest,
-                     RequestMessage = new HttpRequestMessage()
-                     {
-                         RequestUri = new Uri(FakeUri)
-                     },
-                     Content = new StringContent("Bad Request", Encoding.UTF8, "application/json")
-                 });
+            var httpResponseMessage = new HttpResponseMessage(statusCode)
+            {
+                Content = new StringContent(content, Encoding.UTF8, "application/json")
+            };
 
-            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(9, _fakeCorrelationId));
+            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                .Returns(httpResponseMessage);
+
+            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(licenceId, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsService.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get holdings data to Holdings Service started."
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Error
-            && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsFailed.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Holdings Service."
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | Errors : {ErrorDetails} | _X-Correlation-ID : {CorrelationId}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -130,7 +142,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public async Task WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
+        public void WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
@@ -143,21 +155,25 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     },
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
+            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
 
             Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
-              && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsService.ToEventId()
-              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get holdings data to Holdings Service started."
+              && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                  ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
               ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsDataToHoldingsFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Failed to get holdings data | StatusCode : {StatusCode}"
+                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}"
             ).MustHaveHappenedOnceExactly();
         }
     }

@@ -28,8 +28,8 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, string correlationId)
         {
-            _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsService.ToEventId(),
-                "Get holdings data to Holdings Service started.");
+            _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId(),
+                "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}", correlationId);
 
             string bodyJson;
             var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingUrl, licenceId);
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
                     {
                         bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.GetHoldingsDataToHoldingsCompleted.ToEventId(), "Request to get holdings data to Holdings Service completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId(), "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
 
                         var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
 
@@ -51,15 +51,15 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                 default:
                     {
-                        if(httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+                        if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetHoldingsDataToHoldingsFailed.ToEventId(), "Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Holdings Service.", httpResponseMessage.StatusCode.ToString(), bodyJson);
-                            throw new Exception("Failed to retrieve get holdings data with | StatusCode : {StatusCode}| Errors : {ErrorDetails} for Holdings Service.");
+                            _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | Errors : {ErrorDetails} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), bodyJson, correlationId);
+                            throw new Exception("Failed to get holdings from Holdings Service | StatusCode : {StatusCode}| Errors : {ErrorDetails}");
                         }
 
-                        _logger.LogError(EventIds.GetHoldingsDataToHoldingsFailed.ToEventId(), "Failed to get holdings data | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
+                        _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
                         throw new Exception("Failed to get holding data");
                     }
             }

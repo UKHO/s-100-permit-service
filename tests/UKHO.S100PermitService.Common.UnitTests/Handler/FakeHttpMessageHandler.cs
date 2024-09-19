@@ -1,5 +1,4 @@
-﻿using Azure;
-using System.Net;
+﻿using System.Net;
 using System.Text;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Handler
