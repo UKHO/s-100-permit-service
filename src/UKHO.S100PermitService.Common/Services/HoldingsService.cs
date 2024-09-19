@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             string bodyJson;
             var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingsUrl, licenceId);
-            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
+            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri, licenceId, accessToken, correlationId);
 
