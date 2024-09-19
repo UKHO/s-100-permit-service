@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 

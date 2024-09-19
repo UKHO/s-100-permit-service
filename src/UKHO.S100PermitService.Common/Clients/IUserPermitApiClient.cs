@@ -1,4 +1,4 @@
-﻿namespace UKHO.S100PermitService.Common.Helpers
+﻿namespace UKHO.S100PermitService.Common.Clients
 {
     public interface IUserPermitApiClient
     {
