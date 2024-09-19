@@ -2,9 +2,10 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Providers;
 
@@ -29,11 +30,11 @@ namespace UKHO.S100PermitService.Common.Services
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, string correlationId)
         {
             _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId(),
-                "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}", correlationId);
+                "Request to get holdings to Holdings Service started");
 
             string bodyJson;
             var uri = _holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingUrl, licenceId);
-            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.HoldingsClientId);
+            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri, licenceId, accessToken, correlationId);
 
@@ -43,10 +44,9 @@ namespace UKHO.S100PermitService.Common.Services
                     {
                         bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId(), "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
+                        _logger.LogInformation(EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId(), "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
 
                         var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
-
                         return holdingsServiceResponse;
                     }
                 default:
@@ -55,11 +55,12 @@ namespace UKHO.S100PermitService.Common.Services
                         {
                             bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                            _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | Errors : {ErrorDetails} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), bodyJson, correlationId);
-                            throw new Exception("Failed to get holdings from Holdings Service | StatusCode : {StatusCode}| Errors : {ErrorDetails}");
+                            throw new PermitServiceException(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(),
+                                "Failed to get holdings from Holdings Service | StatusCode : {0} | Errors : {1}",
+                                httpResponseMessage.StatusCode.ToString(), bodyJson);
                         }
 
-                        _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}", httpResponseMessage.StatusCode.ToString(), correlationId);
+                        _logger.LogError(EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId(), "Failed to get holdings from Holdings Service | StatusCode : {StatusCode}", httpResponseMessage.StatusCode.ToString());
                         throw new Exception("Failed to get holding data");
                     }
             }

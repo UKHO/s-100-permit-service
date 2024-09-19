@@ -2,11 +2,11 @@
 using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
-using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 
-namespace UKHO.S100PermitService.Common.UnitTests.Helpers
+namespace UKHO.S100PermitService.Common.UnitTests.Clients
 {
     [TestFixture]
     public class HoldingsApiClientTests

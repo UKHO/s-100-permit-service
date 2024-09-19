@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
-namespace UKHO.S100PermitService.Common.Helpers
+namespace UKHO.S100PermitService.Common.Clients
 {
     [ExcludeFromCodeCoverage]
     public static class HttpRequestMessageExtensions
@@ -14,11 +14,6 @@ namespace UKHO.S100PermitService.Common.Helpers
         public static void AddHeader(this HttpRequestMessage requestMessage, string name, string value)
         {
             requestMessage.Headers.Add(name, value);
-        }
-
-        public static void AddCorrelationId(this HttpRequestMessage requestMessage, string correlationId)
-        {
-            requestMessage.AddHeader("X-Correlation-ID", correlationId);
         }
     }
 }

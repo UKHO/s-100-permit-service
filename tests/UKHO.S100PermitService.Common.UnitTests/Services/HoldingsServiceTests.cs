@@ -5,9 +5,10 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -33,7 +34,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [SetUp]
         public void Setup()
         {
-            _fakeHoldingsServiceApiConfiguration = Options.Create(new HoldingsServiceApiConfiguration() { HoldingsClientId = "ClientId2" });
+            _fakeHoldingsServiceApiConfiguration = Options.Create(new HoldingsServiceApiConfiguration() { ClientId = "ClientId2" });
             _fakeHoldingsApiClient = A.Fake<IHoldingsApiClient>();
             _fakeAuthHoldingsServiceTokenProvider = A.Fake<IAuthHoldingsServiceTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
@@ -91,7 +92,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
+                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -99,7 +100,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceCompleted.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}"
+                ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service completed | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -119,22 +120,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<Exception>(() => _holdingsService.GetHoldingsAsync(licenceId, _fakeCorrelationId));
+            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(licenceId, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | Errors : {ErrorDetails} | _X-Correlation-ID : {CorrelationId}"
+                    ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -165,7 +158,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
               && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceStarted.ToEventId()
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                  ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started | _X-Correlation-ID : {CorrelationId}"
+                  ["{OriginalFormat}"].ToString() == "Request to get holdings to Holdings Service started"
               ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -173,7 +166,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<LogLevel>(0) == LogLevel.Error
                 && call.GetArgument<EventId>(1) == EventIds.GetHoldingsToHoldingsServiceFailed.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode} | _X-Correlation-ID : {CorrelationId}"
+                    ["{OriginalFormat}"].ToString() == "Failed to get holdings from Holdings Service | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
     }

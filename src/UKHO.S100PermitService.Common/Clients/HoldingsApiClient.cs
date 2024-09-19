@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace UKHO.S100PermitService.Common.Helpers
+namespace UKHO.S100PermitService.Common.Clients
 {
     public class HoldingsApiClient : IHoldingsApiClient
     {
@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService.Common.Helpers
             if(accessToken != null)
             {
                 httpRequestMessage.SetBearerToken(accessToken);
-                httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
+                httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
