@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.PermitService;
@@ -28,24 +29,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, correlationId);
 
-            var productsList = new List<Products>
-            {
-                new()
-                {
-                    Id = "ID",
-                    DatasetPermit =
-                [
-                    new() {
-                        IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
-                        EditionNumber = 1,
-                        EncryptedKey = "encryptedkey",
-                        Expiry = DateTime.Now,
-                        Filename = "filename",
-
-                    }
-                ]
-                }
-            };
+            var productsList = GetProductsList();
             const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, 1.0m, productsList);
@@ -83,6 +67,30 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
             }
+        }
+
+        [ExcludeFromCodeCoverage]
+        private static List<Products> GetProductsList()
+        {
+            var productsList = new List<Products>
+            {
+                new()
+                {
+                    Id = "ID",
+                    DatasetPermit =
+                    [
+                        new() {
+                            IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
+                            EditionNumber = 1,
+                            EncryptedKey = "encryptedkey",
+                            Expiry = DateTime.Now,
+                            Filename = "filename",
+
+                        }
+                    ]
+                }
+            };
+            return productsList;
         }
     }
 }
