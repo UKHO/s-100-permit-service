@@ -26,8 +26,11 @@ namespace UKHO.S100PermitService.API
     [ExcludeFromCodeCoverage]
     internal static class Program
     {
+        private const string HoldingsServiceApiConfiguration = "HoldingsServiceApiConfiguration";
+        private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
+
         private static void Main(string[] args)
-        {
+        {           
             var builder = WebApplication.CreateBuilder(args);
 
             ConfigureConfiguration(builder);
@@ -111,8 +114,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
-            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
-            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection("UserPermitServiceApiConfiguration"));
+            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
+            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -135,14 +138,14 @@ namespace UKHO.S100PermitService.API
                 options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
-            var holdingsServiceApiConfiguration = builder.Configuration.GetSection("HoldingsServiceApiConfiguration").Get<HoldingsServiceApiConfiguration>();
+            var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
             {
                 client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
                 client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
             });
 
-            var userPermitServiceApiConfiguration = builder.Configuration.GetSection("UserPermitServiceApiConfiguration").Get<UserPermitServiceApiConfiguration>();
+            var userPermitServiceApiConfiguration = builder.Configuration.GetSection(UserPermitServiceApiConfiguration).Get<UserPermitServiceApiConfiguration>();
             builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
             {
                 client.BaseAddress = new Uri(userPermitServiceApiConfiguration.BaseUrl);
