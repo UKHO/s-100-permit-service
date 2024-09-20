@@ -14,6 +14,7 @@ using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Middleware;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -36,6 +37,9 @@ namespace UKHO.S100PermitService.API
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseMiddleware<KeyVaultSecretsMiddleware>();
+            var keyVaultSecretService = app.Services.GetRequiredService<IKeyVaultSecretService>();
+            
             app.UseHttpsRedirection();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -102,9 +106,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IKeyVaultSecretService, KeyVaultSecretService>(); // Register the original configuration
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
-            builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
+            builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();         
         }
 
         private static void ConfigureLogging(WebApplication webApplication)
