@@ -9,7 +9,6 @@ namespace UKHO.S100PermitService.Common.Clients
         public UserPermitApiClient(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
-            _httpClient.Timeout = TimeSpan.FromMinutes(Convert.ToDouble(5));
         }
 
         public async Task<HttpResponseMessage> GetUserPermitsAsync(string uri, int licenceId, string accessToken, string correlationId)
@@ -23,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Clients
             }
 
             httpRequestMessage.SetBearerToken(accessToken);
-            httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
+            httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
         }

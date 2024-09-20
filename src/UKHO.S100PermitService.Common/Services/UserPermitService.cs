@@ -5,6 +5,7 @@ using System.Net;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 
@@ -28,40 +29,36 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, string correlationId)
         {
-            string bodyJson;
-            var requestUri = _userPermitServiceApiConfiguration.Value.BaseUrl + string.Format(UserPermitUrl, licenceId);
+            var uri = new Uri(new Uri(_userPermitServiceApiConfiguration.Value.BaseUrl), string.Format(UserPermitUrl, licenceId));
+
+            _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET {RequestUri} started", uri.AbsolutePath);
+
             var accessToken = await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
 
-            _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET {RequestUri} started", requestUri);
+            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken, correlationId);
 
-            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(requestUri, licenceId, accessToken, correlationId);
-
-            switch(httpResponseMessage.IsSuccessStatusCode)
+            if(httpResponseMessage.IsSuccessStatusCode)
             {
-                case true:
-                    {
-                        bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET {RequestUri} completed. StatusCode: {StatusCode}", requestUri, httpResponseMessage.StatusCode.ToString());
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        var userPermitServiceResponse = JsonConvert.DeserializeObject<UserPermitServiceResponse>(bodyJson);
+                _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET {RequestUri} completed. StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
-                        return userPermitServiceResponse;
-                    }
-                default:
-                    {
-                        if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-                        {
-                            bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var userPermitServiceResponse = JsonConvert.DeserializeObject<UserPermitServiceResponse>(bodyJson);
 
-                            _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {ErrorDetails}", requestUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
-                            throw new Exception();
-                        }
-
-                        _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode}", requestUri, httpResponseMessage.StatusCode.ToString());
-                        throw new Exception();
-                    }
+                return userPermitServiceResponse;
             }
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {ErrorDetails}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+            }
+
+            throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
+                "Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}.",
+                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }
 }
