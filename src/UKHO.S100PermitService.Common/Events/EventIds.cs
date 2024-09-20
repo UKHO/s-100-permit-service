@@ -54,5 +54,20 @@
         /// 840010 - Empty permit xml is received.
         /// </summary>
         EmptyPermitXml = 840010,
+
+        /// <summary>
+        /// 840011 - Permit service exception.
+        /// </summary>
+        PermitServiceException = 840011,
+
+        /// <summary>
+        /// 840012 - KeyVault Secret Updated.
+        /// </summary>
+        KeyVaultSecretUpdated = 840012,
+
+        /// <summary>
+        /// 840013 - Added New KeyVault Secret.
+        /// </summary>
+        AddedNewKeyVaultSecret = 840013
     }
 }

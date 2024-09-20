@@ -1,4 +1,5 @@
 ﻿using FakeItEasy;
+using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
@@ -19,7 +20,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
+
             _fakePermitService = new PermitService(_fakePermitReaderWriter, _fakeLogger);
+        }
+
+        [Test]
+        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        {
+            Action nullPermitService = () => new PermitService(null, _fakeLogger);
+            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
+
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null);
+            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
         }
 
         [Test]

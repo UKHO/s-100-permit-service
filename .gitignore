@@ -397,4 +397,4 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /S100PermitService.v3.ncrunchsolution
-/src/UKHO.S100PermitService.API/appsettings.override.local.json
+/src/UKHO.S100PermitService.API/appsettings.local.overrides.json

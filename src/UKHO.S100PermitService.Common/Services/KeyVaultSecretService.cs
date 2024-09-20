@@ -2,6 +2,7 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -41,18 +42,19 @@ namespace UKHO.S100PermitService.Common.Services
                         if(existingSecret.Exists())
                         {                            
                             existingSecret.Value = secretValue;
-                            _logger.LogInformation($"Updated the secret '{secretName}' in the configuration.");
+                           //// _logger.LogInformation($"Updated the secret '{secretName}' in the configuration.");
+                            _logger.LogInformation(EventIds.KeyVaultSecretUpdated.ToEventId(), "Updated the secret: {secret} in the configuration", secretName);
                         }                        
                         else
                         {                            
-                            ((IConfigurationBuilder)rootConfiguration).AddInMemoryCollection(new Dictionary<string, string> { [secretName] = secretValue });
-                            _logger.LogInformation($"Added the new secret '{secretName}' to the configuration.");
+                            ((IConfigurationBuilder)rootConfiguration).AddInMemoryCollection(new Dictionary<string, string> { [secretName] = secretValue });                            
+                            _logger.LogInformation(EventIds.AddedNewKeyVaultSecret.ToEventId(), "Added the new secret: {secretName} to the configuration", secretName);
                         }
                     }
                 }
                 else
                 {
-                    _logger.LogWarning("The KeyVault:BaseUrl configuration setting is missing or empty. No secrets were refreshed.");
+                    _logger.LogWarning("The ManufacturerKeyvault:ServiceUrl configuration setting is missing or empty. No secrets were refreshed.");
                 }
             }
             catch(Exception ex)

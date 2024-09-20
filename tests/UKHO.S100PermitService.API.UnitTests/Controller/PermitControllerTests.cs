@@ -33,6 +33,19 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
+        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        {
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakePermitReaderWriter);
+            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakePermitReaderWriter);
+            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
+
+            Action nullPermitReaderWriter = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, null);
+            nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
+        }
+
+        [Test]
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = (OkResult)await _permitController.GeneratePermits(007);
@@ -52,6 +65,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
            && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
            ).MustHaveHappenedOnceExactly();
-        }        
+        }
     }
 }

@@ -15,8 +15,8 @@ namespace UKHO.S100PermitService.Common.Services
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger)
         {
-            _permitReaderWriter = permitReaderWriter;
-            _logger = logger;
+            _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public void CreatePermit(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, decimal version, List<Products> products)

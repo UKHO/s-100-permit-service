@@ -3,8 +3,10 @@
 namespace UKHO.S100PermitService.Common
 {
     [ExcludeFromCodeCoverage]
-    public static class Constants
+    public static class PermitServiceConstants
     {
         public const string XCorrelationIdHeaderKey = "X-Correlation-ID";
+
+        public const string PermitServicePolicy = "PermitServiceUser";
     }
 }
