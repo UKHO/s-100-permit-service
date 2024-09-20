@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+﻿using System.Net;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using System.Net;
 using UKHO.S100PermitService.API.FunctionalTests.Auth;
 using UKHO.S100PermitService.API.FunctionalTests.Configuration;
 using UKHO.S100PermitService.API.FunctionalTests.Factories;
