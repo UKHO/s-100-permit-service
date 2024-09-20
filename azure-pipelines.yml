@@ -50,7 +50,6 @@ variables:
   - name: CoverageThresholdLimit
     value: "90"
 
-
 stages:
 
   - stage: Stryker_Mutator
@@ -583,6 +582,12 @@ stages:
       - group: "S-100-PG-IAT"
       - group: "S-100-PG-IAT-TF"
       - group: "S-100-PG-IAT-KV"
+      - name: "AzureAdConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureAdConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
+      - name: "UserPermitServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)  
     jobs:
       - deployment: IATDeployTerraform
         displayName: "IAT - Deploy Terraform"
