@@ -1,9 +1,9 @@
 ﻿namespace UKHO.S100PermitService.Common.Configuration
 {
-    public class UserPermitServiceApiConfiguration : IUserPermitServiceApiConfiguration
+    public class HoldingsServiceApiConfiguration
     {
-        public string BaseUrl { get; set; }
         public string ClientId { get; set; }
+        public string BaseUrl { get; set; }
         public int RequestTimeoutInMinutes { get; set; }
     }
 }

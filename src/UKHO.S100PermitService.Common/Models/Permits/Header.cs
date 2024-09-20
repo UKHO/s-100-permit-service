@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace UKHO.S100PermitService.Common.Models.PermitService
+namespace UKHO.S100PermitService.Common.Models.Permits
 {
     [ExcludeFromCodeCoverage]
     [Serializable()]
@@ -10,7 +10,7 @@ namespace UKHO.S100PermitService.Common.Models.PermitService
         private string _issueDateField;
         private string _dataServerNameField;
         private string _dataServerIdentifierField;
-        private decimal _versionField;
+        private string _versionField;
         private string _userpermitField;
 
         [System.Xml.Serialization.XmlElement("S100SE:issueDate")]
@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.Common.Models.PermitService
         }
 
         [System.Xml.Serialization.XmlElement("S100SE:version")]
-        public decimal Version
+        public string Version
         {
             get
             {

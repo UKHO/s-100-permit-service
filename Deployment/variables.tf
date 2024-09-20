@@ -13,7 +13,8 @@ locals {
   service_name       = "ps"  
   web_app_name       = "${local.service_name}-${local.env_name}-api"
   stub_web_app_name  = "${local.service_name}-${local.env_name}-stub"
-  key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"    
+  key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"
+  key_vault_midkv    = "${local.service_name}-ukho-${local.env_name}-midkv"
   tags = {
     SERVICE                   = "S100 Permit Service"
     ENVIRONMENT               = local.env_name
@@ -29,6 +30,19 @@ variable "sku_name" {
   default = {
             "dev"       =  "P1v2"            
             "vni"       =  "P1v3"
-            "vne"       =  "P1v3"            
+            "vne"       =  "P1v3"
+            "iat"       =  "P1v3"
             }
+}
+
+variable "spoke_rg" {
+  type = string
+}
+
+variable "spoke_vnet_name" {
+  type = string
+}
+
+variable "spoke_subnet_name" {
+  type = string
 }

@@ -29,6 +29,10 @@ resource "azurerm_windows_web_app" "webapp_service" {
     type = "SystemAssigned"
   }
 
+  lifecycle {
+    ignore_changes = [ virtual_network_subnet_id ]
+  }
+
   https_only = true
 }
 
@@ -55,4 +59,9 @@ resource "azurerm_windows_web_app" "stub_webapp_service" {
   }
 
   https_only = true
+}
+
+resource "azurerm_app_service_virtual_network_swift_connection" "webapp_vnet_integration" {
+  app_service_id = azurerm_windows_web_app.webapp_service.id
+  subnet_id      = var.subnet_id
 }
