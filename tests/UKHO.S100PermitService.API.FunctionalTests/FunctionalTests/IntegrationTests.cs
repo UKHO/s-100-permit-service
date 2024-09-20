@@ -14,23 +14,24 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private AuthTokenProvider? _authTokenProvider;
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
+        private string? _authToken;
 
         [OneTimeSetUp]
-        public void OneTimeSetup()
+        public async Task OneTimeSetup()
         {
             _authTokenProvider = new AuthTokenProvider();
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
+            _authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
         [Test]
-        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceId_ThenInternalServerError500IsReturned()
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveHoldings_ThenInternalServerError500IsReturned()
         {
-            var authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
             foreach (var licenceId in _permitServiceApiConfiguration!.InvalidHoldingsLicenceId!)
             {
-                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, authToken, licenceId.ToString());
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)500);
             }  
         }
@@ -40,7 +41,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             foreach (var licenceId in _permitServiceApiConfiguration!.InvalidUPNLicenceId!)
             {
-                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, null, licenceId.ToString());
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)500);
             }
         }
