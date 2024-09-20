@@ -60,7 +60,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public async Task WhenValidLicenceId_ThenUserPermitServiceReturns200OkResponse()
+        public async Task WhenValidDataIsPassed_ThenUserPermitServiceReturnsOkResponse()
         {
             const int LicenceId = 1;
             const string AccessToken = "access-token";
@@ -130,7 +130,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public void WhenUserPermitServiceResponseOtherThanOk_ThenThrowExceptionWithoutErrorDetails(HttpStatusCode statusCode, string content)
+        public void WhenUserPermitServiceResponseOtherThanOk_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
