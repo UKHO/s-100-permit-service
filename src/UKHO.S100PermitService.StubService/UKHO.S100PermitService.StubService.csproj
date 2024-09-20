@@ -21,6 +21,9 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\Holdings\response-200-licenceid-22.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\PKS\request-200.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

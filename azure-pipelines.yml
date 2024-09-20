@@ -50,7 +50,6 @@ variables:
   - name: CoverageThresholdLimit
     value: "90"
 
-
 stages:
 
   - stage: Stryker_Mutator
@@ -400,6 +399,8 @@ stages:
         value: $(EntraID.TenantId)
       - name: "AzureAdConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
+      - name: "UserPermitServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
     jobs:
       - deployment: DevDeployTerraform
         displayName: "Dev - Deploy Terraform"
@@ -479,6 +480,8 @@ stages:
         value: $(EntraID.TenantId)
       - name: "AzureAdConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
+      - name: "UserPermitServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)  
     jobs:
       - deployment: vNextIATDeployTerraform
         displayName: "vNextIAT - Deploy Terraform"
@@ -530,6 +533,8 @@ stages:
         value: $(EntraID.TenantId)
       - name: "AzureAdConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
+      - name: "UserPermitServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)  
     jobs:
       - deployment: vNextE2EDeployTerraform
         displayName: "vNextE2E - Deploy Terraform"
@@ -577,6 +582,12 @@ stages:
       - group: "S-100-PG-IAT"
       - group: "S-100-PG-IAT-TF"
       - group: "S-100-PG-IAT-KV"
+      - name: "AzureAdConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureAdConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
+      - name: "UserPermitServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)  
     jobs:
       - deployment: IATDeployTerraform
         displayName: "IAT - Deploy Terraform"

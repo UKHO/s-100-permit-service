@@ -1,8 +1,8 @@
-﻿using FluentAssertions;
+﻿using System.Net;
+using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
-using System.Net;
 using UKHO.S100PermitService.API.FunctionalTests.Auth;
 using UKHO.S100PermitService.API.FunctionalTests.Configuration;
 using UKHO.S100PermitService.API.FunctionalTests.Factories;
@@ -14,25 +14,36 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private AuthTokenProvider? _authTokenProvider;
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
+        private string? _authToken;
 
         [OneTimeSetUp]
-        public void OneTimeSetup()
+        public async Task OneTimeSetup()
         {
             _authTokenProvider = new AuthTokenProvider();
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
+            _authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
         [Test]
-        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceId_ThenInternalServerError500IsReturned()
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveHoldings_ThenInternalServerError500IsReturned()
         {
-            var authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
-            foreach (var licenceId in _permitServiceApiConfiguration!.InvalidLicenceIds!)
+            foreach (var licenceId in _permitServiceApiConfiguration!.InvalidHoldingsLicenceId!)
             {
-                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, authToken, licenceId.ToString());
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)500);
             }  
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveUPN_ThenInternalServerError500IsReturned()
+        {
+            foreach (var licenceId in _permitServiceApiConfiguration!.InvalidUPNLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)500);
+            }
         }
     }
 }

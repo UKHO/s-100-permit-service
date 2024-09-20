@@ -113,6 +113,21 @@
         /// <summary>
         /// 840022 - Holdings service get holdings request failed
         /// </summary>
-        HoldingsServiceGetHoldingsRequestFailed = 840022
+        HoldingsServiceGetHoldingsRequestFailed = 840022,
+                
+        /// <summary>
+        /// 840023 - Request to UserPermitService GetUserPermit endpoint started
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestStarted = 840023,
+
+        /// <summary>
+        /// 840024 - Request to UserPermitService GetUserPermit endpoint completed
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompleted = 840024,
+
+        /// <summary>
+        /// 840025 - Request to UserPermitService GetUserPermit endpoint failed
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestFailed = 840025
     }
 }
