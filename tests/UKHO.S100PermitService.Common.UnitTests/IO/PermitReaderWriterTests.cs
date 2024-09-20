@@ -1,8 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using System.IO.Abstractions;
-using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models.Permits;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                     DataServerName = "fakeDataServerName",
                     IssueDate = "2024-09-02+01:00",
                     Userpermit = "fakeUserPermit",
-                    Version = 1
+                    Version = "1"
                 },
                 Products = products.ToArray()
             };

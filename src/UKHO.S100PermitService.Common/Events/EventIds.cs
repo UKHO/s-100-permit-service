@@ -3,7 +3,7 @@
     /// <summary>
     /// Event Ids
     /// </summary>
-    public enum EventIds 
+    public enum EventIds
     {
         /// <summary>
         /// 840001 - An unhandled exception occurred while processing the request.
@@ -58,6 +58,61 @@
         /// <summary>
         /// 840011 - Permit service exception.
         /// </summary>
-        PermitServiceException = 840011
+        PermitServiceException = 840011,
+
+        /// <summary>
+        /// 840012 - Get access token to call external api started.
+        /// </summary>
+        GetAccessTokenStarted = 840012,
+
+        /// <summary>
+        /// 840013 - Cached access token to call external api found.
+        /// </summary>
+        CachedAccessTokenFound = 840013,
+
+        /// <summary>
+        /// 840014 - Get new access token to call external api started.
+        /// </summary>
+        GetNewAccessTokenStarted = 840014,
+
+        /// <summary>
+        /// 840015 - Get new access token to call external api completed.
+        /// </summary>
+        GetNewAccessTokenCompleted = 840015,
+
+        /// <summary>
+        /// 840016 - Get access token to call external api completed.
+        /// </summary>
+        GetAccessTokenCompleted = 840016,
+
+        /// <summary>
+        /// 840017 - Caching access token to call external api started .
+        /// </summary>
+        CachingExternalEndPointTokenStarted = 840017,
+
+        /// <summary>
+        /// 840018 - Caching access token to call external api completed.
+        /// </summary>
+        CachingExternalEndPointTokenCompleted = 840018,
+
+        /// <summary>
+        /// 840019 - Request sent to the server is incorrect or corrupt.
+        /// </summary>
+        BadRequest = 840019,
+
+        /// <summary>
+        /// 840020 - Holdings service get holdings request started
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestStarted = 840020,
+
+        /// <summary>
+        /// 840021 - Holdings service get holdings request completed
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompleted = 840021,
+
+        /// <summary>
+        /// 840022 - Holdings service get holdings request failed
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestFailed = 840022
     }
 }

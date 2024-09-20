@@ -1,9 +1,9 @@
-﻿using System.Text;
-using System.Xml.Serialization;
-using System.Xml;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
-using UKHO.S100PermitService.Common.Models;
-using System.Diagnostics.CodeAnalysis;
+using System.Text;
+using System.Xml;
+using System.Xml.Serialization;
+using UKHO.S100PermitService.Common.Models.Permits;
 
 namespace UKHO.S100PermitService.Common.IO
 {

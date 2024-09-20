@@ -4,6 +4,7 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -14,8 +15,10 @@ using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -103,11 +106,12 @@ namespace UKHO.S100PermitService.API
 
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
             builder.Services.AddApplicationInsightsTelemetry(options);
-
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -130,10 +134,22 @@ namespace UKHO.S100PermitService.API
                 options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
+            var holdingsServiceApiConfiguration = builder.Configuration.GetSection("HoldingsServiceApiConfiguration").Get<HoldingsServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
+
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
+            builder.Services.AddScoped<IHoldingsService, HoldingsService>();
+
+            builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

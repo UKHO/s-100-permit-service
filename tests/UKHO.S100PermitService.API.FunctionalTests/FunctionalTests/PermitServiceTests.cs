@@ -14,21 +14,22 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private AuthTokenProvider? _authTokenProvider;
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
+        private string? _authToken;
 
         [OneTimeSetUp]
-        public void OneTimeSetup()
+        public async Task OneTimeSetup()
         {
             _authTokenProvider = new AuthTokenProvider();
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
+            _authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
-            var authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, authToken, _permitServiceApiConfiguration.ValidLicenceId);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
@@ -36,15 +37,25 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var noAuthToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _permitServiceApiConfiguration.ValidLicenceId);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }
 
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
         {
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _permitServiceApiConfiguration.ValidLicenceId);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
             response.StatusCode.Should().Be((HttpStatusCode)401);
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceIdAsAlphanumericSpecialChars_ThenBadRequest400IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.NonIntegerLicenceIds!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
+                response.StatusCode.Should().Be((HttpStatusCode)400);
+            }
         }
 
         [OneTimeTearDown]
