@@ -10,7 +10,7 @@ using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Services
 {
-    public class ProductkeyService: IProductkeyService
+    public class ProductkeyService : IProductkeyService
     {
         private readonly ILogger<ProductkeyService> _logger;
         private readonly IOptions<ProductkeyServiceApiConfiguration> _productkeyServiceApiConfiguration;
@@ -35,42 +35,36 @@ namespace UKHO.S100PermitService.Common.Services
         /// <exception cref="Exception"></exception>
         public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
         {
-            string uri = _productkeyServiceApiConfiguration.Value.BaseUrl + KeysEnc;
+            var uri = new Uri(_productkeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 
-            _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri);
+            _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsolutePath);
 
-            string bodyJson;
-            string accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productkeyServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productkeyServiceApiConfiguration.Value.ClientId);
 
             var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
 
-            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri, HttpMethod.Post, payloadJson, accessToken, correlationId);
+            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri.AbsolutePath, HttpMethod.Post, payloadJson, accessToken, correlationId);
 
-            switch(httpResponseMessage.IsSuccessStatusCode)
+            if(httpResponseMessage.IsSuccessStatusCode)
             {
-                case true:
-                    {
-                        bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                        _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri, httpResponseMessage.StatusCode.ToString());
+                _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
-                        var productKeyServiceResponse = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(bodyJson)!;
-                        return productKeyServiceResponse;
-                    }
-                default:
-                    {
-                        if(httpResponseMessage.StatusCode == HttpStatusCode.BadRequest || httpResponseMessage.StatusCode == HttpStatusCode.NotFound)
-                        {
-                            bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                            _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}", uri, httpResponseMessage.StatusCode.ToString(), bodyJson);
-                            throw new Exception();
-                        }
-
-                        _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed | StatusCode : {StatusCode}", uri, httpResponseMessage.StatusCode.ToString());
-                        throw new Exception();
-                    }
+                var productKeyServiceResponse = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(bodyJson)!;
+                return productKeyServiceResponse;
             }
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                throw new Exception();
+            }
+
+            _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+            throw new Exception();
         }
     }
 }
