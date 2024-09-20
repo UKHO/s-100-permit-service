@@ -102,7 +102,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public Task WhenLicenceIdNotFoundOr0_ThenUserPermitServiceReturnsException404Or400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
+        public void WhenLicenceIdNotFoundOr0_ThenUserPermitServiceReturnsException404Or400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -124,22 +124,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET {RequestUri} started"
             ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {ErrorDetails}"
-            ).MustHaveHappenedOnceExactly();
-
-            return Task.CompletedTask;
         }
 
         [Test]
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public Task WhenUserPermitServiceResponseOtherThanOk_ThenThrowExceptionWithoutErrorDetails(HttpStatusCode statusCode, string content)
+        public void WhenUserPermitServiceResponseOtherThanOk_ThenThrowExceptionWithoutErrorDetails(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
@@ -164,8 +155,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET {RequestUri} started"
             ).MustHaveHappenedOnceExactly();
-
-            return Task.CompletedTask;
         }
     }
 }

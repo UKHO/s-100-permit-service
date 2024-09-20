@@ -39,7 +39,6 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET {RequestUri} completed. StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
@@ -53,11 +52,13 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {ErrorDetails}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
+                "Request to UserPermitService GET {0} failed. StatusCode: {1} | Errors Details: {2}",
+                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
-                "Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}.",
+                "Request to UserPermitService GET {0} failed. Status Code: {1}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }
