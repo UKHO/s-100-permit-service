@@ -142,7 +142,7 @@ namespace UKHO.S100PermitService.API
             });
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            builder.Services.AddSingleton<IAuthHoldingsServiceTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();

@@ -15,26 +15,26 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private readonly ILogger<HoldingsService> _logger;
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
-        private readonly IAuthHoldingsServiceTokenProvider _authHoldingsServiceTokenProvider;
+        private readonly IHoldingsServiceAuthTokenProvider _holdingsServiceAuthTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
         private const string HoldingsUrl = "/holdings/{0}/s100";
 
-        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IAuthHoldingsServiceTokenProvider authHoldingsServiceTokenProvider, IHoldingsApiClient holdingsApiClient)
+        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsServiceApiConfiguration = holdingsApiConfiguration ?? throw new ArgumentNullException(nameof(holdingsApiConfiguration));
-            _authHoldingsServiceTokenProvider = authHoldingsServiceTokenProvider ?? throw new ArgumentNullException(nameof(authHoldingsServiceTokenProvider));
+            _holdingsServiceAuthTokenProvider = holdingsServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(holdingsServiceAuthTokenProvider));
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
         }
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, string correlationId)
         {
-            var uri = new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl + string.Format(HoldingsUrl, licenceId));
+            var uri = new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
 
             _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
                 "Request to HoldingsService GET {RequestUri} started.", uri.AbsolutePath);
 
-            var accessToken = await _authHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, correlationId);
 

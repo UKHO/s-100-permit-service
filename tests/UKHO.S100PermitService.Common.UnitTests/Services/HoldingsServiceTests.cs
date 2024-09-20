@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<HoldingsService> _fakeLogger;
         private IOptions<HoldingsServiceApiConfiguration> _fakeHoldingsServiceApiConfiguration;
-        private IAuthHoldingsServiceTokenProvider _fakeAuthHoldingsServiceTokenProvider;
+        private IHoldingsServiceAuthTokenProvider _fakeHoldingsServiceAuthTokenProvider;
         private IHoldingsApiClient _fakeHoldingsApiClient;
         private IHoldingsService _holdingsService;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
@@ -36,32 +36,32 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeHoldingsServiceApiConfiguration = Options.Create(new HoldingsServiceApiConfiguration { ClientId = "ClientId2", BaseUrl = FakeUri, RequestTimeoutInMinutes = 5 });
             _fakeHoldingsApiClient = A.Fake<IHoldingsApiClient>();
-            _fakeAuthHoldingsServiceTokenProvider = A.Fake<IAuthHoldingsServiceTokenProvider>();
+            _fakeHoldingsServiceAuthTokenProvider = A.Fake<IHoldingsServiceAuthTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
 
-            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient);
+            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient))
+             () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
              .ParamName
              .Should().Be("logger");
 
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, null, _fakeAuthHoldingsServiceTokenProvider, _fakeHoldingsApiClient))
+             () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
              .ParamName
              .Should().Be("holdingsApiConfiguration");
 
             Assert.Throws<ArgumentNullException>(
              () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient))
              .ParamName
-             .Should().Be("authHoldingsServiceTokenProvider");
+             .Should().Be("holdingsServiceAuthTokenProvider");
 
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeAuthHoldingsServiceTokenProvider, null))
+             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null))
              .ParamName
              .Should().Be("holdingsApiClient");
         }
@@ -80,7 +80,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     },
                     Content = new StringContent(OkResponseContent)
                 });
-            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             List<HoldingsServiceResponse> response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId);
@@ -114,7 +114,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 Content = new StringContent(content, Encoding.UTF8, "application/json")
             };
 
-            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
@@ -148,7 +148,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     },
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
-            A.CallTo(() => _fakeAuthHoldingsServiceTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
