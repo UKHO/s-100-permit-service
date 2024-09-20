@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;
         private IPermitReaderWriter _fakePermitReaderWriter;
-        private IKeyVaultSecretService _keyVaultSecretService;
+        private IKeyVaultSecretService _fakekeyVaultSecretService;
 
         [SetUp]
         public void Setup()
@@ -28,20 +28,20 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             _fakeLogger = A.Fake<ILogger<PermitController>>();
             _fakePermitService = A.Fake<IPermitService>();
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
-            _keyVaultSecretService = A.Fake<IKeyVaultSecretService>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter, _keyVaultSecretService);
+            _fakekeyVaultSecretService = A.Fake<IKeyVaultSecretService>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger,_fakePermitService, _fakePermitReaderWriter, _fakekeyVaultSecretService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakePermitReaderWriter);
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakePermitReaderWriter, _fakekeyVaultSecretService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakePermitReaderWriter);
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakePermitReaderWriter, _fakekeyVaultSecretService);
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
 
-            Action nullPermitReaderWriter = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, null);
+            Action nullPermitReaderWriter = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, null, _fakekeyVaultSecretService);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
         }
 
