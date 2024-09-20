@@ -37,19 +37,19 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var uri = new Uri(_productkeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 
-            _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsolutePath);
+            _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsoluteUri);
 
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productkeyServiceApiConfiguration.Value.ClientId);
 
             var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
 
-            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri.AbsolutePath, HttpMethod.Post, payloadJson, accessToken, correlationId);
+            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri.AbsoluteUri, HttpMethod.Post, payloadJson, accessToken, correlationId);
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
 
                 var productKeyServiceResponse = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(bodyJson)!;
                 return productKeyServiceResponse;
@@ -59,11 +59,11 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
                 throw new Exception();
             }
 
-            _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+            _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
             throw new Exception();
         }
     }
