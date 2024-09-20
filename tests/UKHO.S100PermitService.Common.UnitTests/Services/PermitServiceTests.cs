@@ -3,7 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
-using UKHO.S100PermitService.Common.Models.PermitService;
+using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductkeyService;
 using UKHO.S100PermitService.Common.Services;
 
@@ -14,6 +14,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
+        private IHoldingsService _fakeHoldingsService;
+        private IUserPermitService _fakeUserPermitService;
         private IProductkeyService _fakeProductkeyService;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
@@ -24,21 +26,29 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
+            _fakeHoldingsService = A.Fake<IHoldingsService>();
+            _fakeUserPermitService = A.Fake<IUserPermitService>();
             _fakeProductkeyService = A.Fake<IProductkeyService>();
 
-            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductkeyService);
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductkeyService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductkeyService);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductkeyService);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductkeyService);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeHoldingsService, _fakeUserPermitService, _fakeProductkeyService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullProductkeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null);
+            Action nullHoldingsService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeUserPermitService, _fakeProductkeyService);
+            nullHoldingsService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsService");
+
+            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, null, _fakeProductkeyService);
+            nullUserPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitService");
+
+            Action nullProductkeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, null);
             nullProductkeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productkeyService");
         }
 

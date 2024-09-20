@@ -2,9 +2,10 @@
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Net;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.ProductkeyService;
 using UKHO.S100PermitService.Common.Providers;
 
@@ -59,12 +60,14 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
-                _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {ErrorDetails}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
-                throw new Exception();
+                throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(),
+                    "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1} | Error Details : {2}",
+                    uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
-            _logger.LogError(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
-            throw new Exception();
+            throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(), 
+                "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}", 
+                uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
         }
     }
 }

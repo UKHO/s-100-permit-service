@@ -2,6 +2,8 @@ using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -12,8 +14,8 @@ using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
-using UKHO.S100PermitService.Common.Helpers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -47,12 +49,15 @@ namespace UKHO.S100PermitService.API
             });
 
             app.UseCorrelationIdMiddleware();
+            app.UseExceptionHandlingMiddleware();
             app.UseHeaderPropagation();
             app.UseRouting();
 
             ConfigureLogging(app);
 
             app.MapControllers();
+            app.UseAuthorization();
+
             app.Run();
         }
 
@@ -95,27 +100,76 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddHeaderPropagation(options =>
             {
-                options.Headers.Add(Constants.XCorrelationIdHeaderKey);
+                options.Headers.Add(PermitServiceConstants.XCorrelationIdHeaderKey);
             });
-            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
 
-            builder.Services.AddApplicationInsightsTelemetry();
-            builder.Services.AddDistributedMemoryCache();
+            var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+            builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddHttpClient();
+            builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
+            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection("UserPermitServiceApiConfiguration"));
             builder.Services.Configure<ProductkeyServiceApiConfiguration>(builder.Configuration.GetSection("ProductkeyServiceApiConfiguration"));
 
+            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                   .AddJwtBearer("AzureAd", options =>
+                   {
+                       options.Audience = azureAdConfiguration.ClientId;
+                       options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
+                   });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .AddAuthenticationSchemes("AzureAd")
+                .Build();
+            });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
+            });
+
+            var holdingsServiceApiConfiguration = builder.Configuration.GetSection("HoldingsServiceApiConfiguration").Get<HoldingsServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
+            var userPermitServiceApiConfiguration = builder.Configuration.GetSection("UserPermitServiceApiConfiguration").Get<UserPermitServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(userPermitServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(userPermitServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
+            var productKeyServiceApiConfiguration = builder.Configuration.GetSection("ProductkeyServiceApiConfiguration").Get<ProductkeyServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(productKeyServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(productKeyServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
+            builder.Services.AddScoped<IHoldingsService, HoldingsService>();
+            builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductkeyService, ProductkeyService>();
 
+            builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
+            builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
             builder.Services.AddTransient<IProductkeyServiceApiClient, ProductkeyServiceApiClient>();
         }
 
@@ -135,7 +189,7 @@ namespace UKHO.S100PermitService.API
                         additionalValues["_User-Agent"] = httpContextAccessor.HttpContext.Request.Headers.UserAgent.FirstOrDefault() ?? string.Empty;
                         additionalValues["_AssemblyVersion"] = Assembly.GetExecutingAssembly().GetCustomAttributes<AssemblyFileVersionAttribute>().Single().Version;
                         additionalValues["_X-Correlation-ID"] =
-                            httpContextAccessor.HttpContext.Request.Headers?[Constants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
+                            httpContextAccessor.HttpContext.Request.Headers?[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault() ?? string.Empty;
                     }
                 }
 

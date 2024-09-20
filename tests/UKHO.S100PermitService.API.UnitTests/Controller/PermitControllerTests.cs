@@ -30,6 +30,16 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
+        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        {
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService);
+            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null);
+            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
+        }
+
+        [Test]
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = (OkResult)await _permitController.GeneratePermits(007);

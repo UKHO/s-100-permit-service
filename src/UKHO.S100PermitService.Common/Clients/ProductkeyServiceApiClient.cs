@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace UKHO.S100PermitService.Common.Helpers
+namespace UKHO.S100PermitService.Common.Clients
 {
     public class ProductkeyServiceApiClient : IProductkeyServiceApiClient
     {

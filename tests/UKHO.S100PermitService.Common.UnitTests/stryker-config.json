@@ -1,0 +1,19 @@
+{
+    "stryker-config": {
+
+        "reporters": [
+            "html",
+            "progress"
+        ],
+        "thresholds": {
+            "high": 80,
+            "low": 60,
+            "break": 34
+        },
+	"ignore-mutations": [
+        			
+   			   ],
+        "project": "UKHO.S100PermitService.Common",
+        "solution": "../../S100PermitService.sln"
+    }
+}

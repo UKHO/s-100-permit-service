@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
+    [ExcludeFromCodeCoverage]
     public abstract class BaseController<T> : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -12,9 +14,9 @@ namespace UKHO.S100PermitService.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        protected string GetCurrentCorrelationId()
+        protected string GetCorrelationId()
         {
-            return _httpContextAccessor.HttpContext!.Request.Headers[Constants.XCorrelationIdHeaderKey].FirstOrDefault()!;
+            return _httpContextAccessor.HttpContext!.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
         }
     }
 }

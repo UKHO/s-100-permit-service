@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Models;
 
 namespace UKHO.S100PermitService.Common.Providers
 {
@@ -46,7 +45,7 @@ namespace UKHO.S100PermitService.Common.Providers
             return newAuthToken.AccessToken!;
         }
 
-        private async Task<AuthTokenDetails> GetAuthToken(string resource)
+        private async Task<AuthToken> GetAuthToken(string resource)
         {
             _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started | {DateTime}", DateTime.Now.ToUniversalTime());
 
@@ -55,14 +54,14 @@ namespace UKHO.S100PermitService.Common.Providers
 
             _logger.LogInformation(EventIds.GetNewAccessTokenCompleted.ToEventId(), "New access token to call external endpoint generated successfully | {DateTime}", DateTime.Now.ToUniversalTime());
 
-            return new AuthTokenDetails
+            return new AuthToken
             {
                 ExpiresIn = accessToken.ExpiresOn.UtcDateTime,
                 AccessToken = accessToken.Token
             };
         }
 
-        private void AddAuthTokenToCache(string key, AuthTokenDetails authTokenDetails)
+        private void AddAuthTokenToCache(string key, AuthToken authTokenDetails)
         {
             _logger.LogInformation(EventIds.CachingExternalEndPointTokenStarted.ToEventId(), "Adding new access token in cache to call external endpoint | {DateTime}", DateTime.Now.ToUniversalTime());
 
@@ -82,12 +81,12 @@ namespace UKHO.S100PermitService.Common.Providers
             _logger.LogInformation(EventIds.CachingExternalEndPointTokenCompleted.ToEventId(), "New token is added in cache to call external endpoint and it expires in {ExpiresIn} with sliding expiration duration {options}.", Convert.ToString(authTokenDetails.ExpiresIn, CultureInfo.InvariantCulture), JsonSerializer.Serialize(options));
         }
 
-        private AuthTokenDetails? GetAuthTokenFromCache(string key)
+        private AuthToken? GetAuthTokenFromCache(string key)
         {
             lock(_lock)
             {
                 var item = _distributedCache.GetString(key);
-                return item != null ? JsonSerializer.Deserialize<AuthTokenDetails>(item) : null;
+                return item != null ? JsonSerializer.Deserialize<AuthToken>(item) : null;
             }
         }
     }

@@ -2,7 +2,7 @@
 using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
-using UKHO.S100PermitService.Common.Helpers;
+using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Models.ProductkeyService;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 

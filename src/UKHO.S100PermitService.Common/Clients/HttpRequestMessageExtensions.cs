@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Http.Headers;
 
-namespace UKHO.S100PermitService.Common.Helpers
+namespace UKHO.S100PermitService.Common.Clients
 {
     [ExcludeFromCodeCoverage]
     public static class HttpRequestMessageExtensions

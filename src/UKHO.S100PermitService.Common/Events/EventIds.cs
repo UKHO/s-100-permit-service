@@ -56,53 +56,88 @@
         EmptyPermitXml = 840010,
 
         /// <summary>
-        /// 840011 - Get access token to call external api started.
+        /// 840011 - Permit service exception.
         /// </summary>
-        GetAccessTokenStarted = 840011,
+        PermitServiceException = 840011,
 
         /// <summary>
-        /// 840012 - Cached access token to call external api found.
+        /// 840012 - Get access token to call external api started.
         /// </summary>
-        CachedAccessTokenFound = 840012,
+        GetAccessTokenStarted = 840012,
 
         /// <summary>
-        /// 840013 - Get new access token to call external api started.
+        /// 840013 - Cached access token to call external api found.
         /// </summary>
-        GetNewAccessTokenStarted = 840013,
+        CachedAccessTokenFound = 840013,
 
         /// <summary>
-        /// 840014 - Get new access token to call external api completed.
+        /// 840014 - Get new access token to call external api started.
         /// </summary>
-        GetNewAccessTokenCompleted = 840014,
+        GetNewAccessTokenStarted = 840014,
 
         /// <summary>
-        /// 840015 - Get access token to call external api completed.
+        /// 840015 - Get new access token to call external api completed.
         /// </summary>
-        GetAccessTokenCompleted = 840015,
+        GetNewAccessTokenCompleted = 840015,
 
         /// <summary>
-        /// 840016 - Caching access token to call external api started .
+        /// 840016 - Get access token to call external api completed.
         /// </summary>
-        CachingExternalEndPointTokenStarted = 840016,
+        GetAccessTokenCompleted = 840016,
 
         /// <summary>
-        /// 840017 - Caching access token to call external api completed.
+        /// 840017 - Caching access token to call external api started .
         /// </summary>
-        CachingExternalEndPointTokenCompleted = 840017,
+        CachingExternalEndPointTokenStarted = 840017,
 
         /// <summary>
-        /// 840018 - Get permit key from product key service started
+        /// 840018 - Caching access token to call external api completed.
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestStarted = 840018,
+        CachingExternalEndPointTokenCompleted = 840018,
 
         /// <summary>
-        /// 840019 - Get permit key from product key service completed
+        /// 840019 - Holdings service get holdings request started
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestCompleted = 840019,
+        HoldingsServiceGetHoldingsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Exception occurred while get permit key from product key service
+        /// 840020 - Holdings service get holdings request completed
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840020
+        HoldingsServiceGetHoldingsRequestCompleted = 840020,
+
+        /// <summary>
+        /// 840021 - Holdings service get holdings request failed
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestFailed = 840021,
+
+        /// <summary>
+        /// 840022 - Request to UserPermitService GetUserPermit endpoint started
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestStarted = 840022,
+
+        /// <summary>
+        /// 840023 - Request to UserPermitService GetUserPermit endpoint completed
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompleted = 840023,
+
+        /// <summary>
+        /// 840024 - Request to UserPermitService GetUserPermit endpoint failed
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestFailed = 840024,
+
+        /// <summary>
+        /// 840025 - Get permit key from product key service started
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+
+        /// <summary>
+        /// 840026 - Get permit key from product key service completed
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+
+        /// <summary>
+        /// 840027 - Exception occurred while get permit key from product key service
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestFailed = 840027
     }
 }
