@@ -401,7 +401,7 @@ stages:
         value: $(EntraID.ApplicationId)
       - name: "UserPermitServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
-      - name: "ProductkeyServiceApiConfiguration.ClientId"
+      - name: "ProductKeyServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
     jobs:
       - deployment: DevDeployTerraform
@@ -484,7 +484,7 @@ stages:
         value: $(EntraID.ApplicationId)
       - name: "UserPermitServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)  
-      - name: "ProductkeyServiceApiConfiguration.ClientId"
+      - name: "ProductKeyServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
     jobs:
       - deployment: vNextIATDeployTerraform
@@ -539,7 +539,7 @@ stages:
         value: $(EntraID.ApplicationId)
       - name: "UserPermitServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)  
-      - name: "ProductkeyServiceApiConfiguration.ClientId"
+      - name: "ProductKeyServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
     jobs:
       - deployment: vNextE2EDeployTerraform
@@ -593,7 +593,9 @@ stages:
       - name: "AzureAdConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
       - name: "UserPermitServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)  
+        value: $(EntraID.ApplicationId)
+      - name: "ProductKeyServiceApiConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)
     jobs:
       - deployment: IATDeployTerraform
         displayName: "IAT - Deploy Terraform"

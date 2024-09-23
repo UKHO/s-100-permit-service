@@ -6,25 +6,25 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using UKHO.S100PermitService.Common.Models.ProductkeyService;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Services
 {
-    public class ProductkeyService : IProductkeyService
+    public class ProductKeyService : IProductKeyService
     {
-        private readonly ILogger<ProductkeyService> _logger;
-        private readonly IOptions<ProductkeyServiceApiConfiguration> _productkeyServiceApiConfiguration;
+        private readonly ILogger<ProductKeyService> _logger;
+        private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
         private readonly IProductKeyServiceAuthTokenProvider _productKeyServiceAuthTokenProvider;
-        private readonly IProductkeyServiceApiClient _productkeyServiceApiClient;
+        private readonly IProductKeyServiceApiClient _productKeyServiceApiClient;
         private const string KeysEnc = "/keys/s100";
 
-        public ProductkeyService(ILogger<ProductkeyService> logger, IOptions<ProductkeyServiceApiConfiguration> productkeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductkeyServiceApiClient productkeyServiceApiClient)
+        public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _productkeyServiceApiConfiguration = productkeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productkeyServiceApiConfiguration));
+            _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
             _productKeyServiceAuthTokenProvider = productKeyServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(productKeyServiceAuthTokenProvider));
-            _productkeyServiceApiClient = productkeyServiceApiClient ?? throw new ArgumentNullException(nameof(productkeyServiceApiClient));
+            _productKeyServiceApiClient = productKeyServiceApiClient ?? throw new ArgumentNullException(nameof(productKeyServiceApiClient));
         }
 
         /// <summary>
@@ -36,15 +36,15 @@ namespace UKHO.S100PermitService.Common.Services
         /// <exception cref="Exception"></exception>
         public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
         {
-            var uri = new Uri(_productkeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
+            var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 
             _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsoluteUri);
 
-            var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productkeyServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
             var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
 
-            var httpResponseMessage = await _productkeyServiceApiClient.CallProductkeyServiceApiAsync(uri.AbsoluteUri, HttpMethod.Post, payloadJson, accessToken, correlationId);
+            var httpResponseMessage = await _productKeyServiceApiClient.CallProductKeyServiceApiAsync(uri.AbsoluteUri, HttpMethod.Post, payloadJson, accessToken, correlationId);
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {

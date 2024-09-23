@@ -4,7 +4,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
-using UKHO.S100PermitService.Common.Models.ProductkeyService;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -16,19 +16,19 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IPermitReaderWriter _permitReaderWriter;
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
-        private readonly IProductkeyService _productkeyService;
+        private readonly IProductKeyService _productKeyService;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
                                 IHoldingsService holdingsService,
                                 IUserPermitService userPermitService,
-                                IProductkeyService productkeyService)
+                                IProductKeyService productKeyService)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
-            _productkeyService = productkeyService ?? throw new ArgumentNullException(nameof(productkeyService));
+            _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
         }
 
         public async Task CreatePermitAsync(int licenceId, string correlationId)
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-            var pksResponseData = await _productkeyService.PostProductKeyServiceRequest(productKeyServiceRequest, correlationId);
+            var pksResponseData = await _productKeyService.PostProductKeyServiceRequest(productKeyServiceRequest, correlationId);
 
             const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 

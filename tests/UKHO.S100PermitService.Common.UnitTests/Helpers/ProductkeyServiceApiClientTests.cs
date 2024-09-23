@@ -3,18 +3,18 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
 using UKHO.S100PermitService.Common.Clients;
-using UKHO.S100PermitService.Common.Models.ProductkeyService;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 {
     [TestFixture]
-    public class ProductkeyServiceApiClientTests
+    public class ProductKeyServiceApiClientTests
     {
         private IHttpClientFactory _fakeHttpClientFactory;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
-        private IProductkeyServiceApiClient? _productkeyServiceApiClient;
+        private IProductKeyServiceApiClient? _productKeyServiceApiClient;
 
         [SetUp]
         public void SetUp()
@@ -38,9 +38,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _productkeyServiceApiClient = new ProductkeyServiceApiClient(_fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productkeyServiceApiClient.CallProductkeyServiceApiAsync("http://test.com", HttpMethod.Post, productKeyServiceRequestData, "testToken", _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.CallProductKeyServiceApiAsync("http://test.com", HttpMethod.Post, productKeyServiceRequestData, "testToken", _fakeCorrelationId);
 
             var deSerializedResult = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -68,9 +68,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _productkeyServiceApiClient = new ProductkeyServiceApiClient(_fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productkeyServiceApiClient.CallProductkeyServiceApiAsync("http://test.com", HttpMethod.Post, "", string.Empty, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.CallProductKeyServiceApiAsync("http://test.com", HttpMethod.Post, "", string.Empty, _fakeCorrelationId);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }

@@ -3,7 +3,7 @@
 namespace UKHO.S100PermitService.Common.Configuration
 {
     [ExcludeFromCodeCoverage]
-    public class ProductkeyServiceApiConfiguration
+    public class ProductKeyServiceApiConfiguration
     {
         public string BaseUrl { get; set; }
         public string ClientId { get; set; }

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace UKHO.S100PermitService.Common.Models.ProductkeyService
+namespace UKHO.S100PermitService.Common.Models.ProductKeyService
 {
     public class ProductKeyServiceRequest
     {

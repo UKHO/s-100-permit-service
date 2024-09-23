@@ -2,17 +2,16 @@
 
 namespace UKHO.S100PermitService.Common.Clients
 {
-    public class ProductkeyServiceApiClient : IProductkeyServiceApiClient
+    public class ProductKeyServiceApiClient : IProductKeyServiceApiClient
     {
         private readonly HttpClient _httpClient;
 
-        public ProductkeyServiceApiClient(IHttpClientFactory httpClientFactory)
+        public ProductKeyServiceApiClient(IHttpClientFactory httpClientFactory)
         {
             _httpClient = httpClientFactory.CreateClient();
-            _httpClient.Timeout = TimeSpan.FromMinutes(Convert.ToDouble(5));
         }
 
-        public async Task<HttpResponseMessage> CallProductkeyServiceApiAsync(string uri, HttpMethod httpMethod, string payload, string accessToken, string correlationId)
+        public async Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payload, string accessToken, string correlationId)
         {
             using var httpRequestMessage = new HttpRequestMessage(httpMethod, uri);
             httpRequestMessage.Content = new StringContent(payload, Encoding.UTF8, "application/json");
