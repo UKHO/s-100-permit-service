@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-            var pksResponseData = await _productKeyService.PostProductKeyServiceRequest(productKeyServiceRequest, correlationId);
+            var pksResponseData = await _productKeyService.PostProductKeyServiceRequestAsync(productKeyServiceRequest, correlationId);
 
             const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 

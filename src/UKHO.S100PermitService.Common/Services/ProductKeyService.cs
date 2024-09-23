@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
+        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequestAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
         {
             var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 
