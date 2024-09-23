@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         }
 
         [Test]
-        public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOKResponse()
+        public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOkResponse()
         {
             var productKeyServiceRequestData = JsonConvert.SerializeObject(new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } });
 
