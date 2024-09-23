@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.Common.Clients
             if(!string.IsNullOrEmpty(accessToken))
             {
                 httpRequestMessage.SetBearerToken(accessToken);
-                httpRequestMessage.AddHeader("X-Correlation-ID", correlationId);
+                httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
