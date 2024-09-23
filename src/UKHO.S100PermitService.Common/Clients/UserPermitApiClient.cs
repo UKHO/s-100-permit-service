@@ -16,13 +16,11 @@ namespace UKHO.S100PermitService.Common.Clients
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
             httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, "application/json");
 
-            if(string.IsNullOrEmpty(accessToken))
+            if(accessToken != null)
             {
-                return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+                httpRequestMessage.SetBearerToken(accessToken);
+                httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
-
-            httpRequestMessage.SetBearerToken(accessToken);
-            httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
 
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
         }
