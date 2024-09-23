@@ -2,6 +2,6 @@
 {
     public interface IProductKeyServiceApiClient
     {
-        Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payload, string accessToken, string correlationId);
+        Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payLoad, string accessToken, string correlationId);
     }
 }

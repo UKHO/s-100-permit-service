@@ -11,10 +11,10 @@ namespace UKHO.S100PermitService.Common.Clients
             _httpClient = httpClientFactory.CreateClient();
         }
 
-        public async Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payload, string accessToken, string correlationId)
+        public async Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payLoad, string accessToken, string correlationId)
         {
             using var httpRequestMessage = new HttpRequestMessage(httpMethod, uri);
-            httpRequestMessage.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+            httpRequestMessage.Content = new StringContent(payLoad, Encoding.UTF8, "application/json");
 
             if(!string.IsNullOrEmpty(accessToken))
             {
