@@ -6,7 +6,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.ProductKeyServices;
 using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
+        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequests> productKeyServiceRequest, string correlationId)
         {
             var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 

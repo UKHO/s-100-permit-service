@@ -112,10 +112,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddDistributedMemoryCache();
 
-            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection("EventHubLoggingConfiguration"));
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection("UserPermitServiceApiConfiguration"));
-            builder.Services.Configure<ProductKeyServiceApiConfiguration>(builder.Configuration.GetSection("ProductKeyServiceApiConfiguration"));
+            builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection("ProductKeyServiceApiConfiguration"));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

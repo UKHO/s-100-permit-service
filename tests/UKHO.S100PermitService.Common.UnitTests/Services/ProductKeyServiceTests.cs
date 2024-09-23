@@ -9,7 +9,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.ProductKeyServices;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
@@ -91,7 +91,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(HttpStatusCode.BadRequest)]
         [TestCase(HttpStatusCode.NotFound)]
-        public async Task WhenRequestsInvalidOrNonExistentData_ThenThrowException(HttpStatusCode httpStatusCode)
+        public async Task WhenRequestIsInvalidOrNonExistData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.CallProductKeyServiceApiAsync
                     (A<string>.Ignored, A<HttpMethod>.Ignored, A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
