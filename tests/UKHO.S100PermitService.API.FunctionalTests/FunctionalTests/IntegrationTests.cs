@@ -45,5 +45,15 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
                 response.StatusCode.Should().Be((HttpStatusCode)500);
             }
         }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveKey_ThenInternalServerError500IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidPKSLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)500);
+            }
+        }
     }
 }
