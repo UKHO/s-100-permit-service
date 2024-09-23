@@ -4,7 +4,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
-using UKHO.S100PermitService.Common.Models.ProductKeyServices;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -109,9 +109,9 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private static List<ProductKeyServiceRequests> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse)
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse)
         {
-            return holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequests
+            return holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
             {
                 ProductName = y.CellCode,
                 Edition = y.LatestEditionNumber

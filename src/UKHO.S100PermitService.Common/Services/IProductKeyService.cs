@@ -1,9 +1,9 @@
-﻿using UKHO.S100PermitService.Common.Models.ProductKeyServices;
+﻿using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
     public interface IProductKeyService
     {
-        Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequests> productKeyServiceRequest, string correlationId);
+        Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequest(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId);
     }
 }

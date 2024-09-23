@@ -9,7 +9,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using UKHO.S100PermitService.Common.Models.ProductKeyServices;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 

@@ -3,7 +3,7 @@ using FluentAssertions;
 using Newtonsoft.Json;
 using System.Net;
 using UKHO.S100PermitService.Common.Clients;
-using UKHO.S100PermitService.Common.Models.ProductKeyServices;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Helpers
@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [Test]
         public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOKResponse()
         {
-            var productKeyServiceRequestData = JsonConvert.SerializeObject(new List<ProductKeyServiceRequests>() { new() { ProductName = "test101", Edition = "1" } });
+            var productKeyServiceRequestData = JsonConvert.SerializeObject(new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } });
 
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                                     JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>()
