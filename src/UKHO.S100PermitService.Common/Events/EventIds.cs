@@ -96,17 +96,17 @@
         CachingExternalEndPointTokenCompleted = 840018,
 
         /// <summary>
-        /// 840019 - Holdings service get holdings request started
+        /// 840019 - Request to Holdings service GetHoldings started
         /// </summary>
         HoldingsServiceGetHoldingsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Holdings service get holdings request completed
+        /// 840020 - Request to Holdings service GetHoldings completed
         /// </summary>
         HoldingsServiceGetHoldingsRequestCompleted = 840020,
 
         /// <summary>
-        /// 840021 - Holdings service get holdings request failed
+        /// 840021 - Request to Holdings service GetHoldings failed
         /// </summary>
         HoldingsServiceGetHoldingsRequestFailed = 840021,
 
@@ -126,17 +126,17 @@
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get permit key from product key service started
+        /// 840025 - Get permit key from Product Key Service started
         /// </summary>
         ProductKeyServicePostPermitKeyRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get permit key from product key service completed
+        /// 840026 - Get permit key from Product Key Service completed
         /// </summary>
         ProductKeyServicePostPermitKeyRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get permit key from product key service
+        /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
         ProductKeyServicePostPermitKeyRequestFailed = 840027
     }
