@@ -1,4 +1,6 @@
-﻿using System.Text;
+﻿using Newtonsoft.Json;
+using System.Text;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
@@ -11,10 +13,13 @@ namespace UKHO.S100PermitService.Common.Clients
             _httpClient = httpClientFactory.CreateClient();
         }
 
-        public async Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payLoad, string accessToken, string correlationId)
+        public async Task<HttpResponseMessage> GetProductKeysAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest,
+                                                                    string accessToken, CancellationToken cancellationToken, string correlationId)
         {
-            using var httpRequestMessage = new HttpRequestMessage(httpMethod, uri);
-            httpRequestMessage.Content = new StringContent(payLoad, Encoding.UTF8, "application/json");
+            var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
+
+            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+            httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
 
             if(!string.IsNullOrEmpty(accessToken))
             {
@@ -22,7 +27,7 @@ namespace UKHO.S100PermitService.Common.Clients
                 httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
 
-            return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+            return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
         }
     }
 }

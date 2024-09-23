@@ -56,10 +56,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
-            A.CallTo(() => _fakeProductKeyService.PostProductKeyServiceRequestAsync(A<List<ProductKeyServiceRequest>>.Ignored,A<string>.Ignored))
+            A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                             .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
+            await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
@@ -110,10 +110,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenEmptyPermitXml_ThenFileIsNotCreated()
         {
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
-            A.CallTo(() => _fakeProductKeyService.PostProductKeyServiceRequestAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                          .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            await _permitService.CreatePermitAsync(1, _fakeCorrelationId);
+            await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
 

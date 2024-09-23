@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequestAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId)
+        public async Task<List<ProductKeyServiceResponse>> GetPermitKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 
@@ -42,9 +42,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
-            var payloadJson = JsonConvert.SerializeObject(productKeyServiceRequest);
-
-            var httpResponseMessage = await _productKeyServiceApiClient.CallProductKeyServiceApiAsync(uri.AbsoluteUri, HttpMethod.Post, payloadJson, accessToken, correlationId);
+            var httpResponseMessage = await _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId);
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {

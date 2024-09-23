@@ -27,6 +27,8 @@ namespace UKHO.S100PermitService.API
     {
         private const string HoldingsServiceApiConfiguration = "HoldingsServiceApiConfiguration";
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
+        private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
+        private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
 
         private static void Main(string[] args)
         {           
@@ -112,10 +114,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddDistributedMemoryCache();
 
-            builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection("EventHubLoggingConfiguration"));
-            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection("HoldingsServiceApiConfiguration"));
-            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection("UserPermitServiceApiConfiguration"));
-            builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection("ProductKeyServiceApiConfiguration"));
+            builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
+            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
+            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
+            builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -152,7 +154,7 @@ namespace UKHO.S100PermitService.API
                 client.Timeout = TimeSpan.FromMinutes(userPermitServiceApiConfiguration.RequestTimeoutInMinutes);
             });
 
-            var productKeyServiceApiConfiguration = builder.Configuration.GetSection("ProductKeyServiceApiConfiguration").Get<ProductKeyServiceApiConfiguration>();
+            var productKeyServiceApiConfiguration = builder.Configuration.GetSection(ProductKeyServiceApiConfiguration).Get<ProductKeyServiceApiConfiguration>();
             builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
             {
                 client.BaseAddress = new Uri(productKeyServiceApiConfiguration.BaseUrl);

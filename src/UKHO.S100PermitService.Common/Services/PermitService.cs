@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
         }
 
-        public async Task CreatePermitAsync(int licenceId, string correlationId)
+        public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-            var pksResponseData = await _productKeyService.PostProductKeyServiceRequestAsync(productKeyServiceRequest, correlationId);
+            var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
             const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
 
@@ -108,14 +108,11 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        [ExcludeFromCodeCoverage]
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse)
-        {
-            return holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-            {
-                ProductName = y.CellCode,
-                Edition = y.LatestEditionNumber
-            })).ToList();
-        }
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse) =>
+             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+             {
+                 ProductName = y.CellCode,
+                 Edition = y.LatestEditionNumber
+             })).ToList();
     }
 }

@@ -1,7 +1,10 @@
-﻿namespace UKHO.S100PermitService.Common.Clients
+﻿using UKHO.S100PermitService.Common.Models.ProductKeyService;
+
+namespace UKHO.S100PermitService.Common.Clients
 {
     public interface IProductKeyServiceApiClient
     {
-        Task<HttpResponseMessage> CallProductKeyServiceApiAsync(string uri, HttpMethod httpMethod, string payLoad, string accessToken, string correlationId);
+        Task<HttpResponseMessage> GetProductKeysAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest,
+                                                                string accessToken, CancellationToken cancellationToken, string correlationId);
     }
 }

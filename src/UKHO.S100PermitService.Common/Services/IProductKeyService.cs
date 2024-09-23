@@ -4,6 +4,6 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public interface IProductKeyService
     {
-        Task<List<ProductKeyServiceResponse>> PostProductKeyServiceRequestAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId);
+        Task<List<ProductKeyServiceResponse>> GetPermitKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId);
     }
 }

@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [Test]
         public void WhenValidDataIsPassed_ThenProductKeyServiceReturnsOkResponse()
         {
-            var productKeyServiceRequestData = JsonConvert.SerializeObject(new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } });
+            var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
 
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                                     JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>()
@@ -40,7 +40,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.CallProductKeyServiceApiAsync("http://test.com", HttpMethod.Post, productKeyServiceRequestData, "testToken", _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", CancellationToken.None, _fakeCorrelationId);
 
             var deSerializedResult = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.CallProductKeyServiceApiAsync("http://test.com", HttpMethod.Post, "", string.Empty, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com",new List<ProductKeyServiceRequest>() { }, "", CancellationToken.None, _fakeCorrelationId);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }

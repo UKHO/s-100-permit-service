@@ -18,5 +18,10 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             return _httpContextAccessor.HttpContext!.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
         }
+
+        protected CancellationToken IsRequestCancelled()
+        {
+            return _httpContextAccessor.HttpContext.RequestAborted;
+        }
     }
 }
