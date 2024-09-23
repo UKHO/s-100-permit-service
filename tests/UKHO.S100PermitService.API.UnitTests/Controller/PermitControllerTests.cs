@@ -46,7 +46,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
 
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, CancellationToken.None, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
