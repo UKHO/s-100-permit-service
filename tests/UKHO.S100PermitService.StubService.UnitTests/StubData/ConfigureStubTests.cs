@@ -31,12 +31,12 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
         [Test]
         public void WhenConfigureProductKeyServiceStub_ThenEnsureRequiredNumberOfJsonFilesAreInPlace()
         {
-            var ResponseFileDirectory = @"StubData\PKS";
+            var ResponseFileDirectory = @"StubData\ProductKeyService";
             var _responseFileDirectoryPath = Path.Combine(Environment.CurrentDirectory, ResponseFileDirectory);
 
             var jsonFiles = Directory.GetFiles(_responseFileDirectoryPath, "*.json");
 
-            jsonFiles.Length.Should().Be(7, "there should be exactly 7 json files in the StubData\\PKS folder");
+            jsonFiles.Length.Should().Be(7, "there should be exactly 7 json files in the StubData\\ProductKeyService folder");
         }
     }
 }

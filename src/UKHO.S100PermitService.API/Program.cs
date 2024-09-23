@@ -4,7 +4,6 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Serilog;
@@ -28,6 +27,8 @@ namespace UKHO.S100PermitService.API
     {
         private const string HoldingsServiceApiConfiguration = "HoldingsServiceApiConfiguration";
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
+        private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
+        private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
 
         private static void Main(string[] args)
         {           
@@ -68,7 +69,7 @@ namespace UKHO.S100PermitService.API
         private static void ConfigureConfiguration(WebApplicationBuilder builder)
         {
             builder.Configuration.AddJsonFile("appsettings.json", false, true);
-#if DEBUG            
+#if DEBUG
             builder.Configuration.AddJsonFile("appsettings.local.overrides.json", true, true);
 #endif
             builder.Configuration.AddEnvironmentVariables();
@@ -113,9 +114,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddDistributedMemoryCache();
 
-            builder.Services.Configure<EventHubLoggingConfiguration>(builder.Configuration.GetSection("EventHubLoggingConfiguration"));
+            builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
+            builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -152,18 +154,28 @@ namespace UKHO.S100PermitService.API
                 client.Timeout = TimeSpan.FromMinutes(userPermitServiceApiConfiguration.RequestTimeoutInMinutes);
             });
 
+            var productKeyServiceApiConfiguration = builder.Configuration.GetSection(ProductKeyServiceApiConfiguration).Get<ProductKeyServiceApiConfiguration>();
+            builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
+            {
+                client.BaseAddress = new Uri(productKeyServiceApiConfiguration.BaseUrl);
+                client.Timeout = TimeSpan.FromMinutes(productKeyServiceApiConfiguration.RequestTimeoutInMinutes);
+            });
+
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
+            builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
+            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

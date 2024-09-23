@@ -1,0 +1,71 @@
+﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Net;
+using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Providers;
+
+namespace UKHO.S100PermitService.Common.Services
+{
+    public class ProductKeyService : IProductKeyService
+    {
+        private readonly ILogger<ProductKeyService> _logger;
+        private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
+        private readonly IProductKeyServiceAuthTokenProvider _productKeyServiceAuthTokenProvider;
+        private readonly IProductKeyServiceApiClient _productKeyServiceApiClient;
+        private const string KeysEnc = "/keys/s100";
+
+        public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient)
+        {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
+            _productKeyServiceAuthTokenProvider = productKeyServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(productKeyServiceAuthTokenProvider));
+            _productKeyServiceApiClient = productKeyServiceApiClient ?? throw new ArgumentNullException(nameof(productKeyServiceApiClient));
+        }
+
+        /// <summary>
+        /// Get permit key from Product Key Service
+        /// </summary>
+        /// <param name="productKeyServiceRequest"></param>
+        /// <param name="correlationId"></param>
+        /// <returns>ProductKeyServiceResponse</returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<List<ProductKeyServiceResponse>> GetPermitKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
+        {
+            var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
+
+            _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsoluteUri);
+
+            var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
+
+            var httpResponseMessage = await _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId);
+
+            if(httpResponseMessage.IsSuccessStatusCode)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
+
+                var productKeyServiceResponse = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(bodyJson)!;
+                return productKeyServiceResponse;
+            }
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+
+                throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(),
+                    "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1} | Error Details : {2}",
+                    uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
+            }
+
+            throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(),
+                "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}",
+                uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
+        }
+    }
+}

@@ -96,38 +96,48 @@
         CachingExternalEndPointTokenCompleted = 840018,
 
         /// <summary>
-        /// 840019 - Request sent to the server is incorrect or corrupt.
+        /// 840019 - Request to Holdings service GetHoldings started
         /// </summary>
-        BadRequest = 840019,
+        HoldingsServiceGetHoldingsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Holdings service get holdings request started
+        /// 840020 - Request to Holdings service GetHoldings completed
         /// </summary>
-        HoldingsServiceGetHoldingsRequestStarted = 840020,
+        HoldingsServiceGetHoldingsRequestCompleted = 840020,
 
         /// <summary>
-        /// 840021 - Holdings service get holdings request completed
+        /// 840021 - Request to Holdings service GetHoldings failed
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompleted = 840021,
+        HoldingsServiceGetHoldingsRequestFailed = 840021,
 
         /// <summary>
-        /// 840022 - Holdings service get holdings request failed
+        /// 840022 - Request to UserPermitService GetUserPermit endpoint started
         /// </summary>
-        HoldingsServiceGetHoldingsRequestFailed = 840022,
-                
-        /// <summary>
-        /// 840023 - Request to UserPermitService GetUserPermit endpoint started
-        /// </summary>
-        UserPermitServiceGetUserPermitsRequestStarted = 840023,
+        UserPermitServiceGetUserPermitsRequestStarted = 840022,
 
         /// <summary>
-        /// 840024 - Request to UserPermitService GetUserPermit endpoint completed
+        /// 840023 - Request to UserPermitService GetUserPermit endpoint completed
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompleted = 840024,
+        UserPermitServiceGetUserPermitsRequestCompleted = 840023,
 
         /// <summary>
-        /// 840025 - Request to UserPermitService GetUserPermit endpoint failed
+        /// 840024 - Request to UserPermitService GetUserPermit endpoint failed
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestFailed = 840025
+        UserPermitServiceGetUserPermitsRequestFailed = 840024,
+
+        /// <summary>
+        /// 840025 - Get permit key from Product Key Service started
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+
+        /// <summary>
+        /// 840026 - Get permit key from Product Key Service completed
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+
+        /// <summary>
+        /// 840027 - Exception occurred while get permit key from Product Key Service
+        /// </summary>
+        ProductKeyServicePostPermitKeyRequestFailed = 840027
     }
 }
