@@ -1,0 +1,15 @@
+[
+  {
+    "productCode": "P2342",
+    "productTitle": "P2342",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "101GB50080ABCDEFG.000",
+        "cellTitle": "101GB50080ABCDEFG",
+        "latestEditionNumber": "2",
+        "latestUpdateNumber": "3"
+      }
+    ]
+  }
+]

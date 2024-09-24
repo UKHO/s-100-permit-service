@@ -1,15 +1,15 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
-using UKHO.S100PermitService.Common;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.API.Middleware;
+using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 
 namespace UKHO.S100PermitService.API.UnitTests.Middleware
 {

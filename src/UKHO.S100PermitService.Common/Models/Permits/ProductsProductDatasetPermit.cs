@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace UKHO.S100PermitService.Common.Models
+namespace UKHO.S100PermitService.Common.Models.Permits
 {
     [ExcludeFromCodeCoverage]
-    [System.Serializable()]
+    [Serializable()]
     [System.ComponentModel.DesignerCategory("code")]
     public partial class ProductsProductDatasetPermit
     {
