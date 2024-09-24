@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.API.Middleware
 
         private async Task HandleExceptionAsync(HttpContext httpContext, Exception exception, EventId eventId, string message, params object[] messageArgs)
         {
-            httpContext.Response.ContentType = "application/json";
+            httpContext.Response.ContentType = PermitServiceConstants.ContentType;
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
             _logger.LogError(eventId, exception, message, messageArgs);
@@ -46,10 +46,7 @@ namespace UKHO.S100PermitService.API.Middleware
                 Status = httpContext.Response.StatusCode,
                 Extensions =
                 {
-                    ["correlationId"] = correlationId,
-                    ["eventId"] = eventId.Id,
-                    ["eventName"] = eventId.Name,
-                    ["message"] = string.Format(message, messageArgs)
+                    ["correlationId"] = correlationId
                 }
             };
 

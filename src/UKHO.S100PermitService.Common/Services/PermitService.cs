@@ -35,11 +35,11 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, correlationId);
+            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
             var productsList = GetProductsList();
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, correlationId);
+            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
