@@ -10,22 +10,27 @@ namespace UKHO.S100PermitService.Common.Securities
     {
         private static readonly int _keySize = 128;
         private static readonly int _keySizeEncoded = _keySize / 4;
+        protected readonly Aes aes;
+
+        public S100Crypt()
+        {
+            using var aes = Aes.Create();
+            aes.BlockSize = _keySize;
+            aes.KeySize = _keySize;
+            aes.IV = new byte[16];
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.None;
+        }
 
         public string Decrypt(string hexString, string keyHexEncoded)
         {
             if(keyHexEncoded.Length != _keySizeEncoded)
             {
-                throw new PermitServiceException(EventIds.HexKeyLengthError.ToEventId(), $"Expected encoded key length {0}, but found {1}.",
+                throw new PermitServiceException(EventIds.HexKeyLengthError.ToEventId(), "Expected encoded key length {0}, but found {1}.",
                                                                                                 _keySizeEncoded, keyHexEncoded.Length);
             }
 
-            using var aes = Aes.Create();
-            aes.BlockSize = _keySize;
-            aes.KeySize = _keySize;
-            aes.IV = new byte[16];
             aes.Key = StringToByteArray(keyHexEncoded);
-            aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.None;
 
             // decryption
             var encryptedByte = StringToByteArray(hexString);
