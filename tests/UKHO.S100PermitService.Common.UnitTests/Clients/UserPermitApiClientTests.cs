@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         private UserPermitApiClient? _userPermitApiClient;
         private IHttpClientFactory _fakeHttpClientFactory;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
-        private const string ValidResponse = "[{\r\n  \"licenceId\": \"1\",\r\n  \"userPermits\": [\r\n    {\r\n      \"title\": \"Port Radar\",\r\n      \"upn\": \"FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3\"\r\n    }\r\n  ]\r\n}]";
+        private const string ValidResponse = "[{\r\n  \"licenceId\": 1,\r\n  \"userPermits\": [\r\n    {\r\n      \"title\": \"Port Radar\",\r\n      \"upn\": \"FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3\"\r\n    }\r\n  ]\r\n}]";
 
         [SetUp]
         public void SetUp()
