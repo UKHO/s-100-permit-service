@@ -16,6 +16,8 @@ using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -31,7 +33,7 @@ namespace UKHO.S100PermitService.API
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
 
         private static void Main(string[] args)
-        {           
+        {
             var builder = WebApplication.CreateBuilder(args);
 
             ConfigureConfiguration(builder);
@@ -140,12 +142,15 @@ namespace UKHO.S100PermitService.API
                 options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
+            var retryCount = Convert.ToInt32(configuration["RetryConfiguration:RetryCount"]);
+            var sleepDuration = Convert.ToDouble(configuration["RetryConfiguration:SleepDurationInSeconds"]);
+
             var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
             {
                 client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
                 client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
-            });
+            }).AddPolicyHandler((services, request) => RetryPolicy.GetRetryPolicy(services.GetService<ILogger<IHoldingsApiClient>>(), EventIds.RetryHttpClientHoldingsRequest, retryCount, sleepDuration));
 
             var userPermitServiceApiConfiguration = builder.Configuration.GetSection(UserPermitServiceApiConfiguration).Get<UserPermitServiceApiConfiguration>();
             builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>

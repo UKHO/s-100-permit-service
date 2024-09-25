@@ -138,6 +138,11 @@
         /// <summary>
         /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027
+        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+
+        /// <summary>
+        /// 840028 - Request for retrying holdings api endpoint
+        /// </summary>
+        RetryHttpClientHoldingsRequest = 840028
     }
 }
