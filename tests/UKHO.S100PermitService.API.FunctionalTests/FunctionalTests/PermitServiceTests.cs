@@ -26,6 +26,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
+        // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
@@ -33,6 +34,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
+        // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
@@ -41,6 +43,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }
 
+        // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
         {
@@ -48,6 +51,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)401);
         }
 
+        // PBI 172721: Get Holdings from Shop Facade stub
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInvalidLicenceIdAsAlphanumericSpecialChars_ThenBadRequest400IsReturned()
         {
@@ -55,6 +59,39 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             {
                 var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
                 response.StatusCode.Should().Be((HttpStatusCode)400);
+            }
+        }
+
+        // PBI 172721: Get Holdings from Shop Facade stub
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveHoldings_ThenInternalServerError500IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidHoldingsLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)500);
+            }
+        }
+
+        // PBI 172722: Get UPNs from Shop Facade stub
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveUPN_ThenInternalServerError500IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidUPNLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)500);
+            }
+        }
+
+        // PBI 172910: Get Permit Keys from PKS stub
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveKey_ThenInternalServerError500IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidPKSLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)500);
             }
         }
 

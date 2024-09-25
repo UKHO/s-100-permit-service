@@ -9,6 +9,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
     {
         private TokenConfiguration? _tokenConfiguration;
 
+        /// <summary>
+        /// This method is used to generate the token
+        /// </summary>
+        /// <param name="clientId">Sets the Client ID to generate the token</param>
+        /// <param name="clientSecret">Sets the Client Secret to generate the token</param>
+        /// <returns></returns>
         public async Task<string> GetPermitServiceToken(string clientId, string clientSecret)
         {
             var serviceProvider = GetServiceProvider();
