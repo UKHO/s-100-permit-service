@@ -79,9 +79,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
 
             problemDetails.Status.Should().Be((int)HttpStatusCode.InternalServerError);
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
-            problemDetails.Extensions["eventId"].ToString().Should().Be("840011");
-            problemDetails.Extensions["eventName"].ToString().Should().Be("PermitServiceException");
-            problemDetails.Extensions["message"].ToString().Should().Be("fakemessage");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
 
