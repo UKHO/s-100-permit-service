@@ -5,6 +5,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Securities;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -17,18 +18,21 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
+        private readonly IS100Manufacturer _s100Manufacturer;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
                                 IHoldingsService holdingsService,
                                 IUserPermitService userPermitService,
-                                IProductKeyService productKeyService)
+                                IProductKeyService productKeyService,
+                                IS100Manufacturer s100Manufacturer)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
+            _s100Manufacturer = s100Manufacturer ?? throw new ArgumentNullException(nameof(s100Manufacturer));
         }
 
         public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)

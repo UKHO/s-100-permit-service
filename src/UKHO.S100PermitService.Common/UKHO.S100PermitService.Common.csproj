@@ -23,4 +23,8 @@
     <PackageReference Include="UKHO.Logging.EventHubLogProvider" Version="1.24163.8" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Utilities\" />
+  </ItemGroup>
+
 </Project>

@@ -138,6 +138,21 @@
         /// <summary>
         /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027
+        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+
+        /// <summary>
+        /// Expected encoded key length not found
+        /// </summary>
+        HexKeyLengthError = 840028,
+
+        /// <summary>
+        /// Data decryption started
+        /// </summary>
+        DecryptionStarted = 840029,
+
+        /// <summary>
+        /// Data decryption completed
+        /// </summary>
+        DecryptionCompleted = 840030
     }
 }
