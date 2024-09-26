@@ -40,7 +40,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
             _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
 
             var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", _correlationId);
-
             var deserializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -48,10 +47,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
         }
 
         [Test]
-        public void WhenInvalidHoldingsServiceDataIsPassed_ThenReturnsUnauthorizedResponse()
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        [TestCase(HttpStatusCode.Unauthorized)]
+        [TestCase(HttpStatusCode.InternalServerError)]
+        [TestCase(HttpStatusCode.ServiceUnavailable)]
+        [TestCase(HttpStatusCode.UnsupportedMediaType)]
+        public void WhenInvalidHoldingsServiceDataIsPassed_ThenResponseShouldNotBeOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
+                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), httpStatusCode);
 
             var httpClient = new HttpClient(messageHandler)
             {
@@ -64,7 +69,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, null, _correlationId);
 
-            result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            result.Result.StatusCode.Should().Be(httpStatusCode);
         }
     }
 }

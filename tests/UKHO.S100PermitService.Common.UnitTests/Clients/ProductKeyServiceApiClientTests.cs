@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com",new List<ProductKeyServiceRequest>() { }, "", CancellationToken.None, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", new List<ProductKeyServiceRequest>() { }, "", CancellationToken.None, _fakeCorrelationId);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }

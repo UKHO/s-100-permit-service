@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.Clients
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
             httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, "application/json");
 
-            if(accessToken != null)
+            if(!string.IsNullOrEmpty(accessToken))
             {
                 httpRequestMessage.SetBearerToken(accessToken);
                 httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
