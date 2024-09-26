@@ -8,5 +8,7 @@ namespace UKHO.S100PermitService.Common
         public const string XCorrelationIdHeaderKey = "X-Correlation-ID";
 
         public const string PermitServicePolicy = "PermitServiceUser";
+
+        public const string ContentType = "application/json";
     }
 }

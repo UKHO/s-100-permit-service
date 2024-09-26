@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _userPermitApiClient = new UserPermitApiClient(_fakeHttpClientFactory);
 
-            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", _fakeCorrelationId);
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", CancellationToken.None, _fakeCorrelationId);
 
             var deSerializedResult = JsonConvert.DeserializeObject<List<UserPermitServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -66,7 +66,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _userPermitApiClient = new UserPermitApiClient(_fakeHttpClientFactory);
 
-            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, string.Empty, _fakeCorrelationId);
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, string.Empty, CancellationToken.None, _fakeCorrelationId);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }
