@@ -141,23 +141,33 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// Expected encoded key length not found
+        /// 840028 - Expected hex length not found
         /// </summary>
-        HexKeyLengthError = 840028,
+        HexLengthError = 840028,
 
         /// <summary>
-        /// Data decryption started
+        /// 840029 - Get enc keys from permit keys started
         /// </summary>
-        DecryptionStarted = 840029,
+        GetEncKeysFromPermitKeysStarted = 840029,
 
         /// <summary>
-        /// Data decryption completed
+        /// 840030 - Get enc keys from permit keys completed
         /// </summary>
-        DecryptionCompleted = 840030,
+        GetEncKeysFromPermitKeysCompleted = 840030,
 
         /// <summary>
-        /// 840031 - User permit fields validation failed
+        /// 840031 - Get hardware id from user permit started
         /// </summary>
-        UserPermitFieldsValidationFailed = 840031
+        GetHwIdFromUserPermitStarted = 840031,
+
+        /// <summary>
+        /// 840032 - Get hardware id from user permit completed
+        /// </summary>
+        GetHwIdFromUserPermitCompleted = 840032,
+
+        /// <summary>
+        /// 840033 - User permit fields validation failed
+        /// </summary>
+        UserPermitFieldsValidationFailed = 840033
     }
 }
