@@ -45,8 +45,7 @@ namespace UKHO.S100PermitService.API
                 app.UseDeveloperExceptionPage();
             }
 
-            var cacheService = app.Services.GetRequiredService<IManufacturerKeyService>();
-            cacheService.CacheManufacturerKeysAsync();
+            app.Services.GetRequiredService<IManufacturerKeyService>();           
 
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -170,10 +169,11 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>(service =>
-            {
-                return new ManufacturerKeyService(configuration);
-            });
+            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
+            //(service =>
+            //{
+            //    return new ManufacturerKeyService(configuration);
+            //});
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();

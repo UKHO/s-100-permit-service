@@ -2,6 +2,9 @@
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
+using UKHO.S100PermitService.Common.Cache;
+using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -14,10 +17,9 @@ namespace UKHO.S100PermitService.Common.Services
 
         public ManufacturerKeyService(IConfiguration configuration)
         {
-            _memoryCache = CreateMemoryCache();
             _keyVaultEndpoint = configuration["ManufacturerKeyVault:ServiceUri"]!;
             _secretClient = new SecretClient(new Uri(_keyVaultEndpoint), new DefaultAzureCredential());
-            ///CacheManufactureKeysAsync();
+            _memoryCache = CachingEngine.CreateMemoryCache();
             new Action(async () => await CacheManufacturerKeysAsync())();
         }
 
@@ -27,25 +29,39 @@ namespace UKHO.S100PermitService.Common.Services
             if(!string.IsNullOrEmpty(_keyVaultEndpoint))
             {
                 var secretProperties = _secretClient.GetPropertiesOfSecrets();
-                foreach(var secretProperty in secretProperties)
+
+                if(!secretProperties.Any())
                 {
-                    var secretName = secretProperty.Name;
-                    var secretValues  = await GetSetManufacturerValue(secretName);
+                    throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInCache.ToEventId(), "No Secrets found in Manufacturer Keyvault");
                 }
-                //log exception- no secrets found
+                else
+                {
+                    foreach(var secretProperty in secretProperties)
+                    {
+                        var secretName = secretProperty.Name;
+                        await GetSetManufacturerValue(secretName);
+                    }
+                }
             }
         }
 
         // call from controller
         public async Task<string> GetManufacturerKeysAsync(string secretName)
         {
-            if(_memoryCache.TryGetValue(secretName, out string? secretValue))
+            try
             {
-                return secretValue;
-            }
+                if(_memoryCache.TryGetValue(secretName, out string? secretValue))
+                {
+                    return secretValue;
+                }
 
-            var secret = await GetSetManufacturerValue(secretName);
-            return secret;
+                var secret = await GetSetManufacturerValue(secretName);
+                return secret;
+            }
+            catch
+            {
+                throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInCache.ToEventId(), "No Secret found for M_Id in Manufacturer Keyvault");
+            }
         }
 
         //child method
@@ -55,12 +71,6 @@ namespace UKHO.S100PermitService.Common.Services
 
             _memoryCache.Set(secretName, secret, _defaultCacheExpiryDuration);
             return secret;
-        }
-
-        private static MemoryCache CreateMemoryCache()
-        {
-            var memoryCacheOptions = new MemoryCacheOptions();
-            return new MemoryCache(memoryCacheOptions);
-        }
+        }        
     }
 }
