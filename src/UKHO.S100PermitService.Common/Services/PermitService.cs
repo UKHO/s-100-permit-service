@@ -5,6 +5,8 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
+using UKHO.S100PermitService.Common.Validation;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -17,18 +19,21 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
+        private readonly IUserPermitValidator _userPermitValidator;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
                                 IHoldingsService holdingsService,
                                 IUserPermitService userPermitService,
-                                IProductKeyService productKeyService)
+                                IProductKeyService productKeyService,
+                                IUserPermitValidator userPermitValidator)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
+            _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
         }
 
         public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -41,6 +46,29 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
+            List<UserPermitFields> userPermitFields = [];
+
+            //map userPermitServiceResponse to UPNFields
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
+            {
+                userPermitFields.Add(MapUPNsFromUserPermitServiceResponse(userPermit));
+            }
+
+            foreach(var item in userPermitFields)
+            {
+                var result = _userPermitValidator.Validate(item);
+                if(result.IsValid)
+                {
+                    //string hwId = s100Service.GetDecryptedHwdId(upn, upn[40..], mkey);
+
+                    //return new JsonResult(hwId);
+                }
+                else
+                {
+                    _logger.LogInformation(EventIds.UserPermitFieldsValidationFailed.ToEventId(), "User permit fields validation failed");
+                }
+            }
+
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
             var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
@@ -50,6 +78,16 @@ namespace UKHO.S100PermitService.Common.Services
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+        }
+        private UserPermitFields MapUPNsFromUserPermitServiceResponse(UserPermit userPermit)
+        {
+            return new()
+            {
+                Upn = userPermit.Upn,
+                EncryptedHardwareId = userPermit.Upn.Substring(0, 32),
+                CheckSum = userPermit.Upn.Substring(32, 8),
+                MId = userPermit.Upn.Substring(40, 6)
+            };
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)

@@ -19,6 +19,7 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Validation;
 
 namespace UKHO.S100PermitService.API
 {
@@ -173,6 +174,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
+            builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

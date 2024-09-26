@@ -138,6 +138,11 @@
         /// <summary>
         /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027
+        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+
+        /// <summary>
+        /// 840028 - User permit fields validation failed
+        /// </summary>
+        UserPermitFieldsValidationFailed = 840028
     }
 }
