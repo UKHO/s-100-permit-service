@@ -2,6 +2,6 @@
 {
     public interface IS100Crypt
     {
-        string DecryptData(string hexString, string keyHexEncoded);
+        string GetEncKeysFromPermitKeys(string hexString, string keyHexEncoded);
     }
 }

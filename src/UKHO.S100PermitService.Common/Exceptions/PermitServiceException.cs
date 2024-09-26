@@ -13,7 +13,7 @@ namespace UKHO.S100PermitService.Common.Exceptions
         public PermitServiceException(EventId eventId, string message, params object[] messageArguments) : base(message)
         {
             EventId = eventId;
-            MessageArguments = messageArguments ?? Array.Empty<object>();
+            MessageArguments = messageArguments ?? [];
         }
     }
 }
