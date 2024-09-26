@@ -136,6 +136,7 @@
 		<cve>CVE-2023-36558</cve>
 		<cve>CVE-2024-21386</cve>
 		<cve>CVE-2024-21404</cve>
+		<cve>CVE-2021-42306</cve>
 	</suppress>
 	<suppress>
 		<notes>
