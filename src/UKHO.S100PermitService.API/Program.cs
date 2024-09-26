@@ -31,6 +31,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
+        private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
         {
@@ -123,7 +124,7 @@ namespace UKHO.S100PermitService.API
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                   .AddJwtBearer("AzureAd", options =>
+                   .AddJwtBearer(AzureAdScheme, options =>
                    {
                        options.Audience = azureAdConfiguration.ClientId;
                        options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
@@ -133,7 +134,7 @@ namespace UKHO.S100PermitService.API
             {
                 options.DefaultPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
-                .AddAuthenticationSchemes("AzureAd")
+                .AddAuthenticationSchemes(AzureAdScheme)
                 .Build();
             });
 

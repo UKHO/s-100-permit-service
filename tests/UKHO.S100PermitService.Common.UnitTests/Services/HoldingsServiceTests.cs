@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenValidLicenceId_ThenHoldingsServiceReturns200OkResponse()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
@@ -83,7 +83,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            List<HoldingsServiceResponse> response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId);
+            var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
             response.Equals(JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(OkResponseContent));
 
@@ -117,10 +117,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(licenceId, _fakeCorrelationId));
+            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -138,7 +138,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
@@ -151,7 +151,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId));
+            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId));
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
