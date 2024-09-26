@@ -18,7 +18,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
-using UKHO.S100PermitService.Common.Securities;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -169,8 +169,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
-            builder.Services.AddScoped<IS100Manufacturer, S100Manufacturer>();
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();
+            builder.Services.AddScoped<IAesEncryption, AesEncryption>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

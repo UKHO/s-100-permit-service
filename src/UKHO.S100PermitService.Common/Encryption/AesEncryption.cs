@@ -3,16 +3,16 @@ using System.Security.Cryptography;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 
-namespace UKHO.S100PermitService.Common.Securities
+namespace UKHO.S100PermitService.Common.Encryption
 {
     [ExcludeFromCodeCoverage]
-    public class S100Crypt : IS100Crypt
+    public class AesEncryption : IAesEncryption
     {
         private static readonly int _keySize = 128;
         private static readonly int _keySizeEncoded = _keySize / 4;
         protected readonly Aes aes;
 
-        public S100Crypt()
+        public AesEncryption()
         {
             using var aes = Aes.Create();
             aes.BlockSize = _keySize;

@@ -1,16 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 
-namespace UKHO.S100PermitService.Common.Securities
+namespace UKHO.S100PermitService.Common.Encryption
 {
-    public class S100Manufacturer : IS100Manufacturer
+    public class S100Crypt : IS100Crypt
     {
-        private readonly IS100Crypt _s100Crypt;
-        private readonly ILogger<S100Manufacturer> _logger;
+        private readonly IAesEncryption _aesEncryption;
+        private readonly ILogger<S100Crypt> _logger;
 
-        public S100Manufacturer(IS100Crypt s100Crypt, ILogger<S100Manufacturer> logger)
+        public S100Crypt(IAesEncryption aesEncryption, ILogger<S100Crypt> logger)
         {
-            _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
+            _aesEncryption = aesEncryption ?? throw new ArgumentNullException(nameof(aesEncryption));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -18,7 +18,7 @@ namespace UKHO.S100PermitService.Common.Securities
         {
             _logger.LogInformation(EventIds.DecryptionStarted.ToEventId(), "Decryption started");
 
-            var decryptedData = _s100Crypt.Decrypt(hexString, keyHexEncoded);
+            var decryptedData = _aesEncryption.Decrypt(hexString, keyHexEncoded);
 
             _logger.LogInformation(EventIds.DecryptionCompleted.ToEventId(), "Decryption completed");
 
