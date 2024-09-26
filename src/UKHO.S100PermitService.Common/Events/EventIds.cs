@@ -148,6 +148,11 @@
         /// <summary>
         /// 840029 - Added New KeyVault Secret.
         /// </summary>
-        AddedNewKeyVaultSecret = 840029
+        AddedNewKeyVaultSecret = 840029,
+
+        /// <summary>
+        /// 840029 - Manufacturer Id not found for Manufacturer keys in Memory cache.
+        /// </summary>
+        ManufacturerIdNotFoundInCache = 840030
     }
 }

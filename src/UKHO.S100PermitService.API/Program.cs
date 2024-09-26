@@ -17,7 +17,6 @@ using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
-using UKHO.S100PermitService.Common.Middleware;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
 
@@ -45,7 +44,10 @@ namespace UKHO.S100PermitService.API
             {
                 app.UseDeveloperExceptionPage();
             }
-           
+
+            var cacheService = app.Services.GetRequiredService<IManufacturerKeyService>();
+            cacheService.CacheManufacturerKeysAsync();
+
             app.UseHttpsRedirection();
             app.UseSwagger();
             app.UseSwaggerUI(c =>
@@ -56,10 +58,7 @@ namespace UKHO.S100PermitService.API
 
             app.UseCorrelationIdMiddleware();
             app.UseExceptionHandlingMiddleware();
-
-            app.UseMiddleware<KeyVaultSecretsMiddleware>();
-            var keyVaultSecretService = app.Services.GetRequiredService<IKeyVaultSecretService>();
-
+            
             app.UseHeaderPropagation();
             app.UseRouting();
 
@@ -117,6 +116,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddMemoryCache();
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
@@ -170,8 +170,11 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>(service =>
+            {
+                return new ManufacturerKeyService(configuration);
+            });
 
-            builder.Services.AddSingleton<IKeyVaultSecretService, KeyVaultSecretService>(); // Register the original configuration
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
@@ -181,8 +184,7 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
-            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
-            builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();         
+            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();                     
         }
 
         private static void ConfigureLogging(WebApplication webApplication)
