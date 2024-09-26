@@ -2,6 +2,7 @@
 {
     public interface IS100Crypt
     {
-        string GetEncKeysFromPermitKeys(string hexString, string keyHexEncoded);
+        string GetEncKeysFromPermitKeys(string permitKeys, string hardwareId);
+        string GetHwIdFromUserPermit(string upn, string mKey);
     }
 }
