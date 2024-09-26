@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitApiClient = userPermitApiClient ?? throw new ArgumentNullException(nameof(userPermitApiClient));
         }
 
-        public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, string correlationId)
+        public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(new Uri(_userPermitServiceApiConfiguration.Value.BaseUrl), string.Format(UserPermitUrl, licenceId));
 
@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken, correlationId);
+            var httpResponseMessage = await _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
