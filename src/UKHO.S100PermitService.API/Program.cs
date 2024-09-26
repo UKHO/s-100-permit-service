@@ -18,6 +18,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 using UKHO.S100PermitService.Common.Validation;
 
@@ -31,6 +32,7 @@ namespace UKHO.S100PermitService.API
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
         private const string AzureAdScheme = "AzureAd";
+        private const string AzureAdConfiguration = "AzureAdConfiguration";
 
         private static void Main(string[] args)
         {
@@ -121,7 +123,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
 
-            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            var azureAdConfiguration = configuration.GetSection(AzureAdConfiguration).Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer(AzureAdScheme, options =>
                    {
@@ -129,18 +131,12 @@ namespace UKHO.S100PermitService.API
                        options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
                    });
 
-            builder.Services.AddAuthorization(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            builder.Services.AddAuthorizationBuilder()
+                .SetDefaultPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AzureAdScheme)
-                .Build();
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
-            });
+                .Build())
+                .AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
 
             var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
@@ -174,6 +170,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
+            builder.Services.AddScoped<IS100Crypt, S100Crypt>();
+            builder.Services.AddScoped<IAesEncryption, AesEncryption>();
             builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();

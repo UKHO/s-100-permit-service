@@ -141,8 +141,23 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - User permit fields validation failed
+        /// Expected encoded key length not found
         /// </summary>
-        UserPermitFieldsValidationFailed = 840028
+        HexKeyLengthError = 840028,
+
+        /// <summary>
+        /// Data decryption started
+        /// </summary>
+        DecryptionStarted = 840029,
+
+        /// <summary>
+        /// Data decryption completed
+        /// </summary>
+        DecryptionCompleted = 840030,
+
+        /// <summary>
+        /// 840031 - User permit fields validation failed
+        /// </summary>
+        UserPermitFieldsValidationFailed = 840031
     }
 }
