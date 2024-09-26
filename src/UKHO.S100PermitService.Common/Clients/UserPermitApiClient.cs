@@ -11,10 +11,10 @@ namespace UKHO.S100PermitService.Common.Clients
             _httpClient = httpClientFactory.CreateClient();
         }
 
-        public async Task<HttpResponseMessage> GetUserPermitsAsync(string uri, int licenceId, string accessToken, string correlationId)
+        public async Task<HttpResponseMessage> GetUserPermitsAsync(string uri, int licenceId, string accessToken, CancellationToken cancellationToken, string correlationId)
         {
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
-            httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, "application/json");
+            httpRequestMessage.Content = new StringContent(licenceId.ToString(), Encoding.UTF8, PermitServiceConstants.ContentType);
 
             if(!string.IsNullOrEmpty(accessToken))
             {
@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Clients
                 httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
             }
 
-            return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+            return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
         }
     }
 }
