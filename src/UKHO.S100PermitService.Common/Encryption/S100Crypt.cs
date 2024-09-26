@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 {
     public class S100Crypt : IS100Crypt
     {
-        private readonly int _keySizeEncoded = 32;
+        private const int KeySizeEncoded = 32;
         private readonly IAesEncryption _aesEncryption;
         private readonly ILogger<S100Crypt> _logger;
 
@@ -29,13 +29,13 @@ namespace UKHO.S100PermitService.Common.Encryption
             return encKeys;
         }
 
-        public string GetHwIdFromUserPermit(string upn, string mKey)
+        public string GetHwIdFromUserPermit(string encryptedHardwareId, string mKey)
         {
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get hardware id from user permit started");
 
-            ValidateData(upn, mKey);
+            ValidateData(encryptedHardwareId, mKey);
 
-            var hardwareId = _aesEncryption.Decrypt(upn, mKey);
+            var hardwareId = _aesEncryption.Decrypt(encryptedHardwareId, mKey);
 
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitCompleted.ToEventId(), "Get hardware id from user permit completed");
 
@@ -44,15 +44,15 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         private bool ValidateData(string upn, string key)
         {
-            if(upn.Length != _keySizeEncoded)
+            if(upn.Length != KeySizeEncoded)
             {
                 throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected upn data length {0}, but found {1}.",
-                                                                                                                _keySizeEncoded, upn.Length);
+                                                                                                                KeySizeEncoded, upn.Length);
             }
-            if(key.Length != _keySizeEncoded)
+            if(key.Length != KeySizeEncoded)
             {
                 throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected encoded key length {0}, but found {1}.",
-                                                                                                                _keySizeEncoded, key.Length);
+                                                                                                                KeySizeEncoded, key.Length);
             }
             return true;
         }

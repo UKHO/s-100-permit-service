@@ -168,6 +168,6 @@
         /// <summary>
         /// 840033 - User permit fields validation failed
         /// </summary>
-        UserPermitFieldsValidationFailed = 840033
+        UpnLengthValidationFailed = 840033
     }
 }

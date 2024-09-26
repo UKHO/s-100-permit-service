@@ -6,12 +6,18 @@ using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Encryption;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
+using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.Services
 {
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
+        private const int UpnLength = 46;
+        private const int MIdLength = 6;
+        private const int EncryptedHardwareIdLength = 32;
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -19,13 +25,15 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IS100Crypt _s100Crypt;
+        private readonly IUserPermitValidator _userPermitValidator;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
                                 IHoldingsService holdingsService,
                                 IUserPermitService userPermitService,
                                 IProductKeyService productKeyService,
-                                IS100Crypt s100Crypt)
+                                IS100Crypt s100Crypt,
+            IUserPermitValidator userPermitValidator)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -33,6 +41,7 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
+            _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
         }
 
         public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -41,30 +50,25 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
-            var productsList = GetProductsList();
-
-            var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
-
-            var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
-
-            foreach (var userPermits in userPermitServiceResponse.UserPermits)
+            if(ValidateUserPermisAsync(userPermitServiceResponse))
             {
-                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
-            };
+                var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
-            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
-        }
-        private UserPermitFields MapUPNsFromUserPermitServiceResponse(UserPermit userPermit)
-        {
-            return new()
-            {
-                Upn = userPermit.Upn,
-                EncryptedHardwareId = userPermit.Upn.Substring(0, 32),
-                CheckSum = userPermit.Upn.Substring(32, 8),
-                MId = userPermit.Upn.Substring(40, 6)
-            };
+                var productsList = GetProductsList();
+
+                var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
+
+                var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
+
+                foreach(var userPermits in userPermitServiceResponse.UserPermits)
+                {
+                    string decryptedHardwareId = RetrieveDecryptedHardwareId(userPermits.Upn);
+
+                    CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
+                };
+
+                _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+            }
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
@@ -129,5 +133,31 @@ namespace UKHO.S100PermitService.Common.Services
                  ProductName = y.CellCode,
                  Edition = y.LatestEditionNumber
              })).ToList();
+
+        private bool ValidateUserPermisAsync(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            var result = _userPermitValidator.Validate(userPermitServiceResponse);
+            if(result.IsValid)
+            {
+                return true;
+            }
+            else
+            {
+                throw new PermitServiceException(EventIds.UpnLengthValidationFailed.ToEventId(), "Invalid UPN. UPN must be {0} characters long", UpnLength);
+
+                // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
+            }
+        }
+
+        private string RetrieveDecryptedHardwareId(string upn)
+        {
+            //fetch mId from upn
+            var mId = upn.Substring(40, MIdLength);
+            //retrieve mKey from keyvault
+
+            var mKey = "";
+
+            return _s100Crypt.GetHwIdFromUserPermit(upn[..EncryptedHardwareIdLength], mKey);
+        }
     }
 }
