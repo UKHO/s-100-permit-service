@@ -141,18 +141,8 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - KeyVault Secret Updated.
-        /// </summary>
-        KeyVaultSecretUpdated = 840028,
-
-        /// <summary>
-        /// 840029 - Added New KeyVault Secret.
-        /// </summary>
-        AddedNewKeyVaultSecret = 840029,
-
-        /// <summary>
         /// 840029 - Manufacturer Id not found for Manufacturer keys in Memory cache.
         /// </summary>
-        ManufacturerIdNotFoundInCache = 840030
+        ManufacturerIdNotFoundInCache = 840028
     }
 }
