@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(ValidateUserPermisAsync(userPermitServiceResponse))
+            if(ValidateUpnsAndChecksumAsync(userPermitServiceResponse))
             {
                 var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 foreach(var userPermits in userPermitServiceResponse.UserPermits)
                 {
-                    string decryptedHardwareId = RetrieveDecryptedHardwareId(userPermits.Upn);
+                    var decryptedHardwareId = RetrieveDecryptedHardwareId(userPermits.Upn);
 
                     CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
                 };
@@ -134,7 +134,7 @@ namespace UKHO.S100PermitService.Common.Services
                  Edition = y.LatestEditionNumber
              })).ToList();
 
-        private bool ValidateUserPermisAsync(UserPermitServiceResponse userPermitServiceResponse)
+        private bool ValidateUpnsAndChecksumAsync(UserPermitServiceResponse userPermitServiceResponse)
         {
             var result = _userPermitValidator.Validate(userPermitServiceResponse);
             if(result.IsValid)
@@ -143,8 +143,16 @@ namespace UKHO.S100PermitService.Common.Services
             }
             else
             {
-                throw new PermitServiceException(EventIds.UpnLengthValidationFailed.ToEventId(), "Invalid UPN. UPN must be {0} characters long", UpnLength);
+                var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
+                    .Select(group => new
+                    {
+                        GroupKey = group.Key,
+                        ConcatenatedValues = string.Join(", ", group.Select(item => item.ErrorMessage).Distinct())
+                    });
 
+                var errorMessage = string.Join(", ", errorMessages.GroupBy(item => item.ConcatenatedValues).DistinctBy(a => a).Select(group => group.Key));
+
+                throw new PermitServiceException(EventIds.UpnLengthValidationFailed.ToEventId(), errorMessage.ToString());
                 // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
             }
         }
