@@ -403,8 +403,6 @@ stages:
         value: $(EntraID.ApplicationId)
       - name: "ProductKeyServiceApiConfiguration.ClientId"
         value: $(EntraID.ApplicationId)
-      - name: "ProductKeyServiceApiConfiguration.PermitHardwareId"
-        value: $(ProductKeyServiceApiConfiguration--PermitHardwareId)
     jobs:
       - deployment: DevDeployTerraform
         displayName: "Dev - Deploy Terraform"
