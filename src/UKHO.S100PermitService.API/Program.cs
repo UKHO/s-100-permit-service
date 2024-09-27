@@ -29,6 +29,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
+        private const string ManufacturerKeyvault = "ManufacturerKeyvault";
         private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
@@ -45,8 +46,6 @@ namespace UKHO.S100PermitService.API
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.Services.GetRequiredService<IManufacturerKeyService>();           
 
             app.UseHttpsRedirection();
             app.UseSwagger();
@@ -123,6 +122,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
+            builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyvault));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -170,12 +170,21 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
-            //(service =>
-            //{
-            //    return new ManufacturerKeyService(configuration);
-            //});
+           
+            builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
+            {
+                var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+                var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
+                var secretClient = sp.GetRequiredService <ISecretClient> ();
+                return new ManufacturerKeyService(config, cacheProvider, secretClient);
+            });
+            builder.Services.AddSingleton<ISecretClient>(sp =>
+            {
+                var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>().Value;
+                return new KeyVaultSecretClient(new Uri(config.ServiceUri));
+            });
 
+            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();            
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();

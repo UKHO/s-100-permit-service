@@ -11,29 +11,23 @@ namespace UKHO.S100PermitService.API.Controllers
     public class PermitController : BaseController<PermitController>
     {
         private readonly ILogger<PermitController> _logger;
-        private readonly IPermitService _permitService;        
-        
-        private readonly IManufacturerKeyService _manufacturerKeyService;
+        private readonly IPermitService _permitService;
 
         public PermitController(IHttpContextAccessor httpContextAccessor,
                                     ILogger<PermitController> logger,
-                                    IPermitService permitService,                                    
-                                    IManufacturerKeyService secretProvider)
+                                    IPermitService permitService)
         : base(httpContextAccessor)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _permitService = permitService ?? throw new ArgumentNullException(nameof(permitService));        
-            _manufacturerKeyService = secretProvider ?? throw new ArgumentNullException(nameof(secretProvider));
+            _permitService = permitService ?? throw new ArgumentNullException(nameof(permitService));
         }
 
         [HttpGet]
-        [Route("/permits/{licenceId}")]       
+        [Route("/permits/{licenceId}")]
         public virtual async Task<IActionResult> GeneratePermits(int licenceId)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
-             
-            var connectionString = await _manufacturerKeyService.GetManufacturerKeysAsync("80808");
-            
+
             await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");

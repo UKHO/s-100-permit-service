@@ -1,32 +1,32 @@
-﻿using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Configuration;
-using UKHO.S100PermitService.Common.Cache;
+﻿using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Options;
+using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Services
 {
     public class ManufacturerKeyService : IManufacturerKeyService
     {
-        private readonly TimeSpan _defaultCacheExpiryDuration = TimeSpan.FromHours(value: 2);
-        private readonly IMemoryCache _memoryCache;
-        private readonly SecretClient _secretClient;
-        private readonly string _keyVaultEndpoint;
+        private readonly IOptions<ManufacturerKeyConfiguration> _manufacturerKeyvault;
+        private readonly ICacheProvider _cacheProvider;
+        private readonly ISecretClient _secretClient;
 
-        public ManufacturerKeyService(IConfiguration configuration)
+        public ManufacturerKeyService(IOptions<ManufacturerKeyConfiguration> manufacturerKeyvault,
+                                        ICacheProvider cacheProvider,
+                                        ISecretClient secretClient)
         {
-            _keyVaultEndpoint = configuration["ManufacturerKeyVault:ServiceUri"]!;
-            _secretClient = new SecretClient(new Uri(_keyVaultEndpoint), new DefaultAzureCredential());
-            _memoryCache = CachingEngine.CreateMemoryCache();
-            new Action(async () => await CacheManufacturerKeysAsync())();
+            _manufacturerKeyvault = manufacturerKeyvault ?? throw new ArgumentNullException(nameof(manufacturerKeyvault));
+            _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
+            _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
+            CacheManufacturerKeys();
         }
 
-        //application start
-        public async Task CacheManufacturerKeysAsync()
+        public void CacheManufacturerKeys()
         {
-            if(!string.IsNullOrEmpty(_keyVaultEndpoint))
+            if(!string.IsNullOrEmpty(_manufacturerKeyvault.Value.ServiceUri))
             {
                 var secretProperties = _secretClient.GetPropertiesOfSecrets();
 
@@ -39,24 +39,23 @@ namespace UKHO.S100PermitService.Common.Services
                     foreach(var secretProperty in secretProperties)
                     {
                         var secretName = secretProperty.Name;
-                        await GetSetManufacturerValue(secretName);
+                        GetSetManufacturerValue(secretName);
                     }
                 }
             }
         }
 
-        // call from controller
-        public async Task<string> GetManufacturerKeysAsync(string secretName)
+        public string GetManufacturerKeys(string secretName)
         {
             try
             {
-                if(_memoryCache.TryGetValue(secretName, out string? secretValue))
+                var secretValue = _cacheProvider.GetCacheKey(secretName);
+                if(string.IsNullOrEmpty(secretValue))
                 {
-                    return secretValue;
+                    var secret = GetSetManufacturerValue(secretName);
+                    return secret.Value.ToString();
                 }
-
-                var secret = await GetSetManufacturerValue(secretName);
-                return secret;
+                return secretValue;
             }
             catch
             {
@@ -64,13 +63,17 @@ namespace UKHO.S100PermitService.Common.Services
             }
         }
 
-        //child method
-        private async Task<string> GetSetManufacturerValue(string secretName)
+        private KeyVaultSecret GetSetManufacturerValue(string secretName)
         {
-            var secret = (await _secretClient.GetSecretAsync(secretName)).Value.Value;
+            var secretValue = _secretClient.GetSecret(secretName);
 
-            _memoryCache.Set(secretName, secret, _defaultCacheExpiryDuration);
-            return secret;
-        }        
+            _cacheProvider.SetCacheKey(secretName, secretValue.Value, CacheExpiryDuration());
+            return secretValue;
+        }
+
+        private TimeSpan CacheExpiryDuration()
+        {
+            return TimeSpan.FromHours(value: _manufacturerKeyvault.Value.CacheTimeoutInHours);
+        }
     }
 }

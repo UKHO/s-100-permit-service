@@ -2,7 +2,7 @@
 {
     public interface IManufacturerKeyService
     {
-        Task CacheManufacturerKeysAsync();
-        Task<string> GetManufacturerKeysAsync(string secretName);       
+        void CacheManufacturerKeys();
+        string GetManufacturerKeys(string secretName);       
     }
 }
