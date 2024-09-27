@@ -1,15 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.Text;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
     public class ProductKeyServiceApiClient : IProductKeyServiceApiClient
     {
+        private readonly ILogger<ProductKeyServiceApiClient> _logger;
         private readonly HttpClient _httpClient;
 
-        public ProductKeyServiceApiClient(IHttpClientFactory httpClientFactory)
+        public ProductKeyServiceApiClient(ILogger<ProductKeyServiceApiClient> logger, IHttpClientFactory httpClientFactory)
         {
+            _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
         }
 
@@ -24,6 +28,10 @@ namespace UKHO.S100PermitService.Common.Clients
             {
                 httpRequestMessage.SetBearerToken(accessToken);
                 httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
+            }
+            else
+            {
+                _logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null");
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);

@@ -1,8 +1,10 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Net;
 using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 
@@ -11,6 +13,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
     [TestFixture]
     public class UserPermitApiClientTests
     {
+        private ILogger<UserPermitApiClient> _fakeLogger;
         private UserPermitApiClient? _userPermitApiClient;
         private IHttpClientFactory _fakeHttpClientFactory;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
@@ -19,6 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         [SetUp]
         public void SetUp()
         {
+            _fakeLogger = A.Fake<ILogger<UserPermitApiClient>>();
             _fakeHttpClientFactory = A.Fake<IHttpClientFactory>();
         }
 
@@ -35,7 +39,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _userPermitApiClient = new UserPermitApiClient(_fakeHttpClientFactory);
+            _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
 
             var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", CancellationToken.None, _fakeCorrelationId);
 
@@ -64,11 +68,47 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _userPermitApiClient = new UserPermitApiClient(_fakeHttpClientFactory);
+            _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
 
             var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, string.Empty, CancellationToken.None, _fakeCorrelationId);
 
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+            ).MustHaveHappenedOnceExactly();
+
             result.Result.StatusCode.Should().Be(httpStatusCode);
+        }
+
+        [Test]
+        public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
+        {
+            var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
+                JsonConvert.SerializeObject(new UserPermitServiceResponse() { }), HttpStatusCode.Unauthorized);
+
+            var httpClient = new HttpClient(messageHandler)
+            {
+                BaseAddress = new Uri("http://test.com")
+            };
+
+            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
+
+            _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
+
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, null, CancellationToken.None, _fakeCorrelationId);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+            ).MustHaveHappenedOnceExactly();
+
+            result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
     }
 }

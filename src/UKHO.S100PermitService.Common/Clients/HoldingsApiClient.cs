@@ -1,13 +1,17 @@
-﻿using System.Text;
+﻿using Microsoft.Extensions.Logging;
+using System.Text;
+using UKHO.S100PermitService.Common.Events;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
     public class HoldingsApiClient : IHoldingsApiClient
     {
+        private readonly ILogger<HoldingsApiClient> _logger;
         private readonly HttpClient _httpClient;
 
-        public HoldingsApiClient(IHttpClientFactory httpClientFactory)
+        public HoldingsApiClient(ILogger<HoldingsApiClient> logger, IHttpClientFactory httpClientFactory)
         {
+            _logger = logger;
             _httpClient = httpClientFactory.CreateClient();
         }
 
@@ -20,6 +24,10 @@ namespace UKHO.S100PermitService.Common.Clients
             {
                 httpRequestMessage.SetBearerToken(accessToken);
                 httpRequestMessage.AddHeader(PermitServiceConstants.XCorrelationIdHeaderKey, correlationId);
+            }
+            else
+            {
+                _logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null");
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
