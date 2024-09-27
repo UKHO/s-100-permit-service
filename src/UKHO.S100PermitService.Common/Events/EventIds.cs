@@ -166,8 +166,13 @@
         GetHwIdFromUserPermitCompleted = 840032,
 
         /// <summary>
-        /// 840033 - User permit fields validation failed
+        /// 840033 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthValidationFailed = 840033
+        UpnLengthOrCheckSumValidationFailed = 840033,
+
+        /// <summary>
+        /// 840034 - MKey not found in keyvault
+        /// </summary>
+        MKeyNotFoundInKeyVault = 840034
     }
 }

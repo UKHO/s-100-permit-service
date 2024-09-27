@@ -15,9 +15,6 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
-        private const int UpnLength = 46;
-        private const int MIdLength = 6;
-        private const int EncryptedHardwareIdLength = 32;
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -62,7 +59,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 foreach(var userPermits in userPermitServiceResponse.UserPermits)
                 {
-                    var decryptedHardwareId = RetrieveDecryptedHardwareId(userPermits.Upn);
+                    var decryptedHardwareId = _s100Crypt.GetHwIdFromUserPermit(userPermits.Upn);
 
                     CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
                 };
@@ -152,20 +149,9 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var errorMessage = string.Join(", ", errorMessages.GroupBy(item => item.ConcatenatedValues).DistinctBy(a => a).Select(group => group.Key));
 
-                throw new PermitServiceException(EventIds.UpnLengthValidationFailed.ToEventId(), errorMessage.ToString());
+                throw new PermitServiceException(EventIds.UpnLengthOrCheckSumValidationFailed.ToEventId(), errorMessage.ToString());
                 // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
             }
-        }
-
-        private string RetrieveDecryptedHardwareId(string upn)
-        {
-            //fetch mId from upn
-            var mId = upn.Substring(40, MIdLength);
-            //retrieve mKey from keyvault
-
-            var mKey = "";
-
-            return _s100Crypt.GetHwIdFromUserPermit(upn[..EncryptedHardwareIdLength], mKey);
-        }
+        }        
     }
 }

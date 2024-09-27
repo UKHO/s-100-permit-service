@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         private static Aes CreateAes(string keyHexEncoded)
         {
-            using var aes = Aes.Create();
+            var aes = Aes.Create();
             aes.BlockSize = KeySize;
             aes.KeySize = KeySize;
             aes.IV = new byte[Iv_Length];

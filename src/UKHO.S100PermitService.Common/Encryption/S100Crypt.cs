@@ -10,6 +10,9 @@ namespace UKHO.S100PermitService.Common.Encryption
         private readonly IAesEncryption _aesEncryption;
         private readonly ILogger<S100Crypt> _logger;
 
+        private const int MIdLength = 6;
+        private const int EncryptedHardwareIdLength = 32;
+
         public S100Crypt(IAesEncryption aesEncryption, ILogger<S100Crypt> logger)
         {
             _aesEncryption = aesEncryption ?? throw new ArgumentNullException(nameof(aesEncryption));
@@ -29,9 +32,22 @@ namespace UKHO.S100PermitService.Common.Encryption
             return encKeys;
         }
 
-        public string GetHwIdFromUserPermit(string encryptedHardwareId, string mKey)
+        public string GetHwIdFromUserPermit(string upn)
         {
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get hardware id from user permit started");
+
+            var encryptedHardwareId = upn[..EncryptedHardwareIdLength];
+
+            // fetch mId from upn
+            var mId = upn[^MIdLength..];
+            //retrieve mKey from keyvault
+
+            var mKey = "";
+
+            if(string.IsNullOrEmpty(mKey))
+            {
+                throw new PermitServiceException(EventIds.MKeyNotFoundInKeyVault.ToEventId(), "mKey not available for given mId {0}.", mId);
+            }
 
             ValidateData(encryptedHardwareId, mKey);
 
@@ -42,7 +58,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             return hardwareId;
         }
 
-        private bool ValidateData(string upn, string key)
+        private static bool ValidateData(string upn, string key)
         {
             if(upn.Length != KeySizeEncoded)
             {

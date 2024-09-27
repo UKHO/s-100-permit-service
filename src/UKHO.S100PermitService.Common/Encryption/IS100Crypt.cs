@@ -4,6 +4,6 @@
     {
         string GetEncKeysFromPermitKeys(string hexString, string keyHexEncoded);
 
-        string GetHwIdFromUserPermit(string encryptedHardwareId, string mKey);
+        string GetHwIdFromUserPermit(string upn);
     }
 }

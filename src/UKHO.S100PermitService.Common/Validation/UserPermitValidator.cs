@@ -26,7 +26,7 @@ namespace UKHO.S100PermitService.Common.Validation
             });
         }
 
-        public static bool IsValidChecksum(string hwIdEncrypted, string checkSum)
+        private static bool IsValidChecksum(string hwIdEncrypted, string checkSum)
         {
             var crc = new Crc32();
             crc.Update(Encoding.UTF8.GetBytes(hwIdEncrypted));
