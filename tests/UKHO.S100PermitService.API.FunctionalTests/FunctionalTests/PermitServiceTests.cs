@@ -100,7 +100,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoNotHaveDataAvailable_ThenNoContent204IsReturned()
         {
-            foreach(var licenceId in _permitServiceApiConfiguration!.DataUnavailbleLicenceId!)
+            foreach(var licenceId in _permitServiceApiConfiguration!.NoDataLicenceId!)
             {
                 var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)204);
