@@ -143,6 +143,16 @@
         /// <summary>
         /// 840028 - Request for retrying holdings api endpoint
         /// </summary>
-        RetryHttpClientHoldingsRequest = 840028
+        RetryHttpClientHoldingsRequest = 840028,
+
+        /// <summary>
+        /// 840029 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840029,
+
+        /// <summary>
+        /// 840030 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientPKSRequest = 840030
     }
 }

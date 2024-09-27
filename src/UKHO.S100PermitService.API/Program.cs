@@ -31,6 +31,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
+        private const string RetryConfiguration = "RetryConfiguration";
         private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
@@ -121,6 +122,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
+            builder.Services.Configure<RetryConfiguration>(configuration.GetSection(RetryConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -143,15 +145,12 @@ namespace UKHO.S100PermitService.API
                 options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
             });
 
-            var retryCount = Convert.ToInt32(configuration["RetryConfiguration:RetryCount"]);
-            var sleepDuration = Convert.ToDouble(configuration["RetryConfiguration:SleepDurationInSeconds"]);
-
             var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
             {
                 client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
                 client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
-            }).AddPolicyHandler((services, request) => RetryPolicy.GetRetryPolicy(services.GetService<ILogger<IHoldingsApiClient>>(), EventIds.RetryHttpClientHoldingsRequest, retryCount, sleepDuration));
+            });
 
             var userPermitServiceApiConfiguration = builder.Configuration.GetSection(UserPermitServiceApiConfiguration).Get<UserPermitServiceApiConfiguration>();
             builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
@@ -178,6 +177,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
+            builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

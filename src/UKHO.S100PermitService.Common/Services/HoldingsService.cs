@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
 
@@ -17,14 +18,16 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
         private readonly IHoldingsServiceAuthTokenProvider _holdingsServiceAuthTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
+        private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private const string HoldingsUrl = "/holdings/{0}/s100";
 
-        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient)
+        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient,IWaitAndRetryPolicy waitAndRetryPolicy)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsServiceApiConfiguration = holdingsApiConfiguration ?? throw new ArgumentNullException(nameof(holdingsApiConfiguration));
             _holdingsServiceAuthTokenProvider = holdingsServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(holdingsServiceAuthTokenProvider));
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
+            _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(_waitAndRetryPolicy));
         }
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -36,7 +39,10 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
+            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).Execute(() =>
+            {
+               return _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
+            });
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
