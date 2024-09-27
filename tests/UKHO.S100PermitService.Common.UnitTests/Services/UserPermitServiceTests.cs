@@ -22,7 +22,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<UserPermitServiceApiConfiguration> _fakeUserPermitServiceApiConfiguration;
         private IUserPermitServiceAuthTokenProvider _fakeUserPermitServiceAuthTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
-        private UserPermitService _userPermitService;
+        
+        private IUserPermitService _userPermitService;
 
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 

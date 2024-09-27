@@ -11,21 +11,25 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public string Decrypt(string hexString, string keyHexEncoded)
         {
-            using var aes = Aes.Create();
+            var encryptedByte = StringToByteArray(hexString);
+
+            using var aes = CreateAes(keyHexEncoded);
+            using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
+            var decryptedText = decrypt.TransformFinalBlock(encryptedByte, 0, encryptedByte.Length);
+
+            return BitConverter.ToString((decryptedText)).Replace("-", "");
+        }
+
+        private static Aes CreateAes(string keyHexEncoded)
+        {
+            var aes = Aes.Create();
             aes.BlockSize = KeySize;
             aes.KeySize = KeySize;
             aes.IV = new byte[Iv_Length];
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.None;
             aes.Key = StringToByteArray(keyHexEncoded);
-
-            // decryption
-            var encryptedByte = StringToByteArray(hexString);
-
-            using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
-            var decryptedText = decrypt.TransformFinalBlock(encryptedByte, 0, encryptedByte.Length);
-
-            return BitConverter.ToString((decryptedText)).Replace("-", "");
+            return aes;
         }
 
         private static byte[] StringToByteArray(string hexString)

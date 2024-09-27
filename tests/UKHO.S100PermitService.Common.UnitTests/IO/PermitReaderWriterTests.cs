@@ -10,13 +10,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
     public class PermitReaderWriterTests
     {
         private IFileSystem _fakeFileSystem;
-        private PermitReaderWriter _fakePermitReaderWriter;
+
+        private IPermitReaderWriter _permitReaderWriter;
 
         [SetUp]
         public void Setup()
         {
             _fakeFileSystem = A.Fake<IFileSystem>();
-            _fakePermitReaderWriter = new PermitReaderWriter(_fakeFileSystem);
+            _permitReaderWriter = new PermitReaderWriter(_fakeFileSystem);
         }
 
         [Test]
@@ -54,7 +55,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                 Products = products.ToArray()
             };
 
-            var result = _fakePermitReaderWriter.ReadPermit(permit);
+            var result = _permitReaderWriter.ReadPermit(permit);
 
             result.Should().Be(expectedResult);
         }
