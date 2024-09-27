@@ -21,6 +21,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<ProductKeyService> _fakeLogger;
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
+        private IOptions<WaitAndRetryConfiguration> _fakeWaitAndRetryConfiguration;
         private IProductKeyServiceAuthTokenProvider _fakeProductKeyServiceAuthTokenProvider;
         private IProductKeyServiceApiClient _fakeProductKeyServiceApiClient;
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
@@ -36,14 +37,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeProductKeyServiceApiConfiguration = Options.Create(new ProductKeyServiceApiConfiguration() { ClientId = "ClientId2", BaseUrl = "http://localhost:5000" });
             _fakeProductKeyServiceAuthTokenProvider = A.Fake<IProductKeyServiceAuthTokenProvider>();
             _fakeProductKeyServiceApiClient = A.Fake<IProductKeyServiceApiClient>();
+            _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
 
-            var configuration = new WaitAndRetryConfiguration()
-            {
-                RetryCount = "2",
-                SleepDurationInSeconds = "2"
-            };
-            var options = Options.Create(configuration);
-            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(options);
+            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _productKeyService = new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy);
         }
 

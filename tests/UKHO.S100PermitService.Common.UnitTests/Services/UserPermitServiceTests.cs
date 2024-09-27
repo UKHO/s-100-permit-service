@@ -21,6 +21,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<UserPermitService> _fakeLogger;
         private IOptions<UserPermitServiceApiConfiguration> _fakeUserPermitServiceApiConfiguration;
+        private IOptions<WaitAndRetryConfiguration> _fakeWaitAndRetryConfiguration;
         private IUserPermitServiceAuthTokenProvider _fakeUserPermitServiceAuthTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
@@ -38,17 +39,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void SetUp()
         {
             _fakeLogger = A.Fake<ILogger<UserPermitService>>();
-            _fakeUserPermitServiceApiConfiguration = Options.Create(new UserPermitServiceApiConfiguration() { ClientId = "ClientId", BaseUrl = "http://localhost:5000" });
+            _fakeUserPermitServiceApiConfiguration = Options.Create(new UserPermitServiceApiConfiguration() { ClientId = "ClientId", BaseUrl = "http://localhost:5000", RequestTimeoutInMinutes = 5 });
             _fakeUserPermitServiceAuthTokenProvider = A.Fake<IUserPermitServiceAuthTokenProvider>();
             _fakeUserPermitApiClient = A.Fake<IUserPermitApiClient>();
-
-            var configuration = new WaitAndRetryConfiguration()
-            {
-                RetryCount = "2",
-                SleepDurationInSeconds = "2"
-            };
-            var options = Options.Create(configuration);
-            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(options);
+            _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
+            
+            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
         }
 

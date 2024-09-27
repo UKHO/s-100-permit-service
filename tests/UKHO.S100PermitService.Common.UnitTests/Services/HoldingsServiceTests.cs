@@ -21,6 +21,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<HoldingsService> _fakeLogger;
         private IOptions<HoldingsServiceApiConfiguration> _fakeHoldingsServiceApiConfiguration;
+        private IOptions<WaitAndRetryConfiguration> _fakeWaitAndRetryConfiguration;
         private IHoldingsServiceAuthTokenProvider _fakeHoldingsServiceAuthTokenProvider;
         private IHoldingsApiClient _fakeHoldingsApiClient;
         private IHoldingsService _holdingsService;
@@ -40,14 +41,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeHoldingsApiClient = A.Fake<IHoldingsApiClient>();
             _fakeHoldingsServiceAuthTokenProvider = A.Fake<IHoldingsServiceAuthTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
+            _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
 
-            var configuration = new WaitAndRetryConfiguration()
-            {
-                RetryCount = "2",
-                SleepDurationInSeconds = "2"
-            };
-            var options = Options.Create(configuration);
-            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(options);
+            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
         }
 
