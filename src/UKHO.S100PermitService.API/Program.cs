@@ -16,7 +16,6 @@ using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
-using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
@@ -31,7 +30,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
-        private const string RetryConfiguration = "RetryConfiguration";
+        private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
@@ -122,7 +121,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
-            builder.Services.Configure<RetryConfiguration>(configuration.GetSection(RetryConfiguration));
+            builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

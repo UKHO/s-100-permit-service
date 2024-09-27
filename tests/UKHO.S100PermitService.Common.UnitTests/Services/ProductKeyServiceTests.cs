@@ -9,6 +9,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -22,6 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
         private IProductKeyServiceAuthTokenProvider _fakeProductKeyServiceAuthTokenProvider;
         private IProductKeyServiceApiClient _fakeProductKeyServiceApiClient;
+        private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         private const string RequestError = "{\"correlationId\":\"fc771eb4-926b-4965-8de9-8b37288d3bd0\",\"errors\":[{\"source\":\"GetProductKey\",\"description\":\"Key not found for ProductName: test101 and Edition: 1.\"}]}";
 
@@ -35,23 +37,33 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeProductKeyServiceAuthTokenProvider = A.Fake<IProductKeyServiceAuthTokenProvider>();
             _fakeProductKeyServiceApiClient = A.Fake<IProductKeyServiceApiClient>();
 
-            _productKeyService = new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient);
+            var configuration = new WaitAndRetryConfiguration()
+            {
+                RetryCount = "2",
+                SleepDurationInSeconds = "2"
+            };
+            var options = Options.Create(configuration);
+            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(options);
+            _productKeyService = new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullProductKeyServiceLogger = () => new ProductKeyService(null, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient);
+            Action nullProductKeyServiceLogger = () => new ProductKeyService(null, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy);
             nullProductKeyServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullProductKeyServiceApiConfiguration = () => new ProductKeyService(_fakeLogger, null, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient);
+            Action nullProductKeyServiceApiConfiguration = () => new ProductKeyService(_fakeLogger, null, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy);
             nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
 
-            Action nullProductKeyServiceAuthTokenProvider = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, null, _fakeProductKeyServiceApiClient);
+            Action nullProductKeyServiceAuthTokenProvider = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, null, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy);
             nullProductKeyServiceAuthTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceAuthTokenProvider");
 
-            Action nullProductKeyServiceApiClient = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, null);
+            Action nullProductKeyServiceApiClient = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy);
             nullProductKeyServiceApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiClient");
+
+            Action nullWaitAndRetryClient = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, null);
+            nullWaitAndRetryClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("waitAndRetryPolicy");
         }
 
         [Test]
@@ -142,6 +154,40 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
+        public async Task WhenProductKeyServiceResponseTooManyRequests_ThenThrowException(HttpStatusCode httpStatusCode, string content)
+        {
+            A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
+                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                                .Returns(new HttpResponseMessage()
+                                {
+                                    StatusCode = httpStatusCode,
+                                    RequestMessage = new HttpRequestMessage()
+                                    {
+                                        RequestUri = new Uri("http://test.com")
+                                    },
+                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
+                                });
+
+            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}");
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+              call.Method.Name == "Log"
+              && call.GetArgument<LogLevel>(0) == LogLevel.Information
+              && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientPKSRequest.ToEventId()
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                  ["{OriginalFormat}"].ToString() == "Re-trying service request with uri {RequestUri} and delay {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
+              ).MustHaveHappened();
         }
     }
 }

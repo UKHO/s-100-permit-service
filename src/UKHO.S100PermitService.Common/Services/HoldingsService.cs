@@ -21,13 +21,13 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private const string HoldingsUrl = "/holdings/{0}/s100";
 
-        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient,IWaitAndRetryPolicy waitAndRetryPolicy)
+        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsServiceApiConfiguration = holdingsApiConfiguration ?? throw new ArgumentNullException(nameof(holdingsApiConfiguration));
             _holdingsServiceAuthTokenProvider = holdingsServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(holdingsServiceAuthTokenProvider));
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
-            _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(_waitAndRetryPolicy));
+            _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
         }
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).Execute(() =>
             {
-               return _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
+                return _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
             });
 
             if(httpResponseMessage.IsSuccessStatusCode)

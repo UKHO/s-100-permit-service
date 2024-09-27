@@ -9,6 +9,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -23,6 +24,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IHoldingsServiceAuthTokenProvider _fakeHoldingsServiceAuthTokenProvider;
         private IHoldingsApiClient _fakeHoldingsApiClient;
         private IHoldingsService _holdingsService;
+        private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string FakeUri = "http://test.com";
         const string AccessToken = "access-token";
@@ -39,31 +41,43 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeHoldingsServiceAuthTokenProvider = A.Fake<IHoldingsServiceAuthTokenProvider>();
             _fakeLogger = A.Fake<ILogger<HoldingsService>>();
 
-            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient);
+            var configuration = new WaitAndRetryConfiguration()
+            {
+                RetryCount = "2",
+                SleepDurationInSeconds = "2"
+            };
+            var options = Options.Create(configuration);
+            _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(options);
+            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
+             () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy))
              .ParamName
              .Should().Be("logger");
 
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
+             () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy))
              .ParamName
              .Should().Be("holdingsApiConfiguration");
 
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient))
+             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy))
              .ParamName
              .Should().Be("holdingsServiceAuthTokenProvider");
 
             Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null))
+             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy))
              .ParamName
              .Should().Be("holdingsApiClient");
+
+            Assert.Throws<ArgumentNullException>(
+             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, null))
+             .ParamName
+             .Should().Be("waitAndRetryPolicy");
         }
 
         [Test]
@@ -160,6 +174,43 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                   ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
               ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
+        public void WhenHoldingsServiceResponseTooManyRequests_ThenReturnsException(HttpStatusCode statusCode, string content)
+        {
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(new HttpResponseMessage
+                {
+                    StatusCode = statusCode,
+                    RequestMessage = new HttpRequestMessage
+                    {
+                        RequestUri = new Uri(FakeUri)
+                    },
+                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
+                });
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
+
+            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId));
+
+            A.CallTo(_fakeLogger).Where(call =>
+              call.Method.Name == "Log"
+              && call.GetArgument<LogLevel>(0) == LogLevel.Information
+              && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                  ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
+              ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+              call.Method.Name == "Log"
+              && call.GetArgument<LogLevel>(0) == LogLevel.Information
+              && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientHoldingsRequest.ToEventId()
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                  ["{OriginalFormat}"].ToString() == "Re-trying service request with uri {RequestUri} and delay {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
+              ).MustHaveHappened();
         }
     }
 }
