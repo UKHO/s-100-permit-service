@@ -141,9 +141,9 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Expected hex length not found
+        /// 840028 - Invalid mKey length or mKey not found in KeyVault
         /// </summary>
-        HexLengthError = 840028,
+        InvalidMKey = 840028,
 
         /// <summary>
         /// 840029 - Get enc keys from permit keys started
@@ -168,11 +168,6 @@
         /// <summary>
         /// 840033 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthOrCheckSumValidationFailed = 840033,
-
-        /// <summary>
-        /// 840034 - MKey not found in keyvault
-        /// </summary>
-        MKeyNotFoundInKeyVault = 840034
+        UpnLengthOrCheckSumValidationFailed = 840033
     }
 }

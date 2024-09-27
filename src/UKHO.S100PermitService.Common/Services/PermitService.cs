@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var decryptedHardwareId = _s100Crypt.GetHwIdFromUserPermit(userPermits.Upn);
 
                     CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
-                };
+                }
 
                 _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
             }
@@ -138,20 +138,18 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 return true;
             }
-            else
-            {
-                var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
-                    .Select(group => new
-                    {
-                        GroupKey = group.Key,
-                        ConcatenatedValues = string.Join(", ", group.Select(item => item.ErrorMessage).Distinct())
-                    });
+            var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
+                .Select(group => new
+                {
+                    Errors = string.Join(", ", group.Key)
+                });
 
-                var errorMessage = string.Join(", ", errorMessages.GroupBy(item => item.ConcatenatedValues).DistinctBy(a => a).Select(group => group.Key));
+            var errorMessage = string.Join(", ", errorMessages
+                .Select(group => group.Errors)
+                .Distinct());
 
-                throw new PermitServiceException(EventIds.UpnLengthOrCheckSumValidationFailed.ToEventId(), errorMessage.ToString());
-                // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
-            }
-        }        
+            throw new PermitServiceException(EventIds.UpnLengthOrCheckSumValidationFailed.ToEventId(), errorMessage);
+            // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
+        }
     }
 }

@@ -23,8 +23,6 @@ namespace UKHO.S100PermitService.Common.Encryption
         {
             _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get encKeys from permit keys started");
 
-            ValidateData(permitKeys, hardwareId);
-
             var encKeys = _aesEncryption.Decrypt(permitKeys, hardwareId);
 
             _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get encKeys from permit keys completed");
@@ -44,33 +42,16 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             var mKey = "";
 
-            if(string.IsNullOrEmpty(mKey))
+            if(mKey?.Length != KeySizeEncoded)
             {
-                throw new PermitServiceException(EventIds.MKeyNotFoundInKeyVault.ToEventId(), "mKey not available for given mId {0}.", mId);
+                throw new PermitServiceException(EventIds.InvalidMKey.ToEventId(), "Invalid mKey found");
             }
-
-            ValidateData(encryptedHardwareId, mKey);
 
             var hardwareId = _aesEncryption.Decrypt(encryptedHardwareId, mKey);
 
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitCompleted.ToEventId(), "Get hardware id from user permit completed");
 
             return hardwareId;
-        }
-
-        private static bool ValidateData(string upn, string key)
-        {
-            if(upn.Length != KeySizeEncoded)
-            {
-                throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected upn data length {0}, but found {1}.",
-                                                                                                                KeySizeEncoded, upn.Length);
-            }
-            if(key.Length != KeySizeEncoded)
-            {
-                throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected encoded key length {0}, but found {1}.",
-                                                                                                                KeySizeEncoded, key.Length);
-            }
-            return true;
         }
     }
 }
