@@ -27,7 +27,6 @@ namespace UKHO.S100PermitService.Common.Handlers
                              res.StatusCode == HttpStatusCode.InternalServerError).WaitAndRetry(retryCount, _ => TimeSpan.FromSeconds(sleepDuration),
                              onRetry: (response, timespan, retryAttempt, context) =>
                              {
-                                 var retryAfterHeader = response.Result.Headers.FirstOrDefault(h => h.Key.ToLowerInvariant() == "retry-after");
                                  var correlationId = response.Result.RequestMessage!.Headers.FirstOrDefault(h => h.Key.ToLowerInvariant() == "x-correlation-id");
                                  var retryAfter = 0;
                                  logger
