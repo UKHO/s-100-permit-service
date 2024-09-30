@@ -8,14 +8,8 @@ info:
     email: contact@ukho.co.uk
   version: 0.0.1
 servers:
-  - url: https://s100-shopfacade-dev-webapp.azurewebsites.net
+  - url: https://shop-facade-service-url
     description: Proposed Dev URL
-  - url: https://s100-shopfacade-viat-webapp.azurewebsites.net
-    description: Proposed vNext IAT URL
-  - url: https://s100-shopfacade-ve2e-webapp.azurewebsites.net
-    description: Proposed vNext E2E URL
-  - url: https://s100-shopfacade-iat-webapp.azurewebsites.net
-    description: Proposed IAT URL
 security:
   - jwtBearerAuth: []
   
