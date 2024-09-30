@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Services;
@@ -30,11 +31,11 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
-            await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var httpStatusCode = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 
-            return Ok();
+            return httpStatusCode == HttpStatusCode.OK ? Ok() : StatusCode((int)httpStatusCode);
         }
     }
 }

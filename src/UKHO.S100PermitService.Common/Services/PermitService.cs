@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
@@ -31,15 +32,26 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
         }
 
-        public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken,
+            string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+            
+            if(IsListEmptyOrNull(holdingsServiceResponse))
+            {
+                return HttpStatusCode.NoContent;
+            }
 
             var productsList = GetProductsList();
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+
+            if(userPermitServiceResponse == null)
+            {
+                return HttpStatusCode.NoContent;
+            }
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
@@ -50,6 +62,8 @@ namespace UKHO.S100PermitService.Common.Services
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+            
+            return HttpStatusCode.OK;
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
@@ -114,5 +128,10 @@ namespace UKHO.S100PermitService.Common.Services
                  ProductName = y.CellCode,
                  Edition = y.LatestEditionNumber
              })).ToList();
+
+        private static bool IsListEmptyOrNull<T>(List<T>? list)
+        {
+            return list == null || list.Count == 0;
+        }
     }
 }
