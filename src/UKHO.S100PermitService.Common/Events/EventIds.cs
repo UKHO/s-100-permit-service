@@ -168,6 +168,6 @@
         /// <summary>
         /// 840033 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthOrCheckSumValidationFailed = 840033
+        UpnLengthOrChecksumValidationFailed = 840033
     }
 }

@@ -148,8 +148,7 @@ namespace UKHO.S100PermitService.Common.Services
                 .Select(group => group.Errors)
                 .Distinct());
 
-            throw new PermitServiceException(EventIds.UpnLengthOrCheckSumValidationFailed.ToEventId(), errorMessage);
-            // _logger.LogInformation(EventIds.UpnLengthValidationFailed.ToEventId(), "User permit fields validation failed");
+            throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
         }
     }
 }

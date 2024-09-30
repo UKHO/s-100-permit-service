@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using FluentValidation.Results;
 using ICSharpCode.SharpZipLib.Checksum;
 using System.Net;
 using System.Text;
@@ -15,23 +16,27 @@ namespace UKHO.S100PermitService.Common.Validation
             RuleForEach(x => x.UserPermits).ChildRules(userPermits =>
             {
                 userPermits.RuleFor(userPermit => userPermit.Upn).NotNull().Length(46)
-                .WithErrorCode(HttpStatusCode.BadRequest.ToString())
-                .WithMessage("Invalid UPN. UPN must be 46 characters long.");
-            });
-
-            RuleForEach(x => x.UserPermits).ChildRules(userPermits =>
-            {
-                userPermits.RuleFor(userPermit => userPermit.Upn)
-                .Must((userPermit, s) => IsValidChecksum(userPermit.Upn[..EncryptedHardwareIdLength], userPermit.Upn[EncryptedHardwareIdLength..^ReverseChecksumIndex])).WithMessage("Invalid checksum");
+                    .WithErrorCode(HttpStatusCode.BadRequest.ToString())
+                    .WithMessage("Invalid UPN. UPN must be 46 characters long")
+                    .DependentRules(() =>
+                    {
+                        userPermits.RuleFor(userPermit => userPermit.Upn)
+                                            .Must((userPermit, s) => IsValidChecksum(userPermit.Upn[..EncryptedHardwareIdLength], userPermit.Upn[EncryptedHardwareIdLength..^ReverseChecksumIndex])).WithMessage("Invalid checksum");
+                    });
             });
         }
 
-        private static bool IsValidChecksum(string hwIdEncrypted, string checkSum)
+        private static bool IsValidChecksum(string hwIdEncrypted, string checksum)
         {
             var crc = new Crc32();
             crc.Update(Encoding.UTF8.GetBytes(hwIdEncrypted));
             var calculatedChecksum = crc.Value.ToString("X8");
-            return calculatedChecksum.Equals(checkSum);
+            return calculatedChecksum.Equals(checksum);
+        }
+
+        ValidationResult IUserPermitValidator.Validate(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            return Validate(userPermitServiceResponse);
         }
     }
 }
