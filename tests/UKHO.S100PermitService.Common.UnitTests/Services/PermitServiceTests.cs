@@ -1,10 +1,13 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using System.Net;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
@@ -55,9 +58,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetHoldingDetails());
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits());
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                                            .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
+                                            .Returns([new ProductKeyServiceResponse { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
@@ -109,6 +116,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenEmptyPermitXml_ThenFileIsNotCreated()
         {
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetHoldingDetails());
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits());
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                          .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
@@ -158,6 +169,38 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.FileCreationEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Xml file created"
            ).MustNotHaveHappened();
+        }
+
+        private List<HoldingsServiceResponse> GetHoldingDetails()
+        {
+            return
+            [
+                new HoldingsServiceResponse
+                {
+                    ProductTitle = "",
+                    ProductCode = "",
+                    ExpiryDate = DateTime.UtcNow.AddDays(5),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "",
+                            CellCode = "",
+                            LatestEditionNumber = "",
+                            LatestUpdateNumber = ""
+                        }
+                    ]
+                }
+            ];
+        }
+
+        private UserPermitServiceResponse GetUserPermits()
+        {
+            return new UserPermitServiceResponse
+            {
+                LicenceId = "",
+                UserPermits = [new UserPermit { Title = "", Upn = "" }]
+            };
         }
     }
 }

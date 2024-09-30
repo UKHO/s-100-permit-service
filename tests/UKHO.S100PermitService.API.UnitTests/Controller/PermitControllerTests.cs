@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using System.Net;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Services;
@@ -42,6 +43,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         [Test]
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(HttpStatusCode.OK);
+
             var result = (OkResult)await _permitController.GeneratePermits(007);
 
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
