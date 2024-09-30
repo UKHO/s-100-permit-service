@@ -432,6 +432,8 @@ stages:
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+          - name : ManufacturerKeyVault.ServiceUri
+            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceMidUri'] ]
         workspace:
           clean: all
         strategy:
