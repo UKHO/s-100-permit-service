@@ -180,6 +180,7 @@
 		<cve>CVE-2021-26701</cve>
 		<cve>CVE-2021-34485</cve>
 		<cve>CVE-2021-26423</cve>
+	    <cve>CVE-2024-30105</cve>
 	</suppress>
 	<suppress>
 		<notes>
@@ -195,10 +196,4 @@ See https://msrc.microsoft.com/update-guide/en-us/vulnerability/CVE-2018-8409
 		<cve>CVE-2020-1108</cve>
 		<cve>CVE-2021-1721</cve>
 	</suppress>
-<suppress>
-   <notes><![CDATA[
-   file name: System.Text.Json:8.0.0
-   ]]></notes>  
-   <cve>CVE-2024-30105</cve>
-</suppress>
 </suppressions>

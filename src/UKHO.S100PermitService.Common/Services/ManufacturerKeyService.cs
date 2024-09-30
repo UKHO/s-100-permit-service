@@ -16,12 +16,12 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly ICacheProvider _cacheProvider;
         private readonly ISecretClient _secretClient;
 
-        public ManufacturerKeyService(IOptions<ManufacturerKeyConfiguration> manufacturerKeyvault,
+        public ManufacturerKeyService(IOptions<ManufacturerKeyConfiguration> manufacturerKeyVault,
                                         ILogger<ManufacturerKeyService> logger,
                                         ICacheProvider cacheProvider,
                                         ISecretClient secretClient)
         {
-            _manufacturerKeyVault = manufacturerKeyvault ?? throw new ArgumentNullException(nameof(manufacturerKeyvault));
+            _manufacturerKeyVault = manufacturerKeyVault ?? throw new ArgumentNullException(nameof(manufacturerKeyVault));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
             _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
