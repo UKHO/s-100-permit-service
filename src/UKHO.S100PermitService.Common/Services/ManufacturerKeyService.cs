@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 if(!secretProperties.Any())
                 {
-                    throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Keyvault");
+                    throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Key Vault");
                 }
                 else
                 {
