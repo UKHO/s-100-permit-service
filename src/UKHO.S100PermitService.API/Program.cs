@@ -170,6 +170,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
+            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
 
             builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
             {
@@ -178,10 +180,8 @@ namespace UKHO.S100PermitService.API
                 var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
                 var secretClient = sp.GetRequiredService<ISecretClient>();
                 return new ManufacturerKeyService(config, logger, cacheProvider, secretClient);
-            });
+            });          
 
-            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
-            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
