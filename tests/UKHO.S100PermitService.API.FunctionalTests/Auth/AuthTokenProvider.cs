@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
             {
                 if(_tokenConfiguration!.IsRunningOnLocalMachine)
                 {
-                    var debugApp = PublicClientApplicationBuilder.Create(clientId).
+                    var debugApp = PublicClientApplicationBuilder.Create(_tokenConfiguration?.ClientId).
                                                         WithRedirectUri("http://localhost").Build();
 
                     //Acquiring token through user interaction

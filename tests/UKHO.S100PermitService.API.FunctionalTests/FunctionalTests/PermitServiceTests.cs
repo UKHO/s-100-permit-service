@@ -95,6 +95,18 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             }
         }
 
+        [Ignore("temp")]
+        // PBI 179438: Product Backlog Item 179438: Handle successful request with empty response for Get UPNs and Get Holdings
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoNotHaveDataAvailable_ThenNoContent204IsReturned()
+        {
+            foreach(var licenceId in _permitServiceApiConfiguration!.NoDataLicenceId!)
+            {
+                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
+                response.StatusCode.Should().Be((HttpStatusCode)204);
+            }
+        }
+
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
