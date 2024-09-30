@@ -141,7 +141,7 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory cache.
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory keyvault.
         /// </summary>
         ManufacturerIdNotFoundInKeyVault = 840028,
 
