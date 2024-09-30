@@ -5,6 +5,10 @@ data "azurerm_resource_group" "rg" {
 
 module "private_endpoint_link" {
   source              = "github.com/UKHO/tfmodule-azure-private-endpoint-private-link?ref=0.6.0"
+  providers = {
+    azurerm.hub   = azurerm.hub
+    azurerm.spoke   = azurerm.erp
+  }
   vnet_link           = local.vnet_link
   private_connection  = [local.private_connection]
   zone_group          = local.zone_group 
