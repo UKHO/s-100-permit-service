@@ -15,15 +15,14 @@ locals {
   stub_web_app_name  = "${local.service_name}-${local.env_name}-stub"
   key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"
   key_vault_midkv    = "${local.service_name}-ukho-${local.env_name}-midkv"
-  ###
+  pe_environment      = local.env_name
   storage_name       = "${local.service_name}${local.env_name}storage"
   container_name     = "erp-container"
   pe_identity = "pe${local.env_name}pe"
- 
-  vnet_link = "pe${local.env_name}pe"
-  private_connection = "/subscriptions/${var.subscription_id}/resourceGroups/pe-${local.env_name}-rg/providers/Microsoft.Web/sites/pe-${local.env_name}-api"
+  vnet_link = "ps${local.env_name}pe"
+  private_connection = "/subscriptions/${var.subscription_id}/resourceGroups/ps-${local.env_name}-rg/providers/Microsoft.Web/sites/ps-${local.env_name}-api"
   dns_resource_group = "engineering-rg"
-  zone_group = "pe${local.env_name}2pezone"
+  zone_group = "ps${local.env_name}2pezone"
   dns_zones = "privatelink.azurewebsites.net"
   tags = {
     SERVICE                   = "S100 Permit Service"
