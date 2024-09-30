@@ -33,19 +33,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenApplicationStarts_ThenFetchSecretsFromKeyvaultInMemoryCache()
         {
-            _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";            
+            _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";
             var secretKey = "mpn";
-            var secretValue = "M_IDmpm";
-
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
+            var secretValue = "M_IDmpm";            
 
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).Returns(GetSecretProperties(secretKey));
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).Returns(secretValue);
-            var result = () => _manufacturerKeyService.CacheManufacturerKeys();
-            result.Should().NotBeNull();           
+            _manufacturerKeyService.CacheManufacturerKeys();
+
+            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).MustHaveHappened();
         }
 
         [Test]
@@ -69,6 +67,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = _manufacturerKeyService.GetManufacturerKeys("abc");
 
+            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).MustNotHaveHappened();
+
             result.Should().NotBeNull();
             result.Equals(secretKey);
         }
@@ -77,37 +77,23 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void WhenSecretKeyPassedWhichIsNotInMemoryCache_ThenFetchSecretsFromKeyvault()
         {
             var secretKey = "mpn";
-            var secretValue = "M_IDmpm";
+            var secretValue = "";
 
             A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
 
-            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
-
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).Returns(secretValue);
+            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));            
 
             var result = _manufacturerKeyService.GetManufacturerKeys(secretKey);
 
+            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).MustHaveHappened();
+
             result.Should().NotBeNull();
             result.Should().Be(secretValue);
-        }
-
-        [Test]
-        public void WhenSecretKeyPassedWhichIsNotInMemoryCacheandNotInKeyvault_ThenThrowException()
-        {            
-            var secretKey = "mpn";
-            var secretValue = "null";
-
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);          
-
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).Returns(secretValue);
-
-            var result = () => _manufacturerKeyService.GetManufacturerKeys(secretKey);
-            result.Should().Throw<PermitServiceException>().WithMessage("No Secret found for M_Id in Manufacturer Keyvault");            
-        }
+        }       
 
         private static KeyVaultSecret GetSecret(string key, string value)
-        {           
-            return new KeyVaultSecret(key, value);                
+        {
+            return new KeyVaultSecret(key, value);
         }
 
         private static IEnumerable<SecretProperties> GetSecretProperties(string secret)

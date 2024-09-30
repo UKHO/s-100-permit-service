@@ -19,10 +19,9 @@ namespace UKHO.S100PermitService.Common.Providers
             return Value;
         }
 
-        public string SetCacheKey(string key, string value, TimeSpan timeSpan)
+        public void SetCacheKey(string key, string value, TimeSpan timeSpan)
         {            
-            _memoryCache.Set(key, value, timeSpan);            
-            return value;
+            _memoryCache.Set(key, value, timeSpan);
         } 
     }
 }

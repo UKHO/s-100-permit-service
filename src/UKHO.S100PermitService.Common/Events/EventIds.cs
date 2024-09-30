@@ -143,6 +143,6 @@
         /// <summary>
         /// 840029 - Manufacturer Id not found for Manufacturer keys in Memory cache.
         /// </summary>
-        ManufacturerIdNotFoundInCache = 840028
+        ManufacturerIdNotFoundInKeyVault = 840028
     }
 }

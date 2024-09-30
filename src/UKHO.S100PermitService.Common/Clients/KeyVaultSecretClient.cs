@@ -1,6 +1,8 @@
 ﻿using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common.Configuration;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
@@ -8,10 +10,12 @@ namespace UKHO.S100PermitService.Common.Clients
     public class KeyVaultSecretClient : ISecretClient
     {
         private readonly SecretClient _secretClient;
+        private readonly IOptions<ManufacturerKeyConfiguration> _manufacturerKeyVault;
 
-        public KeyVaultSecretClient(Uri keyVaultUri)
+        public KeyVaultSecretClient(IOptions<ManufacturerKeyConfiguration> manufacturerKeyVault)
         {
-            _secretClient = new SecretClient(keyVaultUri, new DefaultAzureCredential());
+            _manufacturerKeyVault = manufacturerKeyVault;
+            _secretClient = new SecretClient(new Uri(_manufacturerKeyVault.Value.ServiceUri), new DefaultAzureCredential());
         }
 
         public KeyVaultSecret GetSecret(string secretName)

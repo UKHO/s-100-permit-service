@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;
-       
+
         private PermitController _permitController;
 
         [SetUp]
@@ -38,7 +38,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
         }
 
-            [Test]
+        [Test]
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = (OkResult)await _permitController.GeneratePermits(007);
