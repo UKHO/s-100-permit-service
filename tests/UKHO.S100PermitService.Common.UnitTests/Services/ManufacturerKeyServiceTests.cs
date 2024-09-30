@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";
             var secretKey = "mpn";
-            var secretValue = "M_IDmpm";            
+            var secretValue = "M_IDmpm";
 
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).Returns(GetSecretProperties(secretKey));
 
@@ -112,7 +112,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
 
-            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));            
+            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
             var result = _manufacturerKeyService.GetManufacturerKeys(secretKey);
 
@@ -120,7 +120,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             result.Should().NotBeNull();
             result.Should().Be(secretValue);
-        }       
+        }
 
         private static KeyVaultSecret GetSecret(string key, string value)
         {
