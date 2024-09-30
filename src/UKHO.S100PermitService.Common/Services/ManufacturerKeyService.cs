@@ -1,4 +1,5 @@
 ﻿using Azure.Security.KeyVault.Secrets;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
@@ -11,14 +12,17 @@ namespace UKHO.S100PermitService.Common.Services
     public class ManufacturerKeyService : IManufacturerKeyService
     {
         private readonly IOptions<ManufacturerKeyConfiguration> _manufacturerKeyVault;
+        private readonly ILogger<ManufacturerKeyService> _logger;
         private readonly ICacheProvider _cacheProvider;
         private readonly ISecretClient _secretClient;
 
         public ManufacturerKeyService(IOptions<ManufacturerKeyConfiguration> manufacturerKeyvault,
+                                        ILogger<ManufacturerKeyService> logger,
                                         ICacheProvider cacheProvider,
                                         ISecretClient secretClient)
         {
             _manufacturerKeyVault = manufacturerKeyvault ?? throw new ArgumentNullException(nameof(manufacturerKeyvault));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
             _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
             CacheManufacturerKeys();
@@ -26,6 +30,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public void CacheManufacturerKeys()
         {
+            _logger.LogInformation(EventIds.ManufacturerKeyCachingStart.ToEventId(), "Caching Of Manufacturer Keys started.");
             if(!string.IsNullOrEmpty(_manufacturerKeyVault.Value.ServiceUri))
             {
                 var secretProperties = _secretClient.GetPropertiesOfSecrets();
@@ -43,6 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                 }
             }
+            _logger.LogInformation(EventIds.ManufacturerKeyCachingEnd.ToEventId(), "Caching Of Manufacturer Keys End.");
         }
 
         public string GetManufacturerKeys(string secretName)
@@ -51,7 +57,7 @@ namespace UKHO.S100PermitService.Common.Services
             if(string.IsNullOrEmpty(secretValue))
             {
                 var secret = GetSetManufacturerValue(secretName);
-                return secret.Value.ToString();
+                return secret.Value;
             }
             return secretValue;
         }

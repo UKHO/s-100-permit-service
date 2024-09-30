@@ -10,7 +10,7 @@ namespace UKHO.S100PermitService.Common.Providers
 
         public CacheProvider(IMemoryCache memoryCache)
         {
-            _memoryCache = memoryCache;                     
+            _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         }
 
         public string GetCacheKey(string key)

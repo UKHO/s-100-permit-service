@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Common.Clients
 
         public KeyVaultSecretClient(IOptions<ManufacturerKeyConfiguration> manufacturerKeyVault)
         {
-            _manufacturerKeyVault = manufacturerKeyVault;
+            _manufacturerKeyVault = manufacturerKeyVault ?? throw new ArgumentNullException(nameof(manufacturerKeyVault));
             _secretClient = new SecretClient(new Uri(_manufacturerKeyVault.Value.ServiceUri), new DefaultAzureCredential());
         }
 

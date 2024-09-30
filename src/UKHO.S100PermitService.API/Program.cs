@@ -174,12 +174,13 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
             {
                 var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+                var logger = sp.GetRequiredService<ILogger<ManufacturerKeyService>>();
                 var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
                 var secretClient = sp.GetRequiredService<ISecretClient>();
-                return new ManufacturerKeyService(config, cacheProvider, secretClient);
+                return new ManufacturerKeyService(config, logger, cacheProvider, secretClient);
             });
-            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
 
+            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
             builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
