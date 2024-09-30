@@ -83,7 +83,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";
 
             var result = () => _manufacturerKeyService.CacheManufacturerKeys();
-            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Keyvault");
+            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault");
 
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).MustHaveHappenedOnceExactly();
         }
