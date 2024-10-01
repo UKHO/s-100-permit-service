@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetHwIdFromUserPermit(A<string>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<string>.Ignored))
                 .Returns("hardwareId");
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
@@ -147,7 +147,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetHwIdFromUserPermit(A<string>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<string>.Ignored))
                 .Returns("hardwareId");
 
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");

@@ -2,6 +2,6 @@
 {
     public interface IS100Crypt
     {
-        string GetHwIdFromUserPermit(string upn);
+        string GetDecryptedHardwareIdFromUserPermit(string upn);
     }
 }
