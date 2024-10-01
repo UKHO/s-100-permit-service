@@ -141,33 +141,39 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Invalid mKey length or mKey not found in KeyVault
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
         /// </summary>
-        InvalidMKey = 840028,
+        ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Get enc keys from permit keys started
+        /// 840029 - Caching of Manufacturer Key started.
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840029,
+        ManufacturerKeyCachingStart = 840029,
 
         /// <summary>
-        /// 840030 - Get enc keys from permit keys completed
+        /// 840030 - Caching of Manufacturer Key end.
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840030,
+        ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Get hardware id from user permit started
+        /// 840031 - Invalid mKey length or mKey not found in KeyVault
         /// </summary>
-        GetHwIdFromUserPermitStarted = 840031,
+        InvalidMKey = 840031,
+
+        
+        /// <summary>
+        /// 840032 - Get hardware id from user permit started
+        /// </summary>
+        GetHwIdFromUserPermitStarted = 840032,
 
         /// <summary>
-        /// 840032 - Get hardware id from user permit completed
+        /// 840033 - Get hardware id from user permit completed
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840032,
+        GetHwIdFromUserPermitCompleted = 840033,
 
         /// <summary>
-        /// 840033 - Upn length or checksum validation failed
+        /// 840034 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840033
+        UpnLengthOrChecksumValidationFailed = 840034
     }
 }
