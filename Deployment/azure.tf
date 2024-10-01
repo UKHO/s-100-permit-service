@@ -3,8 +3,12 @@ terraform {
     azurerm = {
       source  = "hashicorp/azurerm"
       version = "=3.112.0"
+      configuration_aliases = [
+        azurerm.hub,
+        azurerm.erp,
+      ]
     }
-  }
+      }
 
   required_version = "=1.9.2"
   backend "azurerm" {
@@ -13,9 +17,6 @@ terraform {
   }
 }
 
-provider "azurerm" {
-  features {}
-}
 provider "azurerm" {
   features {} 
   alias = "hub"
