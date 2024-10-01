@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
             (bool isValid, string errorMessage) = ValidateUpnsAndChecksum(userPermitServiceResponse);
-            
+
             if(isValid)
             {
                 var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
@@ -59,11 +59,11 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-                foreach(var userPermits in userPermitServiceResponse.UserPermits)
-                {
-                    var decryptedHardwareId = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermits.Upn);
+                var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-                    CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
+                foreach(var upnInfo in listOfUpnInfo)
+                {
+                    CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upnInfo.Upn, "1.0", productsList);
                 }
 
                 _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");

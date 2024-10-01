@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.Encryption
@@ -23,26 +24,39 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public string GetDecryptedHardwareIdFromUserPermit(string upn)
+        public List<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse)
         {
-            _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get decrypted hardware id from user permit started");
+            _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get decrypted hardware id from user permits started");
 
-            var encryptedHardwareId = upn[..EncryptedHardwareIdLength];
+            List<UpnInfo> listOfUpnInfo = [];
+            UpnInfo upnInfo = new();
 
-            var mId = upn[^MIdLength..];
-
-            var mKey = _manufacturerKeyService.GetManufacturerKeys(mId);
-
-            if(mKey?.Length != KeySizeEncoded)
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
-                throw new PermitServiceException(EventIds.InvalidMKey.ToEventId(), "Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}", KeySizeEncoded, mKey.Length);
+                var encryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength];
+
+                var mId = userPermit.Upn[^MIdLength..];
+
+                var mKey = _manufacturerKeyService.GetManufacturerKeys(mId);
+
+                if(mKey?.Length != KeySizeEncoded)
+                {
+                    throw new PermitServiceException(EventIds.InvalidMKey.ToEventId(),
+                        "Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}",
+                        KeySizeEncoded, mKey.Length);
+                }
+
+                var hardwareId = _aesEncryption.Decrypt(encryptedHardwareId, mKey);
+
+                upnInfo.Upn = userPermit.Upn;
+                upnInfo.DecryptedHardwareId = hardwareId;
+
+                listOfUpnInfo.Add(upnInfo);
             }
 
-            var hardwareId = _aesEncryption.Decrypt(encryptedHardwareId, mKey);
+            _logger.LogInformation(EventIds.GetHwIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permits completed");
 
-            _logger.LogInformation(EventIds.GetHwIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permit completed");
-
-            return hardwareId;
+            return listOfUpnInfo;
         }
     }
 }

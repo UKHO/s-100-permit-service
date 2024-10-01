@@ -1,7 +1,9 @@
-﻿namespace UKHO.S100PermitService.Common.Encryption
+﻿using UKHO.S100PermitService.Common.Models.UserPermitService;
+
+namespace UKHO.S100PermitService.Common.Encryption
 {
     public interface IS100Crypt
     {
-        string GetDecryptedHardwareIdFromUserPermit(string upn);
+        List<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse);
     }
 }
