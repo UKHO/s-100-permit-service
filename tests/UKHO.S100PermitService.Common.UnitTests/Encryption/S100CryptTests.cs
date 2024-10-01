@@ -12,45 +12,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
     public class S100CryptTests
     {
         private IAesEncryption _fakeAesEncryption;
-        private IManufacturerKeyService _manufacturerKeyService;
+        private IManufacturerKeyService _fakeManufacturerKeyService;
         private ILogger<S100Crypt> _fakeLogger;
 
-        private S100Crypt _s100Crypt;
+        private IS100Crypt _s100Crypt;
 
-        const string Upn = "encryptedHardwareId1234567890123ChecksummId123";
+        const string FakeUpn = "encryptedHardwareId1234567890123ChecksummId123";
 
         [SetUp]
         public void Setup()
         {
             _fakeAesEncryption = A.Fake<IAesEncryption>();
-            _manufacturerKeyService = A.Fake<IManufacturerKeyService>();
+            _fakeManufacturerKeyService = A.Fake<IManufacturerKeyService>();
             _fakeLogger = A.Fake<ILogger<S100Crypt>>();
 
-            _s100Crypt = new S100Crypt(_fakeAesEncryption, _manufacturerKeyService, _fakeLogger);
+            _s100Crypt = new S100Crypt(_fakeAesEncryption, _fakeManufacturerKeyService, _fakeLogger);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullAesEncryption = () => new S100Crypt(null, _manufacturerKeyService, _fakeLogger);
+            Action nullAesEncryption = () => new S100Crypt(null, _fakeManufacturerKeyService, _fakeLogger);
             nullAesEncryption.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should()
                 .Be("aesEncryption");
 
             Action nullManufacturerKeyService = () => new S100Crypt(_fakeAesEncryption, null, _fakeLogger);
             nullManufacturerKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("manufacturerKeyService");
 
-            Action nullLogger = () => new S100Crypt(_fakeAesEncryption, _manufacturerKeyService, null);
+            Action nullLogger = () => new S100Crypt(_fakeAesEncryption, _fakeManufacturerKeyService, null);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
         }
 
         [Test]
         public async Task WhenMKeyExpectedLengthDoesNotMatch_ThenThrowPermitServiceException()
         {
-            const string MKey = "invalidMKey";
+            const string FakeMKey = "invalidMKey";
 
-            A.CallTo(() => _manufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(MKey);
+            A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            await FluentActions.Invoking(async () => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(Upn)).Should().ThrowAsync<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}");
+            await FluentActions.Invoking(async () => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(FakeUpn)).Should().ThrowAsync<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -71,16 +71,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         public void WhenValidmKeyAndUpn_ThenDecryptedHardwareIdIsReturned()
         {
             
-            const string ExpectedHardwareId = "decryptedHardwareId1234567890mId";
-            const string MKey = "validMKey12345678901234567890123";
+            const string FakeDecryptedHardwareId = "decryptedHardwareId1234567890mId";
+            const string FakeMKey = "validMKey12345678901234567890123";
 
-            A.CallTo(() => _manufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(MKey);
+            A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(ExpectedHardwareId);
+            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
 
-            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(Upn);
+            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(FakeUpn);
 
-            result.Equals(ExpectedHardwareId);
+            result.Equals(FakeDecryptedHardwareId);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
