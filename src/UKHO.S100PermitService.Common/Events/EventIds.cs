@@ -138,6 +138,21 @@
         /// <summary>
         /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027
+        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+
+        /// <summary>
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
+        /// </summary>
+        ManufacturerIdNotFoundInKeyVault = 840028,
+
+        /// <summary>
+        /// 840029 - Caching of Manufacturer Key started.
+        /// </summary>
+        ManufacturerKeyCachingStart = 840029,
+
+        /// <summary>
+        /// 840030 - Caching of Manufacturer Key end.
+        /// </summary>
+        ManufacturerKeyCachingEnd = 840030
     }
 }

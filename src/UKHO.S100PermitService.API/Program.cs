@@ -29,6 +29,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
+        private const string ManufacturerKeyVault = "ManufacturerKeyVault";
         private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
@@ -56,6 +57,7 @@ namespace UKHO.S100PermitService.API
 
             app.UseCorrelationIdMiddleware();
             app.UseExceptionHandlingMiddleware();
+
             app.UseHeaderPropagation();
             app.UseRouting();
 
@@ -113,12 +115,14 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddMemoryCache();
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
+            builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -166,6 +170,17 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
+            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
+
+            builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
+            {
+                var cacheProvider = sp.GetRequiredService<ICacheProvider>();
+                var logger = sp.GetRequiredService<ILogger<ManufacturerKeyService>>();
+                var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
+                var secretClient = sp.GetRequiredService<ISecretClient>();
+                return new ManufacturerKeyService(config, logger, cacheProvider, secretClient);
+            });          
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
