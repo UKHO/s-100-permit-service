@@ -167,7 +167,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         [Test]
         [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
-        public void WhenUserPermitServiceResponseTooManyRequest_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
+        public void WhenUserPermitServiceResponseTooManyRequests_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
@@ -198,7 +198,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
               && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientUserPermitRequest.ToEventId()
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                  ["{OriginalFormat}"].ToString() == "Re-trying service request with uri {RequestUri} and delay {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
+                  ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
         }
     }

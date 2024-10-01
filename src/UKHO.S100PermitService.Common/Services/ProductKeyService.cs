@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientPKSRequest).Execute(() =>
+            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).Execute(() =>
             {
                return _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId).Result;
             });

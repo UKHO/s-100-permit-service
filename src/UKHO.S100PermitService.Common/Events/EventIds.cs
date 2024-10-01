@@ -168,6 +168,6 @@
         /// <summary>
         /// 840033 - Request for retrying product key service api endpoint
         /// </summary>
-        RetryHttpClientPKSRequest = 840033
+        RetryHttpClientProductKeyServiceRequest = 840033
     }
 }
