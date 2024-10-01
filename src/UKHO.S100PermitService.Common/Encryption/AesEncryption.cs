@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Encryption
     [ExcludeFromCodeCoverage]
     public class AesEncryption : IAesEncryption
     {
-        private const int KeySize = 128;
+        private const int KeySize = 128, BlockSize = 128;
         private const int IvLength = 16;
 
         public string Decrypt(string hexString, string keyHexEncoded)
@@ -23,11 +23,11 @@ namespace UKHO.S100PermitService.Common.Encryption
         private static Aes CreateAes(string keyHexEncoded)
         {
             var aes = Aes.Create();
-            aes.BlockSize = KeySize;
+            aes.BlockSize = BlockSize;
             aes.KeySize = KeySize;
             aes.IV = new byte[IvLength];
             aes.Mode = CipherMode.CBC;
-            aes.Padding = PaddingMode.None;
+            aes.Padding = PaddingMode.Zeros;
             aes.Key = StringToByteArray(keyHexEncoded);
             return aes;
         }

@@ -27,8 +27,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
-        const string FakeUri = "http://test.com";
-        const string AccessToken = "access-token";
+        private const string FakeUri = "http://test.com";
+        private const string AccessToken = "access-token";
 
         private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"User permits not found for given LicenceId\"\r\n    }\r\n  ]\r\n}";
         private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"LicenceId is incorrect\"\r\n    }\r\n  ]\r\n}";
@@ -63,9 +63,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenValidDataIsPassed_ThenUserPermitServiceReturnsOkResponse()
         {
-            const int LicenceId = 1;
-            const string AccessToken = "access-token";
-
             var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermit { Title = "Port Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
@@ -80,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var response = await _userPermitService.GetUserPermitAsync(LicenceId, CancellationToken.None, _fakeCorrelationId);
+            var response = await _userPermitService.GetUserPermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             Assert.IsNotNull(response);
             response.Equals(userPermitServiceResponse);
