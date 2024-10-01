@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -38,7 +39,7 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-            
+
             if(IsListEmptyOrNull(holdingsServiceResponse))
             {
                 return HttpStatusCode.NoContent;
@@ -48,7 +49,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(userPermitServiceResponse is null)
+            if(IsUserPermitServiceResponseNull(userPermitServiceResponse))
             {
                 return HttpStatusCode.NoContent;
             }
@@ -62,7 +63,7 @@ namespace UKHO.S100PermitService.Common.Services
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
-            
+
             return HttpStatusCode.OK;
         }
 
@@ -132,6 +133,11 @@ namespace UKHO.S100PermitService.Common.Services
         private static bool IsListEmptyOrNull<T>(List<T>? list)
         {
             return list is null || list.Count == 0;
+        }
+
+        private static bool IsUserPermitServiceResponseNull(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            return userPermitServiceResponse is null || userPermitServiceResponse.GetType().GetProperties().Any(p => p.GetValue(userPermitServiceResponse) == null);
         }
     }
 }

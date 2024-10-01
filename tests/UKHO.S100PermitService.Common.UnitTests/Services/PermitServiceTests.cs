@@ -260,7 +260,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     };
 
                 case NoContent:
-                    return null;
+                    return new UserPermitServiceResponse();
 
                 default:
                     return new UserPermitServiceResponse();
