@@ -141,23 +141,38 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Expected permit hardware id length not found
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
         /// </summary>
-        PermitHardwareIdLengthError = 840028,
+        ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Expected permit key length not found
+        /// 840029 - Caching of Manufacturer Key started.
         /// </summary>
-        PermitKeyLengthError = 840029,
+        ManufacturerKeyCachingStart = 840029,
 
         /// <summary>
-        /// 840030 - Get enc keys from permit keys started
+        /// 840030 - Caching of Manufacturer Key end.
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840030,
+        ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Get enc keys from permit keys completed
+        /// 840031 - Expected permit hardware id length not found
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840031
+        PermitHardwareIdLengthError = 840031,
+
+        /// <summary>
+        /// 840032 - Expected permit key length not found
+        /// </summary>
+        PermitKeyLengthError = 840032,
+
+        /// <summary>
+        /// 840033 - Get enc keys from permit keys started
+        /// </summary>
+        GetEncKeysFromPermitKeysStarted = 840033,
+
+        /// <summary>
+        /// 840034 - Get enc keys from permit keys completed
+        /// </summary>
+        GetEncKeysFromPermitKeysCompleted = 840034
     }
 }
