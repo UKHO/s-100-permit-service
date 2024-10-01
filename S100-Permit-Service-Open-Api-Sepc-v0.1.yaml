@@ -21,10 +21,10 @@ paths:
   /permits/{licenceId}:
     get:
       description: |
-        This service uses the S-100 Part 15 data protection scheme to generate unsigned PERMIT.XML files for the respective User Permit Numbers (UPNs) for the requested licence and returns the compressed zip file containing all these PERMIT.XML files.
+        This service uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for the respective User Permit Numbers (UPNs) for the requested licence and returns the compressed zip file containing all these PERMIT.XML files.
       operationId: getS100Permits
       tags:
-        -  "UKHO Only"
+        -  ""
       parameters:
       - name: licenceId
         in: path
@@ -52,7 +52,7 @@ paths:
                 type: string
                 format: binary
         "204":
-          description: No Content - There are no S100 permits for the licence (No UPNs or Holdings found for the requested licence from S100 Shop Facade).
+          description: No Content - There are no S100 permits for the licence.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -119,7 +119,7 @@ paths:
               schema:
                 type: string
         "500":
-          description: Internal Server Error (reasons could be dependent services returns status code 429/401/403/503/500 or error in processing UPNs / permit key or error in generating permit or error in generating zip file).
+          description: Internal Server Error.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
