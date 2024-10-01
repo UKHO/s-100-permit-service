@@ -124,7 +124,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
             builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
 
-            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration1>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer(AzureAdScheme, options =>
                    {

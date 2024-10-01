@@ -3,7 +3,7 @@
 namespace UKHO.S100PermitService.Common.Configuration
 {
     [ExcludeFromCodeCoverage]
-    public class AzureAdConfiguration
+    public class AzureAdConfiguration1
     {
         public string MicrosoftOnlineLoginUrl { get; set; }
         public string TenantId { get; set; }
