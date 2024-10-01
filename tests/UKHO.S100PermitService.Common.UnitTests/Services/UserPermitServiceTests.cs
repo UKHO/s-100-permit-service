@@ -65,7 +65,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             const int LicenceId = 1;
             const string AccessToken = "access-token";
 
-            var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = "1", UserPermits = [new UserPermit { Title = "Port Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
+            var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = 1, UserPermits = [new UserPermit { Title = "Port Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" }] };
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -81,7 +81,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _userPermitService.GetUserPermitAsync(LicenceId, CancellationToken.None, _fakeCorrelationId);
 
-            Assert.IsNotNull(response);
+            response.Should().NotBeNull();
             response.Equals(userPermitServiceResponse);
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -102,7 +102,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public void WhenLicenceIdNotFoundOr0_ThenUserPermitServiceReturnsException404Or400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
+        public async Task WhenLicenceIdNotFoundOr0_ThenUserPermitServiceReturnsException404Or400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -116,7 +116,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. StatusCode: {1} | Errors Details: {2}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -130,7 +130,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public void WhenUserPermitServiceResponseOtherThanOk_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
+        public async Task WhenUserPermitServiceResponseOtherThanOk_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
@@ -147,7 +147,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. Status Code: {1}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

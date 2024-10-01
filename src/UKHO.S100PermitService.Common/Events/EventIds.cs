@@ -153,6 +153,11 @@
         /// <summary>
         /// 840030 - Caching of Manufacturer Key end.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030
+        ManufacturerKeyCachingEnd = 840030,
+
+        /// <summary>
+        /// 840031 - Access token is empty or null
+        /// </summary>
+        MissingAccessToken = 840031
     }
 }
