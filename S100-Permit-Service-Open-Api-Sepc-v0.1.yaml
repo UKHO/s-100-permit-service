@@ -21,7 +21,7 @@ paths:
   /permits/{licenceId}:
     get:
       description: |
-        This service uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for the respective User Permit Numbers (UPNs) for the requested licence and returns the compressed zip file containing all these PERMIT.XML files.
+        It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.
       operationId: getS100Permits
       tags:
         -  ""
