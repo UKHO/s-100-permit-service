@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            (bool isValid, string errorMessage) = ValidateUpnsAndChecksumAsync(userPermitServiceResponse);
+            (bool isValid, string errorMessage) = ValidateUpnsAndChecksum(userPermitServiceResponse);
             
             if(isValid)
             {
@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.Common.Services
                  Edition = y.LatestEditionNumber
              })).ToList();
 
-        private (bool, string) ValidateUpnsAndChecksumAsync(UserPermitServiceResponse userPermitServiceResponse)
+        private (bool, string) ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
         {
             var result = _userPermitValidator.Validate(userPermitServiceResponse);
             if(result.IsValid)

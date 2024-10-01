@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
 using ICSharpCode.SharpZipLib.Checksum;
-using System.Net;
 using System.Text;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 
@@ -16,7 +15,6 @@ namespace UKHO.S100PermitService.Common.Validation
             RuleForEach(x => x.UserPermits).ChildRules(userPermits =>
             {
                 userPermits.RuleFor(userPermit => userPermit.Upn).NotNull().Length(46)
-                    .WithErrorCode(HttpStatusCode.BadRequest.ToString())
                     .WithMessage("Invalid UPN. UPN must be 46 characters long")
                     .DependentRules(() =>
                     {

@@ -217,7 +217,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     new ValidationFailure("ErrorMessage", "Invalid checksum")
             }));
 
-
             Func<Task> act = async () => { await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId); };
             await act.Should().ThrowAsync<PermitServiceException>().Where(x => x.EventId == EventIds.UpnLengthOrChecksumValidationFailed.ToEventId()).WithMessage("Invalid checksum");
 
