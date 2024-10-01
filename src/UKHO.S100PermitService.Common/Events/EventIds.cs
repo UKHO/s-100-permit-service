@@ -141,18 +141,33 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Request for retrying holdings api endpoint
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
         /// </summary>
-        RetryHttpClientHoldingsRequest = 840028,
+        ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Request for retrying user permit api endpoint
+        /// 840029 - Caching of Manufacturer Key started.
         /// </summary>
-        RetryHttpClientUserPermitRequest = 840029,
+        ManufacturerKeyCachingStart = 840029,
 
         /// <summary>
-        /// 840030 - Request for retrying product key service api endpoint
+        /// 840030 - Caching of Manufacturer Key end.
         /// </summary>
-        RetryHttpClientPKSRequest = 840030
+        ManufacturerKeyCachingEnd = 840030,
+
+        /// <summary>
+        /// 840031 - Request for retrying holdings api endpoint
+        /// </summary>
+        RetryHttpClientHoldingsRequest = 840031,
+
+        /// <summary>
+        /// 840032 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840032,
+
+        /// <summary>
+        /// 840033 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientPKSRequest = 840033
     }
 }
