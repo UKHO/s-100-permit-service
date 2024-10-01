@@ -12,10 +12,8 @@ output "resource_group" {
 
 output keyvault_uri {
   value = module.key_vault.keyvault_uri
-  sensitive = true
 }
 
 output keyvault_mid_uri {
   value = module.key_vault.keyvault_mid_uri
-  sensitive = true
 }
