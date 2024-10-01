@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(userPermitServiceResponse == null)
+            if(userPermitServiceResponse is null)
             {
                 return HttpStatusCode.NoContent;
             }
@@ -131,7 +131,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         private static bool IsListEmptyOrNull<T>(List<T>? list)
         {
-            return list == null || list.Count == 0;
+            return list is null || list.Count == 0;
         }
     }
 }

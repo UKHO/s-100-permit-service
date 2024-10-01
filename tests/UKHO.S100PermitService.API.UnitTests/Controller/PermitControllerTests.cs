@@ -66,5 +66,32 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
            ).MustHaveHappenedOnceExactly();
         }
+
+        [Test]
+        public async Task WhenGetPermitIsCalled_ThenReturnsNoContentResponse()
+        {
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(HttpStatusCode.NoContent);
+
+            var result = (StatusCodeResult)await _permitController.GeneratePermits(1);
+
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
+            ).MustHaveHappenedOnceExactly();
+        }
     }
 }
