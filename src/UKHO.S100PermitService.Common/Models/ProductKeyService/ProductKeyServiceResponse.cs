@@ -1,16 +1,16 @@
-﻿using Newtonsoft.Json;
+﻿using System.Text.Json.Serialization;
 
 namespace UKHO.S100PermitService.Common.Models.ProductKeyService
 {
     public class ProductKeyServiceResponse
     {
-        [JsonProperty("productName")]
+        [JsonPropertyName("productName")]
         public string ProductName { get; set; }
 
-        [JsonProperty("edition")]
+        [JsonPropertyName("edition")]
         public string Edition { get; set; }
 
-        [JsonProperty("key")]
+        [JsonPropertyName("key")]
         public string Key { get; set; }
     }
 }
