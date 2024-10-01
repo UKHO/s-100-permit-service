@@ -141,28 +141,23 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Expected hex length not found
+        /// 840028 - Expected permit hardware id length not found
         /// </summary>
-        HexLengthError = 840028,
+        PermitHardwareIdLengthError = 840028,
 
         /// <summary>
-        /// 840029 - Get enc keys from permit keys started
+        /// 840029 - Expected permit key length not found
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840029,
+        PermitKeyLengthError = 840029,
 
         /// <summary>
-        /// 840030 - Get enc keys from permit keys completed
+        /// 840030 - Get enc keys from permit keys started
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840030,
+        GetEncKeysFromPermitKeysStarted = 840030,
 
         /// <summary>
-        /// 840031 - Get hardware id from user permit started
+        /// 840031 - Get enc keys from permit keys completed
         /// </summary>
-        GetHwIdFromUserPermitStarted = 840031,
-
-        /// <summary>
-        /// 840032 - Get hardware id from user permit completed
-        /// </summary>
-        GetHwIdFromUserPermitCompleted = 840032
+        GetEncKeysFromPermitKeysCompleted = 840031
     }
 }

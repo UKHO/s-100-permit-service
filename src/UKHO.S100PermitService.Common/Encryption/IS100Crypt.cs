@@ -5,6 +5,5 @@ namespace UKHO.S100PermitService.Common.Encryption
     public interface IS100Crypt
     {
         List<ProductKeyServiceResponse> GetEncKeysFromPermitKeys(List<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId);
-        string GetHwIdFromUserPermit(string upn, string mKey);
     }
 }

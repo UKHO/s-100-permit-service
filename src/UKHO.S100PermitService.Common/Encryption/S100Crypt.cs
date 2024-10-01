@@ -20,11 +20,11 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public List<ProductKeyServiceResponse> GetEncKeysFromPermitKeys(List<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from permit keys started");
+            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from permit keys started.");
 
             if(hardwareId.Length != KeySizeEncoded)
             {
-                throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected hardware id length {0}, but found {1}.",
+                throw new PermitServiceException(EventIds.PermitHardwareIdLengthError.ToEventId(), "Expected hardware id length {0}, but found {1}.",
                                                                                                                 KeySizeEncoded, hardwareId.Length);
             }
 
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             {
                 if(productKeyServiceResponse.Key.Length != KeySizeEncoded)
                 {
-                    throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected permit key length {0}, but found {1}.",
+                    throw new PermitServiceException(EventIds.PermitKeyLengthError.ToEventId(), "Expected permit key length {0}, but found {1}.",
                                                                                                                     KeySizeEncoded, productKeyServiceResponse.Key.Length);
                 }
 
@@ -45,37 +45,9 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get enc keys from permit keys completed");
+            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get enc keys from permit keys completed.");
 
             return productKeys;
-        }
-
-        public string GetHwIdFromUserPermit(string upn, string mKey)
-        {
-            _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get hardware id from user permit started");
-
-            ValidateData(upn, mKey);
-
-            var hardwareId = _aesEncryption.Decrypt(upn, mKey);
-
-            _logger.LogInformation(EventIds.GetHwIdFromUserPermitCompleted.ToEventId(), "Get hardware id from user permit completed");
-
-            return hardwareId;
-        }
-
-        private bool ValidateData(string upn, string key)
-        {
-            if(upn.Length != KeySizeEncoded)
-            {
-                throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected upn data length {0}, but found {1}.",
-                                                                                                                KeySizeEncoded, upn.Length);
-            }
-            if(key.Length != KeySizeEncoded)
-            {
-                throw new PermitServiceException(EventIds.HexLengthError.ToEventId(), "Expected encoded key length {0}, but found {1}.",
-                                                                                                                KeySizeEncoded, key.Length);
-            }
-            return true;
         }
     }
 }
