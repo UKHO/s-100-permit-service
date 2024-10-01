@@ -4,6 +4,7 @@ using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
@@ -70,9 +71,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
-            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(new UserPermitServiceResponse() { LicenceId = "1", UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
+
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
+
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                                            .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
+                .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
+
+            A.CallTo(() => _fakeIs100Crypt.GetHwIdFromUserPermit(A<string>.Ignored))
+                .Returns("hardwareId");
+            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
@@ -124,9 +136,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenEmptyPermitXml_ThenFileIsNotCreated()
         {
-            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(new UserPermitServiceResponse() { LicenceId = "1", UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
+
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
+
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                                         .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
+                .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
+
+            A.CallTo(() => _fakeIs100Crypt.GetHwIdFromUserPermit(A<string>.Ignored))
+                .Returns("hardwareId");
+
+            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
@@ -173,6 +197,31 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.FileCreationEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Xml file created"
            ).MustNotHaveHappened();
+        }
+
+        [Test]
+        public async Task WhenUpnOrChecksumValidationFails_ThenThrowPermitServiceException()
+        {
+            A.CallTo(() =>
+                    _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored,
+                        A<string>.Ignored))
+                .Returns(new UserPermitServiceResponse()
+                {
+                    LicenceId = "1",
+                    UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }]
+                });
+
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
+            .Returns(new ValidationResult(new[]
+            {
+                    new ValidationFailure("ErrorMessage", "Invalid checksum")
+            }));
+
+
+            Func<Task> act = async () => { await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId); };
+            await act.Should().ThrowAsync<PermitServiceException>().Where(x => x.EventId == EventIds.UpnLengthOrChecksumValidationFailed.ToEventId()).WithMessage("Invalid checksum");
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
         }
     }
 }

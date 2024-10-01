@@ -1,14 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
-using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Validation;
-using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.Common.Services
                                 IUserPermitService userPermitService,
                                 IProductKeyService productKeyService,
                                 IS100Crypt s100Crypt,
-            IUserPermitValidator userPermitValidator)
+                                IUserPermitValidator userPermitValidator)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -47,7 +47,9 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(ValidateUpnsAndChecksumAsync(userPermitServiceResponse))
+            (bool isValid, string errorMessage) = ValidateUpnsAndChecksumAsync(userPermitServiceResponse);
+            
+            if(isValid)
             {
                 var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
@@ -65,6 +67,10 @@ namespace UKHO.S100PermitService.Common.Services
                 }
 
                 _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+            }
+            else
+            {
+                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
             }
         }
 
@@ -131,13 +137,14 @@ namespace UKHO.S100PermitService.Common.Services
                  Edition = y.LatestEditionNumber
              })).ToList();
 
-        private bool ValidateUpnsAndChecksumAsync(UserPermitServiceResponse userPermitServiceResponse)
+        private (bool, string) ValidateUpnsAndChecksumAsync(UserPermitServiceResponse userPermitServiceResponse)
         {
             var result = _userPermitValidator.Validate(userPermitServiceResponse);
             if(result.IsValid)
             {
-                return true;
+                return (true, string.Empty);
             }
+
             var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
                 .Select(group => new
                 {
@@ -148,7 +155,7 @@ namespace UKHO.S100PermitService.Common.Services
                 .Select(group => group.Errors)
                 .Distinct());
 
-            throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
+            return (false, errorMessage);
         }
     }
 }
