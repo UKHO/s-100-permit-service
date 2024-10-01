@@ -141,8 +141,23 @@
         ProductKeyServicePostPermitKeyRequestFailed = 840027,
 
         /// <summary>
-        /// 840028 - Access token is empty or null
+        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
         /// </summary>
-        MissingAccessToken = 840028
+        ManufacturerIdNotFoundInKeyVault = 840028,
+
+        /// <summary>
+        /// 840029 - Caching of Manufacturer Key started.
+        /// </summary>
+        ManufacturerKeyCachingStart = 840029,
+
+        /// <summary>
+        /// 840030 - Caching of Manufacturer Key end.
+        /// </summary>
+        ManufacturerKeyCachingEnd = 840030,
+
+        /// <summary>
+        /// 840031 - Access token is empty or null
+        /// </summary>
+        MissingAccessToken = 840031
     }
 }

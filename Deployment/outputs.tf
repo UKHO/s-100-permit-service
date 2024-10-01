@@ -13,3 +13,7 @@ output "resource_group" {
 output keyvault_uri {
   value = module.key_vault.keyvault_uri
 }
+
+output keyvault_mid_uri {
+  value = module.key_vault.keyvault_mid_uri
+}
