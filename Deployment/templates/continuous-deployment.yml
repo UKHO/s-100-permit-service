@@ -22,3 +22,8 @@ steps:
       TF_VAR_spoke_rg: $(spokeRG)
       TF_VAR_spoke_vnet_name: $(spokeVnetName)
       TF_VAR_spoke_subnet_name: $(spokeSubnetName)
+      TF_VAR_subscription_id: $(subscriptionId)
+      TF_VAR_hub_subscription_id: $(hubSubscriptionId)
+      TF_VAR_pe_vnet_name: $(peVnetName)
+      TF_VAR_pe_subnet_name: $(peSubnetName)
+      TF_VAR_pe_rg: $(peRG)
