@@ -2,9 +2,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -69,7 +69,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(userPermitServiceResponse))
+                Content = new StringContent(JsonSerializer.Serialize(userPermitServiceResponse))
             };
 
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))

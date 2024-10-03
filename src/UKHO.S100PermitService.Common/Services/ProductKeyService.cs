@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 _logger.LogInformation(EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
 
-                var productKeyServiceResponse = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(bodyJson)!;
+                var productKeyServiceResponse = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(bodyJson)!;
                 return productKeyServiceResponse;
             }
 

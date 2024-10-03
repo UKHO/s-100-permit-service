@@ -2,9 +2,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
-            response.Equals(JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(OkResponseContent));
+            response.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
