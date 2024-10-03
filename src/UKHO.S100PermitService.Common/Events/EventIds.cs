@@ -156,13 +156,18 @@
         ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// 840031 - Access token is empty or null
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840031,
+        MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840020 - Request to Holdings service GetHoldings completed with no content
+        /// 840032 - Request to UserPermitService GetUserPermit endpoint completed with no content
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedNoContent = 840032
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840032,
+
+        /// <summary>
+        /// 840033 - Request to Holdings service GetHoldings completed with no content
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompletedNoContent = 840033
     }
 }

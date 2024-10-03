@@ -286,7 +286,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 case OkResponse:
                     return new UserPermitServiceResponse
                     {
-                        LicenceId = "1",
+                        LicenceId = 1,
                         UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
                     };
 
