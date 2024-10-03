@@ -168,6 +168,6 @@
         /// <summary>
         /// 840033 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedNoContent = 840033
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840033
     }
 }
