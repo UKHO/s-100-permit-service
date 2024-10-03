@@ -82,8 +82,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<string>.Ignored))
-                .Returns("hardwareId");
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
+                .Returns(GetUpnInfo());
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -109,21 +109,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
            && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStart.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization started"
-           ).MustHaveHappenedOnceExactly();
+           ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.XmlSerializationEnd.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization completed"
-            ).MustHaveHappenedOnceExactly();
+            ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
            && call.GetArgument<EventId>(1) == EventIds.FileCreationEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml file created"
-           ).MustHaveHappenedOnceExactly();
+           ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
@@ -147,8 +147,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<string>.Ignored))
-                .Returns("hardwareId");
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
+                .Returns(GetUpnInfo());
 
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
@@ -175,14 +175,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
            && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStart.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization started"
-           ).MustHaveHappenedOnceExactly();
+           ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
            && call.GetArgument<EventId>(1) == EventIds.XmlSerializationEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization completed"
-           ).MustHaveHappenedOnceExactly();
+           ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
@@ -214,13 +214,30 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
             .Returns(new ValidationResult(new[]
             {
-                    new ValidationFailure("ErrorMessage", "Invalid checksum")
+                            new ValidationFailure("ErrorMessage", "Invalid checksum")
             }));
 
             Func<Task> act = async () => { await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId); };
             await act.Should().ThrowAsync<PermitServiceException>().Where(x => x.EventId == EventIds.UpnLengthOrChecksumValidationFailed.ToEventId()).WithMessage("Invalid checksum");
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+        }
+
+        private static List<UpnInfo> GetUpnInfo()
+        {
+            return
+            [
+                new UpnInfo()
+                {
+                    DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
+                },
+                new UpnInfo()
+                {
+                    DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                }
+            ];
         }
     }
 }
