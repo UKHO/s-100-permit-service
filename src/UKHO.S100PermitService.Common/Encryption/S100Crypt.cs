@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 if(mKey?.Length != KeySizeEncoded)
                 {
                     throw new PermitServiceException(EventIds.InvalidMKey.ToEventId(),
-                        "Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}",
+                        "Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyKength}",
                         KeySizeEncoded, mKey.Length);
                 }
 

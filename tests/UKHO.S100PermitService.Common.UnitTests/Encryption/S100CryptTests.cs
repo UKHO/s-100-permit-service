@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            await FluentActions.Invoking(async () => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses())).Should().ThrowAsync<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {0}, but mKey length is {1}");
+            await FluentActions.Invoking(async () => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses())).Should().ThrowAsync<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyKength}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
