@@ -55,12 +55,12 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.",
+                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                "Request to HoldingsService GET {0} failed. Status Code: {1}.",
+                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }

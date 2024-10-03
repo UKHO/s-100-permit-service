@@ -53,12 +53,12 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
-                "Request to UserPermitService GET {0} failed. StatusCode: {1} | Errors Details: {2}",
+                "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
-                "Request to UserPermitService GET {0} failed. Status Code: {1}",
+                "Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }

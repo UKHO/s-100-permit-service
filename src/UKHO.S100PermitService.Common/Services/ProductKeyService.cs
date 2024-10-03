@@ -59,12 +59,12 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(),
-                    "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1} | Error Details : {2}",
+                    "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}",
                     uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.ProductKeyServicePostPermitKeyRequestFailed.ToEventId(),
-                "Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}",
+                "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}",
                 uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
         }
     }
