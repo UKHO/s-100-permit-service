@@ -156,24 +156,29 @@
         ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Invalid mKey length or mKey not found in KeyVault
+        /// 840031 - Access token is empty or null
         /// </summary>
-        InvalidMKey = 840031,
-
-        
-        /// <summary>
-        /// 840032 - Get hardware id from user permit started
-        /// </summary>
-        GetHwIdFromUserPermitStarted = 840032,
+        MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840033 - Get hardware id from user permit completed
+        /// 840032 - Invalid mKey length or mKey not found in KeyVault
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840033,
+        InvalidMKey = 840032,
+
 
         /// <summary>
-        /// 840034 - Upn length or checksum validation failed
+        /// 840033 - Get hardware id from user permit started
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840034
+        GetHwIdFromUserPermitStarted = 840033,
+
+        /// <summary>
+        /// 840034 - Get hardware id from user permit completed
+        /// </summary>
+        GetHwIdFromUserPermitCompleted = 840034,
+
+        /// <summary>
+        /// 840035 - Upn length or checksum validation failed
+        /// </summary>
+        UpnLengthOrChecksumValidationFailed = 840035
     }
 }

@@ -45,25 +45,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
-             .ParamName
-             .Should().Be("logger");
+            Action nullHoldingsLogger = () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient);
+            nullHoldingsLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient))
-             .ParamName
-             .Should().Be("holdingsApiConfiguration");
+            Action nullHoldingsApiConfiguration = () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient);
+            nullHoldingsApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsApiConfiguration");
 
-            Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient))
-             .ParamName
-             .Should().Be("holdingsServiceAuthTokenProvider");
+            Action nullAuthHoldingsServiceTokenProvider = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient);
+            nullAuthHoldingsServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsServiceAuthTokenProvider");
 
-            Assert.Throws<ArgumentNullException>(
-             () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null))
-             .ParamName
-             .Should().Be("holdingsApiClient");
+            Action nullHoldingsApiClient = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null);
+            nullHoldingsApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsApiClient");
         }
 
         [Test]
@@ -107,7 +99,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public void WhenHoldigsNotFoundOrInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
+        public async Task WhenHoldigsNotFoundOrInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -120,7 +112,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -135,7 +127,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public void WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
+        public async Task WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
@@ -151,7 +143,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {0} failed. Status Code: {1}.");
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
