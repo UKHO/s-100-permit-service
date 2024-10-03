@@ -23,8 +23,7 @@ namespace UKHO.S100PermitService.Common.Handlers
             var sleepDuration = double.Parse(_waitAndRetryConfiguration.Value.SleepDurationInSeconds);
 
             return Policy.HandleResult<HttpResponseMessage>(res => res.StatusCode == HttpStatusCode.ServiceUnavailable ||
-                             res.StatusCode == HttpStatusCode.TooManyRequests ||
-                             res.StatusCode == HttpStatusCode.InternalServerError).WaitAndRetry(retryCount, _ => TimeSpan.FromSeconds(sleepDuration),
+                             res.StatusCode == HttpStatusCode.TooManyRequests).WaitAndRetry(retryCount, _ => TimeSpan.FromSeconds(sleepDuration),
                              onRetry: (response, timespan, retryAttempt, context) =>
                              {
                                  var correlationId = response.Result.RequestMessage!.Headers.FirstOrDefault(h => h.Key.ToLowerInvariant() == "x-correlation-id");
