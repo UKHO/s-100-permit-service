@@ -156,23 +156,28 @@
         ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Expected permit hardware id length not found
+        /// 840031 - Access token is empty or null
         /// </summary>
-        PermitHardwareIdLengthError = 840031,
+        MissingAccessToken = 840031,
+        
+        /// <summary>
+        /// 840032 - Expected permit hardware id length not found
+        /// </summary>
+        PermitHardwareIdLengthError = 840032,
 
         /// <summary>
-        /// 840032 - Expected permit key length not found
+        /// 840033 - Expected permit key length not found
         /// </summary>
-        PermitKeyLengthError = 840032,
+        PermitKeyLengthError = 840033,
 
         /// <summary>
-        /// 840033 - Get enc keys from permit keys started
+        /// 840034 - Get enc keys from permit keys started
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840033,
+        GetEncKeysFromPermitKeysStarted = 840034,
 
         /// <summary>
-        /// 840034 - Get enc keys from permit keys completed
+        /// 840035 - Get enc keys from permit keys completed
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840034
+        GetEncKeysFromPermitKeysCompleted = 840035
     }
 }

@@ -11,7 +11,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
     [TestFixture]
     public class S100CryptTests
     {
-        private const string FakePermitHardwareId = "1D3A583E6CB6F32FD0B0648AF006A2BD";
+        private const string FakePermitHardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD";
 
         private IAesEncryption _fakeAesEncryption;
         private ILogger<S100Crypt> _fakeLogger;
@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         public void WhenInvalidPermitHardwareIdPassed_ThenThrowException()
         {
             FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromPermitKeys(GetProductKeyServiceResponse(), "123456")).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Expected hardware id length {0}, but found {1}.");
+                                            ThrowExactly<PermitServiceException>().WithMessage("Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -86,7 +86,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         public void WhenInvalidPermitKeyPassed_ThenThrowException()
         {
             FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromPermitKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Expected permit key length {0}, but found {1}.");
+                                            ThrowExactly<PermitServiceException>().WithMessage("Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 

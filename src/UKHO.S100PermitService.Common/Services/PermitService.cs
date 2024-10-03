@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
@@ -13,7 +15,6 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
-        private const string PermitHardwareId = "ProductKeyServiceApiConfiguration:PermitHardwareId";
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -21,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IS100Crypt _s100Crypt;
-        private readonly IConfiguration _configuration;
+        private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
@@ -29,7 +30,7 @@ namespace UKHO.S100PermitService.Common.Services
                                 IUserPermitService userPermitService,
                                 IProductKeyService productKeyService,
                                 IS100Crypt s100Crypt,
-                                IConfiguration configuration)
+                                IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -37,7 +38,7 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
         }
 
         public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -52,7 +53,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            var encKeyDetails = _s100Crypt.GetEncKeysFromPermitKeys(pksResponseData, _configuration[PermitHardwareId]);
+            var encKeyDetails = _s100Crypt.GetEncKeysFromPermitKeys(pksResponseData, _productKeyServiceApiConfiguration.Value.PermitHardwareId);
 
             var productsList = GetProductsList();
 

@@ -24,8 +24,8 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             if(hardwareId.Length != KeySizeEncoded)
             {
-                throw new PermitServiceException(EventIds.PermitHardwareIdLengthError.ToEventId(), "Expected hardware id length {0}, but found {1}.",
-                                                                                                                KeySizeEncoded, hardwareId.Length);
+                throw new PermitServiceException(EventIds.PermitHardwareIdLengthError.ToEventId(), "Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.", 
+                                                                                                                                               KeySizeEncoded, hardwareId.Length);
             }
 
             List<ProductKeyServiceResponse> productKeys = [];
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             {
                 if(productKeyServiceResponse.Key.Length != KeySizeEncoded)
                 {
-                    throw new PermitServiceException(EventIds.PermitKeyLengthError.ToEventId(), "Expected permit key length {0}, but found {1}.",
+                    throw new PermitServiceException(EventIds.PermitKeyLengthError.ToEventId(), "Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.",
                                                                                                                     KeySizeEncoded, productKeyServiceResponse.Key.Length);
                 }
 

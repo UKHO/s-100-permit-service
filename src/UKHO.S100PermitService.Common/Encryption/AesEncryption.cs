@@ -6,8 +6,7 @@ namespace UKHO.S100PermitService.Common.Encryption
     [ExcludeFromCodeCoverage]
     public class AesEncryption : IAesEncryption
     {
-        private const int KeySize = 128, BlockSize = 128;
-        private const int IvLength = 16;
+        private const int KeySize = 128, BlockSize = 128, IvLength = 16;
 
         public string Decrypt(string hexString, string keyHexEncoded)
         {
