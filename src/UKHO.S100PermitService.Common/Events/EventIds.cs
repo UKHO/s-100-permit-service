@@ -156,18 +156,23 @@
         ManufacturerKeyCachingEnd = 840030,
 
         /// <summary>
-        /// 840031 - Request for retrying holdings api endpoint
+        /// 840031 - Access token is empty or null
         /// </summary>
-        RetryHttpClientHoldingsRequest = 840031,
+        MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840032 - Request for retrying user permit api endpoint
+        /// 840032 - Request for retrying holdings api endpoint
         /// </summary>
-        RetryHttpClientUserPermitRequest = 840032,
+        RetryHttpClientHoldingsRequest = 840032,
 
         /// <summary>
-        /// 840033 - Request for retrying product key service api endpoint
+        /// 840033 - Request for retrying user permit api endpoint
         /// </summary>
-        RetryHttpClientProductKeyServiceRequest = 840033
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034
     }
 }

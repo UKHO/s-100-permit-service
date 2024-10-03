@@ -2,7 +2,7 @@
 {
     public class UserPermitServiceResponse
     {
-        public string LicenceId { get; set; }
+        public int LicenceId { get; set; }
         public List<UserPermit> UserPermits { get; set; }
     }
 }
