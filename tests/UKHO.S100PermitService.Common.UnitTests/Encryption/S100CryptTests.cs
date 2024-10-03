@@ -118,7 +118,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         {
             return new UserPermitServiceResponse()
             {
-                LicenceId = "2",
+                LicenceId = 2,
                 UserPermits =
                 [
                     new UserPermit { Title = "Mariner Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },

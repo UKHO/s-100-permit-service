@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(new UserPermitServiceResponse() { LicenceId = "1", UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
+                .Returns(GeUserPermitServiceResponse());
 
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
 
@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenEmptyPermitXml_ThenFileIsNotCreated()
         {
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(new UserPermitServiceResponse() { LicenceId = "1", UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
+                .Returns(GeUserPermitServiceResponse());
 
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
 
@@ -205,11 +205,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() =>
                     _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored,
                         A<string>.Ignored))
-                .Returns(new UserPermitServiceResponse()
-                {
-                    LicenceId = "1",
-                    UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }]
-                });
+                .Returns(GeUserPermitServiceResponse());
 
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
             .Returns(new ValidationResult(new[]
@@ -238,6 +234,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                 }
             ];
+        }
+
+        private static UserPermitServiceResponse GeUserPermitServiceResponse()
+        {
+            return new UserPermitServiceResponse()
+            {
+                LicenceId = 1,
+                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2" },
+                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
+                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
+                ]
+            };
         }
     }
 }
