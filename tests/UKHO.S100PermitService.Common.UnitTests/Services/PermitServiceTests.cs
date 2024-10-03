@@ -174,14 +174,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse()
+        [TestCase(NoContent)]
+        [TestCase("")]
+        public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
         {
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(OkResponse));
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetHoldingDetails(NoContent));
+                .Returns(GetHoldingDetails(responseType));
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             result.Should().Be(HttpStatusCode.NoContent);
+
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -189,19 +196,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             && call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
             ).MustHaveHappenedOnceExactly();
-        }
-
-        [Test]
-        public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse()
-        {
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetHoldingDetails(OkResponse));
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(NoContent));
-
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
-
-            result.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -209,11 +203,49 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
             ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedNoContent.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+                    .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService responded with empty response"
+            ).MustHaveHappenedOnceExactly();
         }
 
-        private static List<HoldingsServiceResponse> GetHoldingDetails(string value)
+        [Test]
+        [TestCase(NoContent)]
+        [TestCase("")]
+        public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
         {
-            switch(value)
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(responseType));
+
+            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+
+            result.Should().Be(HttpStatusCode.NoContent);
+
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService responded with empty response"
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        private static List<HoldingsServiceResponse> GetHoldingDetails(string responseType)
+        {
+            switch(responseType)
             {
                 case OkResponse:
                     return
@@ -237,20 +269,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     ];
 
                 case NoContent:
-                    return null;
-
-                default:
                     return
                     [
-                        new HoldingsServiceResponse()
                     ];
+
+                default:
+                    return null;
             }
 
         }
 
-        private static UserPermitServiceResponse GetUserPermits(string value)
+        private static UserPermitServiceResponse GetUserPermits(string responseType)
         {
-            switch(value)
+            switch(responseType)
             {
                 case OkResponse:
                     return new UserPermitServiceResponse
@@ -263,7 +294,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     return new UserPermitServiceResponse();
 
                 default:
-                    return new UserPermitServiceResponse();
+                    return null;
             }
         }
     }

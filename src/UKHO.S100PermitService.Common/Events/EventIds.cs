@@ -153,6 +153,16 @@
         /// <summary>
         /// 840030 - Caching of Manufacturer Key end.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030
+        ManufacturerKeyCachingEnd = 840030,
+
+        /// <summary>
+        /// 840031 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840031,
+
+        /// <summary>
+        /// 840020 - Request to Holdings service GetHoldings completed with no content
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompletedNoContent = 840032
     }
 }

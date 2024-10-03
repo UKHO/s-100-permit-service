@@ -38,21 +38,23 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
-            if(IsListEmptyOrNull(holdingsServiceResponse))
-            {
-                return HttpStatusCode.NoContent;
-            }
-
-            var productsList = GetProductsList();
-
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
             if(IsUserPermitServiceResponseNull(userPermitServiceResponse))
             {
+                _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
                 return HttpStatusCode.NoContent;
             }
+
+            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+
+            if(IsListEmptyOrNull(holdingsServiceResponse))
+            {
+                _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompletedNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
+                return HttpStatusCode.NoContent;
+            }
+
+            var productsList = GetProductsList();
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
