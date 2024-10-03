@@ -5,7 +5,7 @@ info:
     The UKHO S100 Shop Facade Service APIs.
   contact:
     name: UKHO
-    email: contact@ukho.co.uk
+    email: martin.rock-evans@ukho.co.uk
   version: 0.0.1
 servers:
   - url: https://shop-facade-service-url
@@ -14,12 +14,10 @@ security:
   - jwtBearerAuth: []
   
 paths:
-  /permits/S100/{licenceId}:
+  /permits/{licenceId}/S100:
     get:
       description: Returns a zip file containing all the S100 permit file(s) for the requested licence.
       operationId: getS100Permits
-      tags:
-        -  ""
       parameters:
       - name: licenceId
         in: path
@@ -132,8 +130,6 @@ paths:
     get:
       description: Returns all User Permit Numbers (UPNs) associated with the requested licence. There can be one or more UPNs for a licence.
       operationId: getUserPermits
-      tags:
-        - ""
       parameters:
       - name: licenceId
         in: path
@@ -241,8 +237,6 @@ paths:
     get:
       description: Get holdings for the requested licence.
       operationId: getHoldings
-      tags:
-        -  ""
       parameters:
       - name: licenceId
         in: path
@@ -259,22 +253,36 @@ paths:
               schema:
                 type: object
                 properties:
-                  productCode:
+                  unitName:
                     type: string
-                    description: ProductCode define the type of product.
+                    description: unitName define the type of unit.
                     example: "P1231"
-                  productTitle:
+                  unitTitle:
                     type: string
-                    description: productTitle define the title of product.
+                    description: unitTitle define the title of unit.
                     example: "P1231"
                   expiryDate:
                     type: string
-                    description: expiryDate of the product.
+                    description: expiryDate of the unit.
                     example: "2026-01-31T23:59:00Z"
-                  cells:
+                  datasets:
                     type: array
                     items:
-                      $ref: "#/components/schemas/cells"
+                      description: Object representing the details of cell.
+                      type: object
+                      properties:
+                        datasetName:
+                          type: string
+                          example: "101GB40079ABCDEFG.000"
+                        datasetTitle:
+                          type: string
+                          example: "101GB40079ABCDEFG"
+                        latestEditionNumber:
+                          type: integer
+                          example: 1
+                        latestUpdateNumber:
+                          type: integer
+                          example: 11
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -1025,22 +1033,6 @@ components:
           - Completed
           - Rejected
           - FulfillmentInProgress
-    cells:
-      description: Object representing the details of cell.
-      type: object
-      properties:
-        cellCode:
-          type: string
-          example: "101GB40079ABCDEFG.000"
-        cellTitle:
-          type: string
-          example: "101GB40079ABCDEFG"
-        latestEditionNumber:
-          type: string
-          example: "1"
-        latestUpdateNumber:
-          type: string
-          example: "11"
   responses:
     TokenAuthenticationFailed:
       description: Token Authentication Failed

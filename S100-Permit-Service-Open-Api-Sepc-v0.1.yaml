@@ -5,11 +5,11 @@ info:
     The UKHO S100 Permit Service API.
   contact:
     name: UKHO
-    email: contact@ukho.co.uk
+    email: martin.rock-evans@ukho.co.uk
   version: 0.0.1
   
 externalDocs:
-  url: https://github.com/UKHO/s-100-permit-service/tree/main
+  url: https://github.com/UKHO/s-100-permit-service
 servers:
   - url: https://permit-service-url
     description: Proposed URL
@@ -23,8 +23,6 @@ paths:
       description: |
         It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.
       operationId: getS100Permits
-      tags:
-        -  ""
       parameters:
       - name: licenceId
         in: path
