@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get decrypted hardware id from user permits started");
 
             List<UpnInfo> listOfUpnInfo = [];
-            UpnInfo upnInfo = new();
+            
 
             foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
@@ -48,8 +48,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
                 var hardwareId = _aesEncryption.Decrypt(encryptedHardwareId, mKey);
 
-                upnInfo.Upn = userPermit.Upn;
-                upnInfo.DecryptedHardwareId = hardwareId;
+                UpnInfo upnInfo = new() { Upn = userPermit.Upn, DecryptedHardwareId = hardwareId };
 
                 listOfUpnInfo.Add(upnInfo);
             }
