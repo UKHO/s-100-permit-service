@@ -161,13 +161,28 @@
         MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840032 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// 840032 - Request for retrying holdings api endpoint
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840032,
+        RetryHttpClientHoldingsRequest = 840032,
 
         /// <summary>
-        /// 840033 - Request to Holdings service GetHoldings completed with no content
+        /// 840033 - Request for retrying user permit api endpoint
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840033
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034,
+
+        /// <summary>
+        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
+
+        /// <summary>
+        /// 840036 - Request to Holdings service GetHoldings completed with no content
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036
     }
 }
