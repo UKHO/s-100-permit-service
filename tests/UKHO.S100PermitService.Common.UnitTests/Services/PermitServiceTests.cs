@@ -276,7 +276,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 default:
                     return null;
             }
-
         }
 
         private static UserPermitServiceResponse GetUserPermits(string responseType)

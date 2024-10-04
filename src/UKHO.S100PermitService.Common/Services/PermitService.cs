@@ -43,6 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
             if(IsUserPermitServiceResponseNull(userPermitServiceResponse))
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
+                
                 return HttpStatusCode.NoContent;
             }
 
@@ -51,6 +52,7 @@ namespace UKHO.S100PermitService.Common.Services
             if(IsListEmptyOrNull(holdingsServiceResponse))
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
+                
                 return HttpStatusCode.NoContent;
             }
 
