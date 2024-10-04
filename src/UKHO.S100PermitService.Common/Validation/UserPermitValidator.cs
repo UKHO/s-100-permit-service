@@ -19,13 +19,16 @@ namespace UKHO.S100PermitService.Common.Validation
                     .DependentRules(() =>
                     {
                         userPermits.RuleFor(userPermit => userPermit.Upn)
-                                            .Must((userPermit, s) => IsValidChecksum(userPermit.Upn[..EncryptedHardwareIdLength], userPermit.Upn[EncryptedHardwareIdLength..^ReverseChecksumIndex])).WithMessage("Invalid checksum");
+                            .Must(IsValidChecksum).WithMessage("Invalid checksum");
                     });
             });
         }
 
-        private static bool IsValidChecksum(string hwIdEncrypted, string checksum)
+        private static bool IsValidChecksum(string upn)
         {
+            var hwIdEncrypted = upn[..EncryptedHardwareIdLength];
+            var checksum = upn[EncryptedHardwareIdLength..^ReverseChecksumIndex];
+
             var crc = new Crc32();
             crc.Update(Encoding.UTF8.GetBytes(hwIdEncrypted));
             var calculatedChecksum = crc.Value.ToString("X8");
