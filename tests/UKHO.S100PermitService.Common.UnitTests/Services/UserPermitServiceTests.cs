@@ -1,5 +1,6 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
+using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -13,6 +14,7 @@ using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Validation;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {
@@ -25,6 +27,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IUserPermitServiceAuthTokenProvider _fakeUserPermitServiceAuthTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
+        private IUserPermitValidator _fakeUserPermitValidator;
         private UserPermitService _userPermitService;
 
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
@@ -43,28 +46,32 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeUserPermitServiceAuthTokenProvider = A.Fake<IUserPermitServiceAuthTokenProvider>();
             _fakeUserPermitApiClient = A.Fake<IUserPermitApiClient>();
             _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
-            
+
             _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
-            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
+            _fakeUserPermitValidator = A.Fake<IUserPermitValidator>();
+            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
+            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
             nullUserPermitServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
+            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
             nullUserPermitServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceApiConfiguration");
 
-            Action nullAuthUserPermitServiceTokenProvider = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, null, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
+            Action nullAuthUserPermitServiceTokenProvider = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, null, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
             nullAuthUserPermitServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceAuthTokenProvider");
 
-            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy);
+            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
             nullUserPermitApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitApiClient");
 
-            Action nullWaitAndRetryClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, null);
+            Action nullWaitAndRetryClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, null, _fakeUserPermitValidator);
             nullWaitAndRetryClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("waitAndRetryPolicy");
+
+            Action nullUserPermitServiceValidator = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, null);
+            nullUserPermitServiceValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitValidator");
         }
 
         [Test]
@@ -184,7 +191,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId));
+            FluentActions.Invoking(() =>
+                _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId))
+                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. Status Code: {1}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -200,6 +209,40 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                   ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
+        }
+
+        [Test]
+        public async Task WhenValidUpns_ThenReturnsTrue()
+        {
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
+
+            var response = _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse());
+
+            response.Equals(true);
+        }
+
+        [Test]
+        public void WhenUpnOrChecksumValidationFails_ThenThrowPermitServiceException()
+        {
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
+                .Returns(new ValidationResult(new[]
+                {
+                    new ValidationFailure("ErrorMessage", "Invalid checksum")
+                }));
+
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Invalid checksum");
+        }
+
+        private static UserPermitServiceResponse GeUserPermitServiceResponse()
+        {
+            return new UserPermitServiceResponse()
+            {
+                LicenceId = 1,
+                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FFiJ0K1L2" },
+                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
+                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
+                ]
+            };
         }
     }
 }
