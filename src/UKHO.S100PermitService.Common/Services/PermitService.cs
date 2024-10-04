@@ -2,11 +2,12 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
-using UKHO.S100PermitService.Common.Models.UserPermitService;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -40,19 +41,19 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(IsUserPermitServiceResponseNull(userPermitServiceResponse))
+            if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
-                
+
                 return HttpStatusCode.NoContent;
             }
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
-            if(IsListEmptyOrNull(holdingsServiceResponse))
+            if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
-                
+
                 return HttpStatusCode.NoContent;
             }
 
@@ -127,21 +128,12 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse) =>
-             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-             {
-                 ProductName = y.CellCode,
-                 Edition = y.LatestEditionNumber
-             })).ToList();
-
-        private static bool IsListEmptyOrNull<T>(List<T>? list)
-        {
-            return list is null || list.Count == 0;
-        }
-
-        private static bool IsUserPermitServiceResponseNull(UserPermitServiceResponse userPermitServiceResponse)
-        {
-            return userPermitServiceResponse is null || userPermitServiceResponse.GetType().GetProperties().Any(p => p.GetValue(userPermitServiceResponse) == null);
-        }
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+            List<HoldingsServiceResponse> holdingsServiceResponse) =>
+            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            {
+                ProductName = y.CellCode,
+                Edition = y.LatestEditionNumber
+            })).ToList();
     }
 }
