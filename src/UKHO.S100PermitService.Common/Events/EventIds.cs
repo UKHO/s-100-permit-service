@@ -161,24 +161,39 @@
         MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840032 - Invalid mKey length or mKey not found in KeyVault
+        /// 840032 - Request for retrying holdings api endpoint
         /// </summary>
-        InvalidMKey = 840032,
+        RetryHttpClientHoldingsRequest = 840032,
+
+        /// <summary>
+        /// 840033 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034,
+
+        /// <summary>
+        /// 840035 - Invalid mKey length or mKey not found in KeyVault
+        /// </summary>
+        InvalidMKey = 840035,
 
 
         /// <summary>
-        /// 840033 - Get hardware id from user permit started
+        /// 840036 - Get hardware id from user permit started
         /// </summary>
-        GetHwIdFromUserPermitStarted = 840033,
+        GetHwIdFromUserPermitStarted = 840036,
 
         /// <summary>
-        /// 840034 - Get hardware id from user permit completed
+        /// 840037 - Get hardware id from user permit completed
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840034,
+        GetHwIdFromUserPermitCompleted = 840037,
 
         /// <summary>
-        /// 840035 - Upn length or checksum validation failed
+        /// 840038 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840035
+        UpnLengthOrChecksumValidationFailed = 840038
     }
 }
