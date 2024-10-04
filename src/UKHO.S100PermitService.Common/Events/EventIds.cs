@@ -158,6 +158,21 @@
         /// <summary>
         /// 840031 - Access token is empty or null
         /// </summary>
-        MissingAccessToken = 840031
+        MissingAccessToken = 840031,
+
+        /// <summary>
+        /// 840032 - Request for retrying holdings api endpoint
+        /// </summary>
+        RetryHttpClientHoldingsRequest = 840032,
+
+        /// <summary>
+        /// 840033 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034
     }
 }
