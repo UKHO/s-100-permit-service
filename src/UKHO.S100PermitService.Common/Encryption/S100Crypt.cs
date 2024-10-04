@@ -39,10 +39,10 @@ namespace UKHO.S100PermitService.Common.Encryption
 
                 var mKey = _manufacturerKeyService.GetManufacturerKeys(mId);
 
-                if(mKey?.Length != KeySizeEncoded)
+                if(mKey.Length != KeySizeEncoded)
                 {
                     throw new PermitServiceException(EventIds.InvalidMKey.ToEventId(),
-                        "Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyKength}",
+                        "Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyLength}",
                         KeySizeEncoded, mKey.Length);
                 }
 

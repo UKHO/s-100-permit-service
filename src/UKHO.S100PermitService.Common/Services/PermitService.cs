@@ -24,13 +24,13 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IS100Crypt _s100Crypt;
         private readonly IUserPermitValidator _userPermitValidator;
 
-        public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger,
-                                IHoldingsService holdingsService,
-                                IUserPermitService userPermitService,
-                                IProductKeyService productKeyService,
-                                IS100Crypt s100Crypt,
-                                IUserPermitValidator userPermitValidator)
+        public PermitService(IPermitReaderWriter permitReaderWriter, 
+                             ILogger<PermitService> logger,
+                             IHoldingsService holdingsService,
+                             IUserPermitService userPermitService,
+                             IProductKeyService productKeyService,
+                             IS100Crypt s100Crypt,
+                             IUserPermitValidator userPermitValidator)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            (bool isValid, string errorMessage) = ValidateUpnsAndChecksum(userPermitServiceResponse);
+            (var isValid, var errorMessage) = ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             if(isValid)
             {

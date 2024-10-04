@@ -56,7 +56,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validation
             };
         }
 
-
         private static UserPermitServiceResponse GeUserPermitServiceResponseWithInvalidUpnLength()
         {
             return new UserPermitServiceResponse()

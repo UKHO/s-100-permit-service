@@ -7,7 +7,7 @@ namespace UKHO.S100PermitService.Common.Encryption
     public class AesEncryption : IAesEncryption
     {
         private const int KeySize = 128;
-        private const int Iv_Length = 16;
+        private const int IvLength = 16;
 
         public string Decrypt(string hexString, string keyHexEncoded)
         {
@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             var aes = Aes.Create();
             aes.BlockSize = KeySize;
             aes.KeySize = KeySize;
-            aes.IV = new byte[Iv_Length];
+            aes.IV = new byte[IvLength];
             aes.Mode = CipherMode.CBC;
             aes.Padding = PaddingMode.None;
             aes.Key = StringToByteArray(keyHexEncoded);

@@ -43,31 +43,31 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public async Task WhenMKeyExpectedLengthDoesNotMatch_ThenThrowPermitServiceException()
+        public void WhenMKeyExpectedLengthDoesNotMatch_ThenThrowPermitServiceException()
         {
             const string FakeMKey = "invalidMKey";
 
             A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            await FluentActions.Invoking(async () => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses())).Should().ThrowAsync<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyKength}");
+            FluentActions.Invoking(() => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses())).Should().Throw<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyLength}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
             ).MustNotHaveHappened();
         }
 
         [Test]
-        public void WhenValidmKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
+        public void WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
         {
             const string FakeDecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB";
 
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -93,7 +93,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 call.Method.Name == "Log"
                     && call.GetArgument<LogLevel>(0) == LogLevel.Information
                     && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitCompleted.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
                 ).MustHaveHappenedOnceExactly();
         }
 
