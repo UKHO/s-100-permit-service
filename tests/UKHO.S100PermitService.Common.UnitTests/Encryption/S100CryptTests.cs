@@ -39,17 +39,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public void WhenProductKeysDecryptedSuccessfully_ThenReturnsDecryptedKeys()
         {
-            var test101EncKey = "20191817161514131211109876543210";
-            var test102EncKey = "36353433323130292827262524232221";
+            var test101ProductKey = "20191817161514131211109876543210";
+            var test102ProductKey = "36353433323130292827262524232221";
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored))
-                                             .Returns(test101EncKey).Once().Then.Returns(test102EncKey);
+                                             .Returns(test101ProductKey).Once().Then.Returns(test102ProductKey);
 
             var result = _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), FakeHardwareId);
 
             result.Should().NotBeNull();
-            result.FirstOrDefault().DecryptedKey.Should().Be(test101EncKey);
-            result.LastOrDefault().DecryptedKey.Should().Be(test102EncKey);
+            result.FirstOrDefault().DecryptedKey.Should().Be(test101ProductKey);
+            result.LastOrDefault().DecryptedKey.Should().Be(test102ProductKey);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
