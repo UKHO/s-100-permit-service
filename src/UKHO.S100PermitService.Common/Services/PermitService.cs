@@ -2,13 +2,10 @@
 using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
-using UKHO.S100PermitService.Common.Models.UserPermitService;
-using UKHO.S100PermitService.Common.Validation;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -22,15 +19,13 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IS100Crypt _s100Crypt;
-        private readonly IUserPermitValidator _userPermitValidator;
 
-        public PermitService(IPermitReaderWriter permitReaderWriter, 
+        public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
                              IHoldingsService holdingsService,
                              IUserPermitService userPermitService,
                              IProductKeyService productKeyService,
-                             IS100Crypt s100Crypt,
-                             IUserPermitValidator userPermitValidator)
+                             IS100Crypt s100Crypt)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -38,7 +33,6 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
-            _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
         }
 
         public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -47,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            (var isValid, var errorMessage) = ValidateUpnsAndChecksum(userPermitServiceResponse);
+            var isValid = _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             if(isValid)
             {
@@ -67,10 +61,6 @@ namespace UKHO.S100PermitService.Common.Services
                 }
 
                 _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
-            }
-            else
-            {
-                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
             }
         }
 
@@ -136,26 +126,5 @@ namespace UKHO.S100PermitService.Common.Services
                  ProductName = y.CellCode,
                  Edition = y.LatestEditionNumber
              })).ToList();
-
-        private (bool, string) ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
-        {
-            var result = _userPermitValidator.Validate(userPermitServiceResponse);
-            if(result.IsValid)
-            {
-                return (true, string.Empty);
-            }
-
-            var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
-                .Select(group => new
-                {
-                    Errors = string.Join(", ", group.Key)
-                });
-
-            var errorMessage = string.Join(", ", errorMessages
-                .Select(group => group.Errors)
-                .Distinct());
-
-            return (false, errorMessage);
-        }
     }
 }

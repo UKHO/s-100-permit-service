@@ -1,15 +1,11 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using ICSharpCode.SharpZipLib.Checksum;
-using System.Text;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 
 namespace UKHO.S100PermitService.Common.Validation
 {
     public class UserPermitValidator : AbstractValidator<UserPermitServiceResponse>, IUserPermitValidator
     {
-        private const int EncryptedHardwareIdLength = 32;
-        private const int ReverseChecksumIndex = 6;
         public UserPermitValidator()
         {
             RuleForEach(x => x.UserPermits).ChildRules(userPermits =>
@@ -19,20 +15,9 @@ namespace UKHO.S100PermitService.Common.Validation
                     .DependentRules(() =>
                     {
                         userPermits.RuleFor(userPermit => userPermit.Upn)
-                            .Must(IsValidChecksum).WithMessage("Invalid checksum");
+                            .Must(ChecksumValidation.IsValidChecksum).WithMessage("Invalid checksum");
                     });
             });
-        }
-
-        private static bool IsValidChecksum(string upn)
-        {
-            var hwIdEncrypted = upn[..EncryptedHardwareIdLength];
-            var checksum = upn[EncryptedHardwareIdLength..^ReverseChecksumIndex];
-
-            var crc = new Crc32();
-            crc.Update(Encoding.UTF8.GetBytes(hwIdEncrypted));
-            var calculatedChecksum = crc.Value.ToString("X8");
-            return calculatedChecksum.Equals(checksum);
         }
 
         ValidationResult IUserPermitValidator.Validate(UserPermitServiceResponse userPermitServiceResponse)
