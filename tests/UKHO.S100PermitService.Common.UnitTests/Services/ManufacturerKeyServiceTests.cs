@@ -89,7 +89,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenNoSecretsInMemoryCacheOrKeyvault_ThenThrowException()
+        public void WhenNoSecretsInMemoryCacheOrKeyVault_ThenThrowException()
         {
             A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);            
 

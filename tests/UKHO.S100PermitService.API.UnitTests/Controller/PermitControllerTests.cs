@@ -15,8 +15,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
     {
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
-        private IPermitService _fakePermitService;
-        private IManufacturerKeyService _manufacturerKeyService;
+        private IPermitService _fakePermitService;        
         private PermitController _permitController;
 
         [SetUp]
@@ -24,25 +23,22 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();
             _fakeLogger = A.Fake<ILogger<PermitController>>();
-            _fakePermitService = A.Fake<IPermitService>();
-            _manufacturerKeyService = A.Fake<ManufacturerKeyService>();
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, _manufacturerKeyService);
+            _fakePermitService = A.Fake<IPermitService>();            
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _manufacturerKeyService);
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _manufacturerKeyService);
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null);
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
         }
 
-       /// <summary>
-       /// /[Test]
-       /// </summary>
-       /// <returns></returns>
+       
+       [Test]      
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = (OkResult)await _permitController.GeneratePermits(007);
