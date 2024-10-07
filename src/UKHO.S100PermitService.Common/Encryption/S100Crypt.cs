@@ -20,14 +20,14 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
-            _logger.LogInformation(EventIds.GetEncKeysFromProductKeysStarted.ToEventId(), "Get enc keys from product keys started.");
+            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysStarted.ToEventId(), "Get decrypted keys from product keys started.");
 
             if(hardwareId.Length != KeySizeEncoded)
             {
                 throw new PermitServiceException(EventIds.HardwareIdLengthError.ToEventId(), "Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.", KeySizeEncoded, hardwareId.Length);
             }
 
-            List<ProductKey> productEncKeys = [];
+            List<ProductKey> productKeys = [];
             foreach(var productKeyServiceResponse in productKeyServiceResponses)
             {
                 if(productKeyServiceResponse.Key.Length != KeySizeEncoded)
@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                     throw new PermitServiceException(EventIds.ProductKeyLengthError.ToEventId(), "Expected product key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.", KeySizeEncoded, productKeyServiceResponse.Key.Length);
                 }
 
-                productEncKeys.Add(new ProductKey()
+                productKeys.Add(new ProductKey()
                 {
                     ProductName = productKeyServiceResponse.ProductName,
                     Edition = productKeyServiceResponse.Edition,
@@ -44,9 +44,9 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetEncKeysFromProductKeysCompleted.ToEventId(), "Get enc keys from product keys completed.");
+            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get decrypted keys from product keys completed.");
 
-            return productEncKeys;
+            return productKeys;
         }
     }
 }

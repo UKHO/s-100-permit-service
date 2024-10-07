@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common.Configuration;
@@ -51,9 +50,9 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-            var pksResponseData = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
+            var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            var encKeyDetails = _s100Crypt.GetDecryptedKeysFromProductKeys(pksResponseData, _productKeyServiceApiConfiguration.Value.HardwareId);
+            var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
             var productsList = GetProductsList();
 

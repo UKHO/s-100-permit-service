@@ -128,17 +128,17 @@
         /// <summary>
         /// 840025 - Get permit key from Product Key Service started
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+        GetProductKeysRequestStarted = 840025,
 
         /// <summary>
         /// 840026 - Get permit key from Product Key Service completed
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+        GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
         /// 840027 - Exception occurred while get permit key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+        GetProductKeysRequestFailed = 840027,
 
         /// <summary>
         /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
@@ -186,13 +186,13 @@
         ProductKeyLengthError = 840036,
 
         /// <summary>
-        /// 840037 - Get enc keys from product keys started
+        /// 840037 - Get decrypted keys from product keys started
         /// </summary>
-        GetEncKeysFromProductKeysStarted = 840037,
+        GetDecryptedKeysFromProductKeysStarted = 840037,
 
         /// <summary>
-        /// 840038 - Get enc keys from product keys completed
+        /// 840038 - Get decrypted keys from product keys completed
         /// </summary>
-        GetEncKeysFromProductKeysCompleted = 840038
+        GetDecryptedKeysFromProductKeysCompleted = 840038
     }
 }
