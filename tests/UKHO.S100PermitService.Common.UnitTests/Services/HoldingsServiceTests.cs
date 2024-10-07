@@ -2,9 +2,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
-            response.Equals(JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(OkResponseContent));
+            response.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -120,7 +120,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.");
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -151,7 +151,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {0} failed. Status Code: {1}.");
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.");
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
