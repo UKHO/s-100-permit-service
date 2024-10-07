@@ -24,7 +24,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<WaitAndRetryConfiguration> _fakeWaitAndRetryConfiguration;
         private IUserPermitServiceAuthTokenProvider _fakeUserPermitServiceAuthTokenProvider;
         private IUserPermitApiClient _fakeUserPermitApiClient;
-        private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;       
+        private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
         private IUserPermitService _userPermitService;
 
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeUserPermitServiceAuthTokenProvider = A.Fake<IUserPermitServiceAuthTokenProvider>();
             _fakeUserPermitApiClient = A.Fake<IUserPermitApiClient>();
             _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
-            
+
             _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy);
         }
@@ -164,7 +164,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         [Test]
         [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
-        public void WhenUserPermitServiceResponseTooManyRequests_ThenResponseShouldNotBeOk(HttpStatusCode statusCode, string content)
+        public async Task WhenUserPermitServiceResponseTooManyRequests_ThenResponseShouldNotBeOkAsync(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
@@ -181,7 +181,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -194,7 +194,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               call.Method.Name == "Log"
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
               && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientUserPermitRequest.ToEventId()
-              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)
                   ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
         }
