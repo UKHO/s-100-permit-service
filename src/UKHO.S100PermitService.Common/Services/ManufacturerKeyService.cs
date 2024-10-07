@@ -53,26 +53,28 @@ namespace UKHO.S100PermitService.Common.Services
 
         public string GetManufacturerKeys(string secretName)
         {
-            var secretValue = _cacheProvider.GetCacheKey(secretName);
-            if(string.IsNullOrEmpty(secretValue))
+            try
             {
-                var secret = GetSetManufacturerValue(secretName);
-                return secret.Value;
+                var secretValue = _cacheProvider.GetCacheKey(secretName);
+                if(string.IsNullOrEmpty(secretValue))
+                {
+                    var secret = GetSetManufacturerValue(secretName);
+                    return secret.Value;
+                }
+                return secretValue;
             }
-            return secretValue;
+            catch(Exception ex)
+            {
+                throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}", ex.Message);
+            }
         }
-
+       
         private KeyVaultSecret GetSetManufacturerValue(string secretName)
         {
             var secretValue = _secretClient.GetSecret(secretName);
 
-            _cacheProvider.SetCacheKey(secretName, secretValue.Value, CacheExpiryDuration());
+            _cacheProvider.SetCacheKey(secretName, secretValue.Value);
             return secretValue;
-        }
-
-        private TimeSpan CacheExpiryDuration()
-        {
-            return TimeSpan.FromHours(value: _manufacturerKeyVault.Value.CacheTimeoutInHours);
         }
     }
 }

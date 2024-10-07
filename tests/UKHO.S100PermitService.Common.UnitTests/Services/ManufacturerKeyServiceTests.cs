@@ -60,7 +60,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             _manufacturerKeyService.CacheManufacturerKeys();
 
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -86,6 +86,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault");
 
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenNoSecretsInMemoryCacheOrKeyvault_ThenThrowException()
+        {
+            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);            
+
+            var result = () => _manufacturerKeyService.GetManufacturerKeys("pqr");
+            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}");   
         }
 
         [Test]
@@ -116,7 +125,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = _manufacturerKeyService.GetManufacturerKeys(secretKey);
 
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored, A<TimeSpan>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             result.Should().NotBeNull();
             result.Should().Be(secretValue);

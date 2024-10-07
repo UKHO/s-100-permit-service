@@ -146,13 +146,33 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Caching of Manufacturer Key started.
+        /// 840029 - Caching of Manufacturer Key from keyvault started.
         /// </summary>
         ManufacturerKeyCachingStart = 840029,
 
         /// <summary>
-        /// 840030 - Caching of Manufacturer Key end.
+        /// 840030 - Caching of Manufacturer Key from keyvault end.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030
+        ManufacturerKeyCachingEnd = 840030,
+
+        /// <summary>
+        /// 840031 - Access token is empty or null
+        /// </summary>
+        MissingAccessToken = 840031,
+
+        /// <summary>
+        /// 840032 - Request for retrying holdings api endpoint
+        /// </summary>
+        RetryHttpClientHoldingsRequest = 840032,
+
+        /// <summary>
+        /// 840033 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034
     }
 }
