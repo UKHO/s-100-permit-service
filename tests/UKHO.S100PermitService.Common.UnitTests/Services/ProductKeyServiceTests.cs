@@ -168,7 +168,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

@@ -39,7 +39,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
         }
 
-        [Test]
+       /// <summary>
+       /// /[Test]
+       /// </summary>
+       /// <returns></returns>
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
             var result = (OkResult)await _permitController.GeneratePermits(007);
