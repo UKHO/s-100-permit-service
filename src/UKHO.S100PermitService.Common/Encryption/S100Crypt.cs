@@ -18,13 +18,13 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IEnumerable<ProductKey> GetEncKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
+        public IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from permit keys started.");
+            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from product keys started.");
 
             if(hardwareId.Length != KeySizeEncoded)
             {
-                throw new PermitServiceException(EventIds.PermitHardwareIdLengthError.ToEventId(), "Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.", KeySizeEncoded, hardwareId.Length);
+                throw new PermitServiceException(EventIds.HardwareIdLengthError.ToEventId(), "Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.", KeySizeEncoded, hardwareId.Length);
             }
 
             List<ProductKey> productEncKeys = [];
@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             {
                 if(productKeyServiceResponse.Key.Length != KeySizeEncoded)
                 {
-                    throw new PermitServiceException(EventIds.PermitKeyLengthError.ToEventId(), "Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.", KeySizeEncoded, productKeyServiceResponse.Key.Length);
+                    throw new PermitServiceException(EventIds.ProductKeyLengthError.ToEventId(), "Expected product key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.", KeySizeEncoded, productKeyServiceResponse.Key.Length);
                 }
 
                 productEncKeys.Add(new ProductKey()
@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get enc keys from permit keys completed.");
+            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get enc keys from product keys completed.");
 
             return productEncKeys;
         }

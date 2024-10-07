@@ -76,7 +76,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                                     .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "test", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
-            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", DecryptedKey = "654321", Key = "123456" }]);
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
@@ -136,7 +136,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                                     .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "test", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
-            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", DecryptedKey = "654321", Key = "123456" }]);
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 

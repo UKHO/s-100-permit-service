@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 
 namespace UKHO.S100PermitService.Common.Encryption
 {
-    [ExcludeFromCodeCoverage]
     public class AesEncryption : IAesEncryption
     {
         private const int KeySize = 128, BlockSize = 128, IvLength = 16;

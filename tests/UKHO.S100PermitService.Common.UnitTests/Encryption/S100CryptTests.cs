@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenPermitKeysDecryptedSuccessfully_ThenReturnsEncKeys()
+        public void WhenProductKeysDecryptedSuccessfully_ThenReturnsEncKeys()
         {
             var test101EncKey = "20191817161514131211109876543210";
             var test102EncKey = "36353433323130292827262524232221";
@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored))
                                              .Returns(test101EncKey).Once().Then.Returns(test102EncKey);
 
-            var result = _s100Crypt.GetEncKeysFromProductKeys(GetProductKeyServiceResponse(), FakePermitHardwareId);
+            var result = _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), FakePermitHardwareId);
 
             result.Should().NotBeNull();
             result.FirstOrDefault().DecryptedKey.Should().Be(test101EncKey);
@@ -55,21 +55,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from permit keys started."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from permit keys completed."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
-        public void WhenInvalidPermitHardwareIdPassed_ThenThrowException()
+        public void WhenInvalidHardwareIdPassed_ThenThrowException()
         {
-            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromProductKeys(GetProductKeyServiceResponse(), "123456")).Should().
+            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), "123456")).Should().
                                             ThrowExactly<PermitServiceException>().WithMessage("Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
@@ -78,15 +78,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from permit keys completed."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustNotHaveHappened();
         }
 
         [Test]
-        public void WhenInvalidPermitKeyPassed_ThenThrowException()
+        public void WhenInvalidProductKeyPassed_ThenThrowException()
         {
-            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
+            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
+                                            ThrowExactly<PermitServiceException>().WithMessage("Expected product key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -94,7 +94,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from permit keys completed."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustNotHaveHappened();
         }
 

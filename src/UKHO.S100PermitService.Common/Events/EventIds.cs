@@ -178,12 +178,12 @@
         /// <summary>
         /// 840035 - Expected permit hardware id length not found
         /// </summary>
-        PermitHardwareIdLengthError = 840035,
+        HardwareIdLengthError = 840035,
 
         /// <summary>
         /// 840036 - Expected permit key length not found
         /// </summary>
-        PermitKeyLengthError = 840036,
+        ProductKeyLengthError = 840036,
 
         /// <summary>
         /// 840037 - Get enc keys from permit keys started
