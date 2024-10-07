@@ -206,13 +206,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               call.Method.Name == "Log"
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
               && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientUserPermitRequest.ToEventId()
-              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)
                   ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
         }
 
         [Test]
-        public async Task WhenValidUpns_ThenReturnsTrue()
+        public void WhenValidUpns_ThenReturnsTrue()
         {
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
 
@@ -233,14 +233,58 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Invalid checksum");
         }
 
+        [Test]
+        public void GetUpnInfoList_ShouldReturnCorrectList()
+        {
+            var expectedUpnInfoList = new List<UpnInfo>
+            {
+                new()
+                {
+                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    MId = "A1B2C3",
+                    Crc32 = "DB74C038"
+                },
+                new()
+                {
+                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
+                    MId = "D4E5F6",
+                    Crc32 = "C1FDEC8B"
+                },
+                new()
+                {
+                    EncryptedHardwareId = "7B5CED73389DECDB110E6E803F957253",
+                    Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9",
+                    MId = "G7H8I9",
+                    Crc32 = "F0DE13D1"
+                }
+            };
+
+            var response = _userPermitService.MapUserPermitResponse(GeUserPermitServiceResponse());
+
+            response.Equals(true);
+
+            response.Count.Equals(expectedUpnInfoList.Count);
+
+            for(var i = 0 ; i < expectedUpnInfoList.Count ; i++)
+            {
+                response[i].EncryptedHardwareId.Equals(expectedUpnInfoList[i].EncryptedHardwareId);
+                response[i].Crc32.Equals(expectedUpnInfoList[i].Crc32);
+                response[i].MId.Equals(expectedUpnInfoList[i].MId);
+                response[i].Upn.Equals(expectedUpnInfoList[i].Upn);
+                response[i].Title.Equals(expectedUpnInfoList[i].Title);
+            }
+        }
+
         private static UserPermitServiceResponse GeUserPermitServiceResponse()
         {
             return new UserPermitServiceResponse()
             {
                 LicenceId = 1,
-                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FFiJ0K1L2" },
-                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
-                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
+                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
+                    new UserPermit{  Title= "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
+                    new UserPermit{ Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
                 ]
             };
         }

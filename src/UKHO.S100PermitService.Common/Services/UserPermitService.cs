@@ -102,15 +102,16 @@ namespace UKHO.S100PermitService.Common.Services
 
         public List<UpnInfo> MapUserPermitResponse(UserPermitServiceResponse userPermitServiceResponse)
         {
-            List<UpnInfo> listOfUpnInfo= [];
+            List<UpnInfo> listOfUpnInfo = [];
             foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
                 var upnInfo = new UpnInfo
                 {
-                    EncryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength], 
+                    EncryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength],
                     MId = userPermit.Upn[^MIdLength..],
                     Crc32 = userPermit.Upn[EncryptedHardwareIdLength..^MIdLength],
-                    Upn = userPermit.Upn
+                    Upn = userPermit.Upn,
+                    Title = userPermit.Title
                 };
                 listOfUpnInfo.Add(upnInfo);
             }

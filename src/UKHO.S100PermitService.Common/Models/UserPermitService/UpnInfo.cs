@@ -7,5 +7,6 @@
         public string EncryptedHardwareId { get; set; }
         public string Crc32 { get; set; }
         public string Upn { get; set; }
+        public string Title { get; set; }
     }
 }
