@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenProductKeysDecryptedSuccessfully_ThenReturnsEncKeys()
+        public void WhenProductKeysDecryptedSuccessfully_ThenReturnsDecryptedKeys()
         {
             var test101EncKey = "20191817161514131211109876543210";
             var test102EncKey = "36353433323130292827262524232221";
