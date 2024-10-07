@@ -47,6 +47,6 @@ variable "spoke_subnet_name" {
   type = string
 }
 
-variable "permithardwareid" {
+variable "hardwareid" {
   type = string
 }
