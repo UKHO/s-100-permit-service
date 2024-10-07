@@ -16,6 +16,7 @@ using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Encryption;
@@ -31,6 +32,7 @@ namespace UKHO.S100PermitService.API
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
         private const string ManufacturerKeyVault = "ManufacturerKeyVault";
+        private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string AzureAdScheme = "AzureAd";
         private const string AzureAdConfiguration = "AzureAdConfiguration";
 
@@ -125,6 +127,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
             builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
+            builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
 
             var azureAdConfiguration = configuration.GetSection(AzureAdConfiguration).Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -184,6 +187,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
+            builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();
             builder.Services.AddScoped<IAesEncryption, AesEncryption>();
 

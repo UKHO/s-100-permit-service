@@ -1,11 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
 
@@ -17,14 +18,16 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<HoldingsServiceApiConfiguration> _holdingsServiceApiConfiguration;
         private readonly IHoldingsServiceAuthTokenProvider _holdingsServiceAuthTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
+        private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private const string HoldingsUrl = "/holdings/{0}/s100";
 
-        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient)
+        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsServiceApiConfiguration = holdingsApiConfiguration ?? throw new ArgumentNullException(nameof(holdingsApiConfiguration));
             _holdingsServiceAuthTokenProvider = holdingsServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(holdingsServiceAuthTokenProvider));
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
+            _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
         }
 
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -36,7 +39,10 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
+            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).Execute(() =>
+            {
+                return _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
+            });
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
@@ -46,7 +52,7 @@ namespace UKHO.S100PermitService.Common.Services
                     "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
                     httpResponseMessage.StatusCode.ToString());
 
-                var holdingsServiceResponse = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(bodyJson);
+                var holdingsServiceResponse = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson);
                 return holdingsServiceResponse;
             }
 
@@ -55,12 +61,12 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET {0} failed. Status Code: {1} | Error Details: {2}.",
+                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                "Request to HoldingsService GET {0} failed. Status Code: {1}.",
+                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }

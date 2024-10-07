@@ -159,25 +159,40 @@
         /// 840031 - Access token is empty or null
         /// </summary>
         MissingAccessToken = 840031,
+
+        /// <summary>
+        /// 840032 - Request for retrying holdings api endpoint
+        /// </summary>
+        RetryHttpClientHoldingsRequest = 840032,
+
+        /// <summary>
+        /// 840033 - Request for retrying user permit api endpoint
+        /// </summary>
+        RetryHttpClientUserPermitRequest = 840033,
+
+        /// <summary>
+        /// 840034 - Request for retrying product key service api endpoint
+        /// </summary>
+        RetryHttpClientProductKeyServiceRequest = 840034
         
         /// <summary>
-        /// 840032 - Expected permit hardware id length not found
+        /// 840035 - Expected permit hardware id length not found
         /// </summary>
-        PermitHardwareIdLengthError = 840032,
+        PermitHardwareIdLengthError = 840035,
 
         /// <summary>
-        /// 840033 - Expected permit key length not found
+        /// 840036 - Expected permit key length not found
         /// </summary>
-        PermitKeyLengthError = 840033,
+        PermitKeyLengthError = 840036,
 
         /// <summary>
-        /// 840034 - Get enc keys from permit keys started
+        /// 840037 - Get enc keys from permit keys started
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840034,
+        GetEncKeysFromPermitKeysStarted = 840037,
 
         /// <summary>
-        /// 840035 - Get enc keys from permit keys completed
+        /// 840038 - Get enc keys from permit keys completed
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840035
+        GetEncKeysFromPermitKeysCompleted = 840038
     }
 }

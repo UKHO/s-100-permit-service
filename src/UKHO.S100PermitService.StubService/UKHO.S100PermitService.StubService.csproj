@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="WireMock.Net" Version="1.6.0" />
     <PackageReference Include="WireMock.Net.Abstractions" Version="1.6.0" />
     <PackageReference Include="WireMock.Org.Abstractions" Version="1.6.0" />
