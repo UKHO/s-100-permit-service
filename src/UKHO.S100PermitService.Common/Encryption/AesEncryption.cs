@@ -10,13 +10,16 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public string Decrypt(string hexString, string keyHexEncoded)
         {
-            var encryptedByte = StringToByteArray(hexString);
-
             using var aes = CreateAes(keyHexEncoded);
             using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
-            var decryptedText = decrypt.TransformFinalBlock(encryptedByte, 0, encryptedByte.Length);
+            return PerformCryptography(hexString, decrypt);
+        }
 
-            return BitConverter.ToString((decryptedText)).Replace("-", "");
+        public string Encrypt(string hexString, string keyHexEncoded)
+        {
+            using var aes = CreateAes(keyHexEncoded);
+            using var decrypt = aes.CreateEncryptor(aes.Key, aes.IV);
+            return PerformCryptography(hexString, decrypt);
         }
 
         private static Aes CreateAes(string keyHexEncoded)
@@ -29,6 +32,17 @@ namespace UKHO.S100PermitService.Common.Encryption
             aes.Padding = PaddingMode.Zeros;
             aes.Key = StringToByteArray(keyHexEncoded);
             return aes;
+        }
+
+        private static string PerformCryptography(string hexString, ICryptoTransform cryptoTransform)
+        {
+            var cypherBytes = StringToByteArray(hexString);
+
+            using var ms = new MemoryStream();
+            using var cryptoStream = new CryptoStream(ms, cryptoTransform, CryptoStreamMode.Write);
+            cryptoStream.Write(cypherBytes, 0, cypherBytes.Length);
+            cryptoStream.FlushFinalBlock();
+            return BitConverter.ToString(ms.ToArray()).Replace("-", "");
         }
 
         private static byte[] StringToByteArray(string hexString)
