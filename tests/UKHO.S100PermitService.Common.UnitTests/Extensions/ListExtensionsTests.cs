@@ -11,7 +11,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Extensions
         [TestCase(null)]
         [TestCase("empty")]
 
-        public void WhenListIsNullOrEmpty_ThenReturnsTrue(string listType)
+        public void WhenListIsNullOrEmpty_ThenReturnsTrue(string? listType)
         {
             List<string>? list = listType is null ? null : [];
 
