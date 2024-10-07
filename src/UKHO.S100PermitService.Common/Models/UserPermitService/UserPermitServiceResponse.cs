@@ -1,8 +1,13 @@
-﻿namespace UKHO.S100PermitService.Common.Models.UserPermitService
+﻿using System.Text.Json.Serialization;
+
+namespace UKHO.S100PermitService.Common.Models.UserPermitService
 {
     public class UserPermitServiceResponse
     {
-        public string LicenceId { get; set; }
+        [JsonPropertyName("licenceId")]
+        public int LicenceId { get; set; }
+
+        [JsonPropertyName("userPermits")]
         public List<UserPermit> UserPermits { get; set; }
     }
 }

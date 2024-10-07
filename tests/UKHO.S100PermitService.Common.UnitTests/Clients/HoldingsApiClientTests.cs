@@ -1,8 +1,10 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.UnitTests.Handler;
 
@@ -11,6 +13,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
     [TestFixture]
     public class HoldingsApiClientTests
     {
+        private ILogger<HoldingsApiClient> _fakeLogger;
         private HoldingsApiClient? _holdingsApiClient;
         private IHttpClientFactory _fakeHttpClientFactory;
         private readonly string _correlationId = Guid.NewGuid().ToString();
@@ -19,6 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
         [SetUp]
         public void Setup()
         {
+            _fakeLogger = A.Fake<ILogger<HoldingsApiClient>>();
             _fakeHttpClientFactory = A.Fake<IHttpClientFactory>();
         }
 
@@ -37,21 +41,27 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
+            _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
 
             var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", CancellationToken.None, _correlationId);
 
-            var deserializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            var deserializedResult = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
             deserializedResult.Count.Should().BeGreaterThanOrEqualTo(1);
         }
 
         [Test]
-        public void WhenInvalidHoldingsServiceDataIsPassed_ThenReturnsUnauthorizedResponse()
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        [TestCase(HttpStatusCode.Unauthorized)]
+        [TestCase(HttpStatusCode.InternalServerError)]
+        [TestCase(HttpStatusCode.ServiceUnavailable)]
+        [TestCase(HttpStatusCode.UnsupportedMediaType)]
+        public void WhenInvalidHoldingsServiceDataIsPassed_ThenResponseShouldNotBeOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
+                JsonSerializer.Serialize(new List<HoldingsServiceResponse> { new() }), httpStatusCode);
 
             var httpClient = new HttpClient(messageHandler)
             {
@@ -60,9 +70,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
 
-            _holdingsApiClient = new HoldingsApiClient(_fakeHttpClientFactory);
+            _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
+
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, "", CancellationToken.None, _correlationId);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+            ).MustHaveHappenedOnceExactly();
+
+            result.Result.StatusCode.Should().Be(httpStatusCode);
+        }
+
+        [Test]
+        public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
+        {
+            var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
+                JsonSerializer.Serialize(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
+
+            var httpClient = new HttpClient(messageHandler)
+            {
+                BaseAddress = new Uri(FakeUri)
+            };
+
+            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
+
+            _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
 
             var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, null, CancellationToken.None, _correlationId);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+            ).MustHaveHappenedOnceExactly();
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
