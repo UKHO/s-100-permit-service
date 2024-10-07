@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace UKHO.S100PermitService.Common.Extensions
+﻿namespace UKHO.S100PermitService.Common.Extensions
 {
-    [ExcludeFromCodeCoverage]
     public static class ListExtensions
     {
         public static bool IsNullOrEmpty<T>(List<T>? list)

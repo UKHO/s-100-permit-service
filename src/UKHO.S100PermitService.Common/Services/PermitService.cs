@@ -129,7 +129,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
-            List<HoldingsServiceResponse> holdingsServiceResponse) =>
+            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
             {
                 ProductName = y.CellCode,
