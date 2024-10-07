@@ -11,7 +11,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
     [TestFixture]
     public class S100CryptTests
     {
-        private const string FakePermitHardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD";
+        private const string FakeHardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD";
 
         private IAesEncryption _fakeAesEncryption;
         private ILogger<S100Crypt> _fakeLogger;
@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored))
                                              .Returns(test101EncKey).Once().Then.Returns(test102EncKey);
 
-            var result = _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), FakePermitHardwareId);
+            var result = _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), FakeHardwareId);
 
             result.Should().NotBeNull();
             result.FirstOrDefault().DecryptedKey.Should().Be(test101EncKey);
@@ -54,14 +54,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromProductKeysStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromProductKeysCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustHaveHappenedOnceExactly();
         }
@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromProductKeysCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustNotHaveHappened();
         }
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public void WhenInvalidProductKeyPassed_ThenThrowException()
         {
-            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
+            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakeHardwareId)).Should().
                                             ThrowExactly<PermitServiceException>().WithMessage("Expected product key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
@@ -93,7 +93,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetEncKeysFromProductKeysCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get enc keys from product keys completed."
             ).MustNotHaveHappened();
         }

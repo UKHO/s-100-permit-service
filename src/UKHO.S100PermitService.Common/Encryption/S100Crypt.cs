@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from product keys started.");
+            _logger.LogInformation(EventIds.GetEncKeysFromProductKeysStarted.ToEventId(), "Get enc keys from product keys started.");
 
             if(hardwareId.Length != KeySizeEncoded)
             {
@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysCompleted.ToEventId(), "Get enc keys from product keys completed.");
+            _logger.LogInformation(EventIds.GetEncKeysFromProductKeysCompleted.ToEventId(), "Get enc keys from product keys completed.");
 
             return productEncKeys;
         }

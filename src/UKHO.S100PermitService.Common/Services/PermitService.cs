@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var pksResponseData = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            var encKeyDetails = _s100Crypt.GetDecryptedKeysFromProductKeys(pksResponseData, _productKeyServiceApiConfiguration.Value.PermitHardwareId);
+            var encKeyDetails = _s100Crypt.GetDecryptedKeysFromProductKeys(pksResponseData, _productKeyServiceApiConfiguration.Value.HardwareId);
 
             var productsList = GetProductsList();
 

@@ -174,25 +174,25 @@
         /// 840034 - Request for retrying product key service api endpoint
         /// </summary>
         RetryHttpClientProductKeyServiceRequest = 840034,
-        
+
         /// <summary>
-        /// 840035 - Expected permit hardware id length not found
+        /// 840035 - Expected hardware id length not found
         /// </summary>
         HardwareIdLengthError = 840035,
 
         /// <summary>
-        /// 840036 - Expected permit key length not found
+        /// 840036 - Expected product key length not found
         /// </summary>
         ProductKeyLengthError = 840036,
 
         /// <summary>
-        /// 840037 - Get enc keys from permit keys started
+        /// 840037 - Get enc keys from product keys started
         /// </summary>
-        GetEncKeysFromPermitKeysStarted = 840037,
+        GetEncKeysFromProductKeysStarted = 840037,
 
         /// <summary>
-        /// 840038 - Get enc keys from permit keys completed
+        /// 840038 - Get enc keys from product keys completed
         /// </summary>
-        GetEncKeysFromPermitKeysCompleted = 840038
+        GetEncKeysFromProductKeysCompleted = 840038
     }
 }
