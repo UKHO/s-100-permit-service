@@ -1,9 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using UKHO.S100PermitService.Common.Models.UserPermitService;
+﻿using UKHO.S100PermitService.Common.Models.UserPermitService;
 
 namespace UKHO.S100PermitService.Common.Validations
 {
-    [ExcludeFromCodeCoverage]
     public static class UserPermitServiceResponseValidator
     {
         public static bool IsResponseNull(UserPermitServiceResponse userPermitServiceResponse)
