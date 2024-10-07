@@ -74,10 +74,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                                      .Returns(new UserPermitServiceResponse() { LicenceId = 1 , UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "test", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
-            A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
-            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromPermitKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
-                                                    .Returns([new() { ProductName = "test101", Edition = "1", EncKey = "654321", Key = "123456" }]);
+            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+                                                    .Returns([new() { ProductName = "test101", Edition = "1", DecryptedKey = "654321", Key = "123456" }]);
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -134,10 +134,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                                      .Returns(new UserPermitServiceResponse() { LicenceId = 1 , UserPermits = [new UserPermit() { Title = "test", Upn = "1234567" }] });
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "test", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
-            A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                                     .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
-            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromPermitKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
-                                                    .Returns([new() { ProductName = "test101", Edition = "1", EncKey = "654321", Key = "123456" }]);
+            A.CallTo(() => _fakeIs100Crypt.GetEncKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+                                                    .Returns([new() { ProductName = "test101", Edition = "1", DecryptedKey = "654321", Key = "123456" }]);
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);

@@ -31,13 +31,13 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get permit key from Product Key Service
+        /// Get keys from Product Key Service
         /// </summary>
         /// <param name="productKeyServiceRequest"></param>
         /// <param name="correlationId"></param>
         /// <returns>ProductKeyServiceResponse</returns>
         /// <exception cref="Exception"></exception>
-        public async Task<List<ProductKeyServiceResponse>> GetPermitKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
+        public async Task<List<ProductKeyServiceResponse>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
 

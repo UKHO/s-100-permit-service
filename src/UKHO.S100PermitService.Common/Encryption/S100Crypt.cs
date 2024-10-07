@@ -18,7 +18,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public List<ProductEncKeys> GetEncKeysFromPermitKeys(List<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
+        public IEnumerable<ProductKey> GetEncKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
             _logger.LogInformation(EventIds.GetEncKeysFromPermitKeysStarted.ToEventId(), "Get enc keys from permit keys started.");
 
@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 throw new PermitServiceException(EventIds.PermitHardwareIdLengthError.ToEventId(), "Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.", KeySizeEncoded, hardwareId.Length);
             }
 
-            List<ProductEncKeys> productEncKeys = [];
+            List<ProductKey> productEncKeys = [];
             foreach(var productKeyServiceResponse in productKeyServiceResponses)
             {
                 if(productKeyServiceResponse.Key.Length != KeySizeEncoded)
@@ -35,12 +35,12 @@ namespace UKHO.S100PermitService.Common.Encryption
                     throw new PermitServiceException(EventIds.PermitKeyLengthError.ToEventId(), "Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.", KeySizeEncoded, productKeyServiceResponse.Key.Length);
                 }
 
-                productEncKeys.Add(new ProductEncKeys()
+                productEncKeys.Add(new ProductKey()
                 {
                     ProductName = productKeyServiceResponse.ProductName,
                     Edition = productKeyServiceResponse.Edition,
                     Key = productKeyServiceResponse.Key,
-                    EncKey = _aesEncryption.Decrypt(productKeyServiceResponse.Key, hardwareId)
+                    DecryptedKey = _aesEncryption.Decrypt(productKeyServiceResponse.Key, hardwareId)
                 });
             }
 

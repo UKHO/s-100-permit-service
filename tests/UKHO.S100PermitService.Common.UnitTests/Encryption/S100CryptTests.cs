@@ -45,11 +45,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored))
                                              .Returns(test101EncKey).Once().Then.Returns(test102EncKey);
 
-            var result = _s100Crypt.GetEncKeysFromPermitKeys(GetProductKeyServiceResponse(), FakePermitHardwareId);
+            var result = _s100Crypt.GetEncKeysFromProductKeys(GetProductKeyServiceResponse(), FakePermitHardwareId);
 
             result.Should().NotBeNull();
-            result[0].EncKey.Should().Be(test101EncKey);
-            result[1].EncKey.Should().Be(test102EncKey);
+            result.FirstOrDefault().DecryptedKey.Should().Be(test101EncKey);
+            result.LastOrDefault().DecryptedKey.Should().Be(test102EncKey);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -69,7 +69,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public void WhenInvalidPermitHardwareIdPassed_ThenThrowException()
         {
-            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromPermitKeys(GetProductKeyServiceResponse(), "123456")).Should().
+            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromProductKeys(GetProductKeyServiceResponse(), "123456")).Should().
                                             ThrowExactly<PermitServiceException>().WithMessage("Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public void WhenInvalidPermitKeyPassed_ThenThrowException()
         {
-            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromPermitKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
+            FluentActions.Invoking(() => _s100Crypt.GetEncKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakePermitHardwareId)).Should().
                                             ThrowExactly<PermitServiceException>().WithMessage("Expected permit key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
