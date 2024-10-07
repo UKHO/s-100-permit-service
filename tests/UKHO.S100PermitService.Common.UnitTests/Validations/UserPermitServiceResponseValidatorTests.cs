@@ -20,7 +20,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         }
 
         [Test]
-        public void WhenUserPermitServiceResponseIsNull_ThenReturnsFalse()
+        public void WhenUserPermitServiceResponseIsNotNull_ThenReturnsFalse()
         {
             List<UserPermit> userPermits = [new UserPermit { Title = "Title", Upn = "Upn" }];
             var userPermitServiceResponse = new UserPermitServiceResponse { LicenceId = 1, UserPermits = userPermits };
