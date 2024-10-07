@@ -45,6 +45,8 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(isValid)
             {
+                var listOfUpnInfo = _userPermitService.MapUserPermitResponse(userPermitServiceResponse);
+
                 var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
                 var productsList = GetProductsList();
@@ -53,7 +55,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-                var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
+                listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(listOfUpnInfo);
 
                 foreach(var upnInfo in listOfUpnInfo)
                 {

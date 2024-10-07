@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            FluentActions.Invoking(() => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses())).Should().Throw<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyLength}");
+            FluentActions.Invoking(() => _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUpnInfoWithDecryptedHardwareId())).Should().Throw<PermitServiceException>().WithMessage("Invalid mKey found from Cache/KeyVault, Expected length is {KeySizeEncoded}, but mKey length is {mKeyLength}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
 
-            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponses());
+            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUpnInfoWithDecryptedHardwareId());
 
             result.Equals(GetUpnInfo());
 
@@ -103,28 +103,42 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             [
                 new UpnInfo()
                 {
-                    DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
-                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
+                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    MId = "A1B2C3",
+                    Crc32 = "DB74C038"
                 },
                 new UpnInfo()
                 {
-                    DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
-                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
+                    MId = "D4E5F6",
+                    Crc32 = "C1FDEC8B"
                 }
             ];
         }
 
-        private static UserPermitServiceResponse GetUserPermitServiceResponses()
+        private static List<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
         {
-            return new UserPermitServiceResponse()
-            {
-                LicenceId = 2,
-                UserPermits =
-                [
-                    new UserPermit { Title = "Mariner Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
-                    new UserPermit { Title = "Starboard Radar", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" }
-                ]
-            };
+            return
+            [
+                new UpnInfo()
+                {
+                    HardwareId = "86C520323CEA3056B5ED7000F98814CB",
+                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    MId = "A1B2C3",
+                    Crc32 = "DB74C038"
+                },
+                new UpnInfo()
+                {
+                    HardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
+                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
+                    MId = "D4E5F6",
+                    Crc32 = "C1FDEC8B"
+                }
+            ];
         }
     }
 }

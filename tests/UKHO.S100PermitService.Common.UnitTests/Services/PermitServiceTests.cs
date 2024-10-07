@@ -70,14 +70,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).Returns(true);
 
+            A.CallTo(() => _fakeUserPermitService.MapUserPermitResponse(A<UserPermitServiceResponse>.Ignored)).Returns(GetUpnInfo());
+
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
 
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
-                .Returns(GetUpnInfo());
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<List<UpnInfo>>.Ignored))
+                .Returns(GetUpnInfoWithDecryptedHardwareId());
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -135,14 +137,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).Returns(true);
 
+            A.CallTo(() => _fakeUserPermitService.MapUserPermitResponse(A<UserPermitServiceResponse>.Ignored)).Returns(GetUpnInfo());
+
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { Cells = [new() { CellCode = "test101", CellTitle = "", LatestEditionNumber = "1", LatestUpdateNumber = "1" }], }]);
 
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns([new() { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
-                .Returns(GetUpnInfo());
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<List<UpnInfo>>.Ignored))
+                .Returns(GetUpnInfoWithDecryptedHardwareId());
 
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("");
 
@@ -199,13 +203,40 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             [
                 new UpnInfo()
                 {
-                    DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
-                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
+                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    MId = "A1B2C3",
+                    Crc32 = "DB74C038"
                 },
                 new UpnInfo()
                 {
-                    DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
-                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
+                    MId = "D4E5F6",
+                    Crc32 = "C1FDEC8B"
+                }
+            ];
+        }
+
+        private static List<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
+        {
+            return
+            [
+                new UpnInfo()
+                {
+                    HardwareId = "86C520323CEA3056B5ED7000F98814CB",
+                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    MId = "A1B2C3",
+                    Crc32 = "DB74C038"
+                },
+                new UpnInfo()
+                {
+                    HardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
+                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
+                    MId = "D4E5F6",
+                    Crc32 = "C1FDEC8B"
                 }
             ];
         }

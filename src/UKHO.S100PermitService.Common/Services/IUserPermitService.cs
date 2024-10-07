@@ -6,5 +6,6 @@ namespace UKHO.S100PermitService.Common.Services
     {
         Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
         bool ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse);
+        List<UpnInfo> MapUserPermitResponse(UserPermitServiceResponse userPermitServiceResponse);
     }
 }

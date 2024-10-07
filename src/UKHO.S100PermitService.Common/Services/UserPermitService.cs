@@ -21,7 +21,10 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitApiClient _userPermitApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private readonly IUserPermitValidator _userPermitValidator;
+
         private const string UserPermitUrl = "/userpermits/{0}/s100";
+        private const int MIdLength = 6;
+        private const int EncryptedHardwareIdLength = 32;
 
         public UserPermitService(ILogger<UserPermitService> logger,
                                  IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration,
@@ -95,6 +98,24 @@ namespace UKHO.S100PermitService.Common.Services
                 .Distinct());
 
             throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
+        }
+
+        public List<UpnInfo> MapUserPermitResponse(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            List<UpnInfo> listOfUpnInfo= [];
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
+            {
+                var upnInfo = new UpnInfo
+                {
+                    EncryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength], 
+                    MId = userPermit.Upn[^MIdLength..],
+                    Crc32 = userPermit.Upn[EncryptedHardwareIdLength..^MIdLength],
+                    Upn = userPermit.Upn
+                };
+                listOfUpnInfo.Add(upnInfo);
+            }
+
+            return listOfUpnInfo;
         }
     }
 }
