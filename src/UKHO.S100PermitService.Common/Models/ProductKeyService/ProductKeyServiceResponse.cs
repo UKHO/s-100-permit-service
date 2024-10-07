@@ -12,8 +12,5 @@ namespace UKHO.S100PermitService.Common.Models.ProductKeyService
 
         [JsonPropertyName("key")]
         public string Key { get; set; }
-
-        [JsonIgnore]
-        public string EncKey {  get; set; }
     }
 }
