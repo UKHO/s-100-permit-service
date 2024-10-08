@@ -173,6 +173,16 @@
         /// <summary>
         /// 840034 - Request for retrying product key service api endpoint
         /// </summary>
-        RetryHttpClientProductKeyServiceRequest = 840034
+        RetryHttpClientProductKeyServiceRequest = 840034,
+
+        /// <summary>
+        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
+
+        /// <summary>
+        /// 840036 - Request to Holdings service GetHoldings completed with no content
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036
     }
 }

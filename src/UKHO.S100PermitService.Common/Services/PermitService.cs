@@ -1,10 +1,13 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -31,15 +34,30 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
         }
 
-        public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken,
+            string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
+            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+
+            if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
+            {
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
+
+                return HttpStatusCode.NoContent;
+            }
+
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
-            var productsList = GetProductsList();
+            if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
+            {
+                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+                return HttpStatusCode.NoContent;
+            }
+
+            var productsList = GetProductsList();
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
@@ -50,6 +68,8 @@ namespace UKHO.S100PermitService.Common.Services
             CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+
+            return HttpStatusCode.OK;
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
@@ -108,11 +128,12 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse) =>
-             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-             {
-                 ProductName = y.CellCode,
-                 Edition = y.LatestEditionNumber
-             })).ToList();
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
+            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            {
+                ProductName = y.CellCode,
+                Edition = y.LatestEditionNumber
+            })).ToList();
     }
 }
