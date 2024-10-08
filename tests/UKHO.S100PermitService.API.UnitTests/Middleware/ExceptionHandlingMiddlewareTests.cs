@@ -112,7 +112,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
-            && call.GetArgument<EventId>(1) == EventIds.PermitServiceException.ToEventId()
+            && call.GetArgument<EventId>(1) == EventIds.AesEncryptionException.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "fakemessage").MustHaveHappenedOnceExactly();
         }
     }
