@@ -1,7 +1,9 @@
-﻿namespace UKHO.S100PermitService.Common.Services
+﻿using System.Net;
+
+namespace UKHO.S100PermitService.Common.Services
 {
     public interface IPermitService
     {
-        Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
+        Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
     }
 }

@@ -27,9 +27,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeManufacturerKeyVault = A.Fake<IOptions<ManufacturerKeyConfiguration>>();
             _fakeLogger = A.Fake<ILogger<ManufacturerKeyService>>();
             _fakeCacheProvider = A.Fake<ICacheProvider>();
-            _fakeSecretClient = A.Fake<ISecretClient>();
-
-            _fakeManufacturerKeyVault.Value.CacheTimeoutInHours = 2;
+            _fakeSecretClient = A.Fake<ISecretClient>();            
 
             _manufacturerKeyService = new ManufacturerKeyService(_fakeManufacturerKeyVault, _fakeLogger, _fakeCacheProvider, _fakeSecretClient);
         }
