@@ -1,0 +1,160 @@
+openapi: 3.0.1
+info:
+  title: UKHO S100 Permit Service API
+  description: |
+    The UKHO S100 Permit Service API.
+  contact:
+    name: UKHO
+    email: martin.rock-evans@ukho.co.uk
+  version: 0.0.1
+  
+externalDocs:
+  url: https://github.com/UKHO/s-100-permit-service
+servers:
+  - url: https://permit-service-url
+    description: Proposed URL
+
+security:
+  - jwtBearerAuth: []
+  
+paths:
+  /permits/{licenceId}:
+    get:
+      description: |
+        It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.
+      operationId: getS100Permits
+      parameters:
+      - name: licenceId
+        in: path
+        description: Licence Id. It must be an integer value and greater than zero.
+        required: true
+        schema:
+          type: integer
+          example: 12345678
+      responses:
+        "200":
+          description: OK - Returns permit files.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+            Content-Disposition:
+              schema:
+                type: string
+                format: filename=permits.zip; filename*=UTF-8''Permits.zip
+          content:
+            application/zip:
+              schema:
+                title: S100 Permits ZIP File
+                type: string
+                format: binary
+        "204":
+          description: No Content - There are no S100 permits for the licence.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+        "400":
+          description: Bad request - could be missing or invalid licenceId, it must be an integer and greater than zero.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorDescription'
+              example:
+                correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
+                errors:
+                - source: licenceId
+                  description: Invalid LicenceId
+            application/zip:
+              schema:
+                $ref: '#/components/schemas/errorDescription'
+        "401":
+          description: Unauthorised - either you have not provided valid token, or your token is not recognised.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+          content: {}
+        "403":
+          description: Forbidden - you have no permission to use this API.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+        "404":
+          description: Licence not found (licence not found in response received from Shop Facade UPN Service or Shop Facade Holding Service).
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errorDescription'
+              example:
+                correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
+                errors:
+                - source: licenceId
+                  description: Licence not found.
+            application/zip:
+              schema:
+                $ref: '#/components/schemas/errorDescription'
+        "429":
+          description: Too Many Requests.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+        "500":
+          description: Internal Server Error.
+          headers:
+            X-Correlation-ID:
+              description: GUID for the request for logging/tracing
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/exceptionDescription'
+            application/zip:
+              schema:
+                $ref: '#/components/schemas/exceptionDescription'
+components:
+  schemas:
+    exceptionDescription:
+      type: object
+      properties:
+        correlationId:
+          type: string
+    errorDescription:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/fieldError'
+    fieldError:
+      type: object
+      properties:
+        source:
+          type: string
+        description:
+          type: string
+  securitySchemes:
+    jwtBearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
