@@ -17,23 +17,25 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;        
         private PermitController _permitController;
+        private IManufacturerKeyService _fakeManufacturerKeyService;
 
         [SetUp]
         public void Setup()
         {
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();
             _fakeLogger = A.Fake<ILogger<PermitController>>();
-            _fakePermitService = A.Fake<IPermitService>();            
-            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService);
+            _fakePermitService = A.Fake<IPermitService>();
+            _fakeManufacturerKeyService = A.Fake<IManufacturerKeyService>();
+            _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService, _fakeManufacturerKeyService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService);
+            Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService, _fakeManufacturerKeyService);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null);
+            Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null, _fakeManufacturerKeyService);
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
         }
 
