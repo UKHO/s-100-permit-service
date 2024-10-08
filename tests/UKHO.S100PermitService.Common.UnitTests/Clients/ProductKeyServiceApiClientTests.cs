@@ -1,8 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
 
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                                    JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>()
+                                    JsonSerializer.Serialize(new List<ProductKeyServiceResponse>()
                                     { new() { ProductName = "test101", Edition = "1", Key = "123456"} }), HttpStatusCode.OK);
 
             var httpClient = new HttpClient(messageHandler)
@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", CancellationToken.None, _fakeCorrelationId);
 
-            var deSerializedResult = JsonConvert.DeserializeObject<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
             deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         public void WhenProductKeyServiceResponseOtherThanOk_ThenResponseShouldNotBeOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() }), httpStatusCode);
+                JsonSerializer.Serialize(new List<ProductKeyServiceResponse>() { new() }), httpStatusCode);
 
             var httpClient = new HttpClient(messageHandler)
             {
@@ -90,7 +90,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() }), HttpStatusCode.Unauthorized);
+                JsonSerializer.Serialize(new List<ProductKeyServiceResponse>() { new() }), HttpStatusCode.Unauthorized);
 
             var httpClient = new HttpClient(messageHandler)
             {

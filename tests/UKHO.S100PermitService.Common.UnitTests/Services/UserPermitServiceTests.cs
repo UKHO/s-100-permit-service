@@ -3,9 +3,9 @@ using FluentAssertions;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -84,7 +84,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(JsonConvert.SerializeObject(userPermitServiceResponse))
+                Content = new StringContent(JsonSerializer.Serialize(userPermitServiceResponse))
             };
 
             A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
@@ -131,7 +131,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. StatusCode: {1} | Errors Details: {2}");
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -162,7 +162,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. Status Code: {1}");
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

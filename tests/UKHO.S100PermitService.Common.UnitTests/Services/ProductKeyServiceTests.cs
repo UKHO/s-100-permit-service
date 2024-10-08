@@ -2,9 +2,9 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
 using System.Net;
 using System.Text;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -27,6 +27,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         private const string RequestError = "{\"correlationId\":\"fc771eb4-926b-4965-8de9-8b37288d3bd0\",\"errors\":[{\"source\":\"GetProductKey\",\"description\":\"Key not found for ProductName: test101 and Edition: 1.\"}]}";
+        private const string AccessToken = "access-token";
 
         private IProductKeyService _productKeyService;
 
@@ -74,8 +75,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 {
                                     RequestUri = new Uri("http://test.com")
                                 },
-                                Content = new StringContent(JsonConvert.SerializeObject(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
+                                Content = new StringContent(JsonSerializer.Serialize(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
                             });
+            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+               .Returns(AccessToken);
 
             var response = await _productKeyService.GetPermitKeysAsync([new() { ProductName = "test101", Edition = "1" }], CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
@@ -112,8 +115,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 },
                                 Content = new StringContent(RequestError)
                             });
+            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1} | Error Details : {2}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -142,7 +146,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -168,7 +172,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {0} failed. | StatusCode : {1}");
+            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
+
+            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

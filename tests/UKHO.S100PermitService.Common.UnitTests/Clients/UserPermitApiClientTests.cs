@@ -1,8 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", CancellationToken.None, _fakeCorrelationId);
 
-            var deSerializedResult = JsonConvert.DeserializeObject<List<UserPermitServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            var deSerializedResult = JsonSerializer.Deserialize<List<UserPermitServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
             deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
@@ -59,7 +59,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         public void WhenUserPermitServiceResponseOtherThanOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new UserPermitServiceResponse() { }), httpStatusCode);
+                JsonSerializer.Serialize(new UserPermitServiceResponse() { }), httpStatusCode);
 
             var httpClient = new HttpClient(messageHandler)
             {
@@ -87,7 +87,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new UserPermitServiceResponse() { }), HttpStatusCode.Unauthorized);
+                JsonSerializer.Serialize(new UserPermitServiceResponse() { }), HttpStatusCode.Unauthorized);
 
             var httpClient = new HttpClient(messageHandler)
             {

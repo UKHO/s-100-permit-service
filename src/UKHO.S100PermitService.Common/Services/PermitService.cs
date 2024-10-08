@@ -1,11 +1,14 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -35,11 +38,28 @@ namespace UKHO.S100PermitService.Common.Services
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
         }
 
-        public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken,
+            string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+
+            if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
+            {
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
+
+                return HttpStatusCode.NoContent;
+            }
+
+            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+
+            if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
+            {
+                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
+
+                return HttpStatusCode.NoContent;
+            }
 
             var isValid = _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
@@ -47,13 +67,13 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var listOfUpnInfo = _userPermitService.MapUserPermitResponse(userPermitServiceResponse);
 
-                var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
                 var productsList = GetProductsList();
 
                 var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-                var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
+                var pksResponseData =
+                    await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken,
+                        correlationId);
 
                 listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(listOfUpnInfo);
 
@@ -63,7 +83,10 @@ namespace UKHO.S100PermitService.Common.Services
                 }
 
                 _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+
+                return HttpStatusCode.OK;
             }
+            return HttpStatusCode.InternalServerError;
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
@@ -122,11 +145,12 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse) =>
-             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-             {
-                 ProductName = y.CellCode,
-                 Edition = y.LatestEditionNumber
-             })).ToList();
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
+            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            {
+                ProductName = y.CellCode,
+                Edition = y.LatestEditionNumber
+            })).ToList();
     }
 }

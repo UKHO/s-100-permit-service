@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
+using System.Net;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Services;
@@ -42,6 +43,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         [Test]
         public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
         {
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(HttpStatusCode.OK);
+
             var result = (OkResult)await _permitController.GeneratePermits(007);
 
             result.StatusCode.Should().Be(StatusCodes.Status200OK);
@@ -61,6 +65,33 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
            && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task WhenGetPermitIsCalled_ThenReturnsNoContentResponse()
+        {
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(HttpStatusCode.NoContent);
+
+            var result = (StatusCodeResult)await _permitController.GeneratePermits(1);
+
+            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+
+            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
+            ).MustHaveHappenedOnceExactly();
         }
     }
 }

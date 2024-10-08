@@ -176,24 +176,33 @@
         RetryHttpClientProductKeyServiceRequest = 840034,
 
         /// <summary>
-        /// 840035 - Invalid mKey length or mKey not found in KeyVault
+        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content
         /// </summary>
-        InvalidMKey = 840035,
-
-
-        /// <summary>
-        /// 840036 - Get hardware id from user permit started
-        /// </summary>
-        GetHwIdFromUserPermitStarted = 840036,
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
 
         /// <summary>
-        /// 840037 - Get hardware id from user permit completed
+        /// 840036 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840037,
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
 
         /// <summary>
-        /// 840038 - Upn length or checksum validation failed
+        /// 840037 - Invalid mKey length or mKey not found in KeyVault
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840038
+        InvalidMKey = 840037,
+
+        /// <summary>
+        /// 840038 - Get hardware id from user permit started
+        /// </summary>
+        GetHwIdFromUserPermitStarted = 840038,
+
+        /// <summary>
+        /// 840039 - Get hardware id from user permit completed
+        /// </summary>
+        GetHwIdFromUserPermitCompleted = 840039,
+
+        /// <summary>
+        /// 840040 - Upn length or checksum validation failed
+        /// </summary>
+        UpnLengthOrChecksumValidationFailed = 840040
     }
 }

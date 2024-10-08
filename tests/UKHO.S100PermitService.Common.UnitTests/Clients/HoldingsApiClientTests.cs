@@ -1,8 +1,8 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.Holdings;
@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", CancellationToken.None, _correlationId);
 
-            var deserializedResult = JsonConvert.DeserializeObject<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            var deserializedResult = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
             deserializedResult.Count.Should().BeGreaterThanOrEqualTo(1);
@@ -61,7 +61,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
         public void WhenInvalidHoldingsServiceDataIsPassed_ThenResponseShouldNotBeOk(HttpStatusCode httpStatusCode)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), httpStatusCode);
+                JsonSerializer.Serialize(new List<HoldingsServiceResponse> { new() }), httpStatusCode);
 
             var httpClient = new HttpClient(messageHandler)
             {
@@ -89,7 +89,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
         public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
-                JsonConvert.SerializeObject(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
+                JsonSerializer.Serialize(new List<HoldingsServiceResponse> { new() }), HttpStatusCode.Unauthorized);
 
             var httpClient = new HttpClient(messageHandler)
             {
