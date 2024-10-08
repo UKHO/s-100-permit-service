@@ -14,7 +14,7 @@ using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {
@@ -46,9 +46,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeUserPermitServiceAuthTokenProvider = A.Fake<IUserPermitServiceAuthTokenProvider>();
             _fakeUserPermitApiClient = A.Fake<IUserPermitApiClient>();
             _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
-
             _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _fakeUserPermitValidator = A.Fake<IUserPermitValidator>();
+
             _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
         }
 

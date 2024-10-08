@@ -2,7 +2,7 @@
 using FluentValidation.Results;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 
-namespace UKHO.S100PermitService.Common.Validation
+namespace UKHO.S100PermitService.Common.Validations
 {
     public class UserPermitValidator : AbstractValidator<UserPermitServiceResponse>, IUserPermitValidator
     {

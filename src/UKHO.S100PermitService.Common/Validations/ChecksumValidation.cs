@@ -2,7 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
-namespace UKHO.S100PermitService.Common.Validation
+namespace UKHO.S100PermitService.Common.Validations
 {
     [ExcludeFromCodeCoverage]
     public static class ChecksumValidation

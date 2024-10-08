@@ -10,7 +10,7 @@ using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {
@@ -23,7 +23,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IUserPermitService _fakeUserPermitService;
         private IProductKeyService _fakeProductKeyService;
         private IS100Crypt _fakeIs100Crypt;
-        private IUserPermitValidator _fakeUserPermitValidator;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string NoContent = "noContent";
         const string OkResponse = "okResponse";
@@ -39,7 +38,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeUserPermitService = A.Fake<IUserPermitService>();
             _fakeProductKeyService = A.Fake<IProductKeyService>();
             _fakeIs100Crypt = A.Fake<IS100Crypt>();
-            _fakeUserPermitValidator = A.Fake<IUserPermitValidator>();
 
             _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt);
         }
@@ -76,7 +74,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeUserPermitService.MapUserPermitResponse(A<UserPermitServiceResponse>.Ignored)).Returns(GetUpnInfo());
 
-
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
 
@@ -86,8 +83,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<List<UpnInfo>>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
-
-
 
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 

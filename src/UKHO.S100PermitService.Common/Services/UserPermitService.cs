@@ -9,7 +9,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
-using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {

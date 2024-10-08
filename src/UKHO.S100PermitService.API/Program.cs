@@ -21,7 +21,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.API
 {

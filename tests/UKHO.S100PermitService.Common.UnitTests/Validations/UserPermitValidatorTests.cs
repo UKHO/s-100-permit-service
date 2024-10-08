@@ -1,9 +1,9 @@
 ﻿using FluentAssertions;
 using FluentValidation.TestHelper;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
-using UKHO.S100PermitService.Common.Validation;
+using UKHO.S100PermitService.Common.Validations;
 
-namespace UKHO.S100PermitService.Common.UnitTests.Validation
+namespace UKHO.S100PermitService.Common.UnitTests.Validations
 {
     [TestFixture]
     public class UserPermitValidatorTests
