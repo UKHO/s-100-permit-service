@@ -1,5 +1,6 @@
 ﻿using FluentAssertions;
 using UKHO.S100PermitService.Common.Encryption;
+using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 {
@@ -26,12 +27,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenProvidedValidData_ThenSuccessfullyReturnsEncryptedData()
+        public void WhenInvalidHexStringIsPassed_ThenThrowException()
         {
-            var result = _aesEncryption.Encrypt(FakeText, FakeKey);
+            FluentActions.Invoking(() => _aesEncryption.Decrypt("123456", FakeKey)).Should().
+                                            ThrowExactly<AesEncryptionException>().WithMessage("Expected hex string length {HexSize}, but found {HexString Length}.");
 
-            result.Should().NotBeNullOrEmpty();
-            result.Should().NotBe(FakeText);
+        }
+
+        [Test]
+        public void WhenInvalidHexKeyIsPassed_ThenThrowException()
+        {
+            FluentActions.Invoking(() => _aesEncryption.Decrypt(FakeText, "123456")).Should().
+                                            ThrowExactly<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
+
         }
     }
 }

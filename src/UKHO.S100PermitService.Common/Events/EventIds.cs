@@ -184,16 +184,16 @@
         /// 840036 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
         HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
-        
-        /// <summary>
-        /// 840037 - Expected hardware id length not found
-        /// </summary>
-        HardwareIdLengthError = 840037,
 
         /// <summary>
-        /// 840038 - Expected product key length not found
+        /// 840037 - Expected hex string length not found
         /// </summary>
-        ProductKeyLengthError = 840038,
+        HexStringLengthError = 840037,
+
+        /// <summary>
+        /// 840038 - Expected hex key length not found
+        /// </summary>
+        HexKeyLengthError = 840038,
 
         /// <summary>
         /// 840039 - Get decrypted keys from product keys started
@@ -203,6 +203,11 @@
         /// <summary>
         /// 840040 - Get decrypted keys from product keys completed
         /// </summary>
-        GetDecryptedKeysFromProductKeysCompleted = 840040
+        GetDecryptedKeysFromProductKeysCompleted = 840040,
+
+        /// <summary>
+        /// 840041 - Aes encryption exception
+        /// </summary>
+        AesEncryptionException = 840041
     }
 }

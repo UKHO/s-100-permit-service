@@ -87,5 +87,33 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             && call.GetArgument<EventId>(1) == EventIds.PermitServiceException.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "fakemessage").MustHaveHappenedOnceExactly();
         }
+
+        [Test]
+        public async Task WhenExceptionIsOfTypeAesEncryptionException_ThenLogsErrorWithAesEncryptionExceptionEventId()
+        {
+            var memoryStream = new MemoryStream();
+            _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
+            _fakeHttpContext.Response.Body = memoryStream;
+            A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new AesEncryptionException(EventIds.AesEncryptionException.ToEventId(), "fakemessage"));
+
+            await _middleware.InvokeAsync(_fakeHttpContext);
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            var responseBody = await new StreamReader(memoryStream).ReadToEndAsync();
+            var problemDetails = JsonSerializer.Deserialize<ProblemDetails>(responseBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            problemDetails.Status.Should().Be((int)HttpStatusCode.InternalServerError);
+            problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
+            _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
+            _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
+
+            A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Error
+            && call.GetArgument<EventId>(1) == EventIds.PermitServiceException.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "fakemessage").MustHaveHappenedOnceExactly();
+        }
     }
 }

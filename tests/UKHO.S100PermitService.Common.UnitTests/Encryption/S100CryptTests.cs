@@ -3,7 +3,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Encryption
@@ -64,38 +63,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys completed."
             ).MustHaveHappenedOnceExactly();
-        }
-
-        [Test]
-        public void WhenInvalidHardwareIdPassed_ThenThrowException()
-        {
-            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), "123456")).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Expected hardware id length {KeySizeEncoded}, but found {HardwareId Length}.");
-
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys completed."
-            ).MustNotHaveHappened();
-        }
-
-        [Test]
-        public void WhenInvalidProductKeyPassed_ThenThrowException()
-        {
-            FluentActions.Invoking(() => _s100Crypt.GetDecryptedKeysFromProductKeys(GetInvalidProductKeyServiceResponse(), FakeHardwareId)).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Expected product key length {KeySizeEncoded}, but found {ProductKeyServiceResponse Key Length}.");
-
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys completed."
-            ).MustNotHaveHappened();
         }
 
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()

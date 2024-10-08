@@ -3,7 +3,5 @@
     public interface IAesEncryption
     {
         string Decrypt(string hexString, string keyHexEncoded);
-
-        string Encrypt(string hexString, string keyHexEncoded);
     }
 }
