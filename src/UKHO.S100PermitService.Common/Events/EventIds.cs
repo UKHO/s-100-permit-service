@@ -176,23 +176,33 @@
         RetryHttpClientProductKeyServiceRequest = 840034,
 
         /// <summary>
-        /// 840035 - Expected hardware id length not found
+        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content
         /// </summary>
-        HardwareIdLengthError = 840035,
+        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
 
         /// <summary>
-        /// 840036 - Expected product key length not found
+        /// 840036 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
-        ProductKeyLengthError = 840036,
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
+        
+        /// <summary>
+        /// 840037 - Expected hardware id length not found
+        /// </summary>
+        HardwareIdLengthError = 840037,
 
         /// <summary>
-        /// 840037 - Get decrypted keys from product keys started
+        /// 840038 - Expected product key length not found
         /// </summary>
-        GetDecryptedKeysFromProductKeysStarted = 840037,
+        ProductKeyLengthError = 840038,
 
         /// <summary>
-        /// 840038 - Get decrypted keys from product keys completed
+        /// 840039 - Get decrypted keys from product keys started
         /// </summary>
-        GetDecryptedKeysFromProductKeysCompleted = 840038
+        GetDecryptedKeysFromProductKeysStarted = 840039,
+
+        /// <summary>
+        /// 840040 - Get decrypted keys from product keys completed
+        /// </summary>
+        GetDecryptedKeysFromProductKeysCompleted = 840040
     }
 }

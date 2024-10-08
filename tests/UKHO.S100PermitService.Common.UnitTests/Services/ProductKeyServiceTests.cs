@@ -77,9 +77,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 },
                                 Content = new StringContent(JsonSerializer.Serialize(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } }))
                             });
-
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
-                .Returns(AccessToken);
+               .Returns(AccessToken);
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
@@ -116,9 +115,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 },
                                 Content = new StringContent(RequestError)
                             });
-
-            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
-                .Returns(AccessToken);
+            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
 
             await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
             

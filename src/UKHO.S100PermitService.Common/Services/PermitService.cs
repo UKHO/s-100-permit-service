@@ -1,13 +1,16 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -24,12 +27,12 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger,
-                                IHoldingsService holdingsService,
-                                IUserPermitService userPermitService,
-                                IProductKeyService productKeyService,
-                                IS100Crypt s100Crypt,
-                                IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration)
+                             ILogger<PermitService> logger,
+                             IHoldingsService holdingsService,
+                             IUserPermitService userPermitService,
+                             IProductKeyService productKeyService,
+                             IS100Crypt s100Crypt,
+                             IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -40,13 +43,27 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
         }
 
-        public async Task CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
+            if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
+            {
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
+
+                return HttpStatusCode.NoContent;
+            }
+
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+
+            if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
+            {
+                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
+
+                return HttpStatusCode.NoContent;
+            }
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
@@ -62,6 +79,8 @@ namespace UKHO.S100PermitService.Common.Services
             };
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+
+            return HttpStatusCode.OK;
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
@@ -120,11 +139,12 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(List<HoldingsServiceResponse> holdingsServiceResponse) =>
-             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-             {
-                 ProductName = y.CellCode,
-                 Edition = y.LatestEditionNumber
-             })).ToList();
+        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
+            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            {
+                ProductName = y.CellCode,
+                Edition = y.LatestEditionNumber
+            })).ToList();
     }
 }
