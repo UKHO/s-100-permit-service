@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get keys from Product Key Service
+        /// Get product keys from Product Key Service
         /// </summary>
         /// <param name="productKeyServiceRequest"></param>
         /// <param name="correlationId"></param>

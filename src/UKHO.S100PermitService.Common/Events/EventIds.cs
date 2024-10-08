@@ -126,17 +126,17 @@
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get permit key from Product Key Service started
+        /// 840025 - Get product key from Product Key Service started
         /// </summary>
         GetProductKeysRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get permit key from Product Key Service completed
+        /// 840026 - Get product key from Product Key Service completed
         /// </summary>
         GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get permit key from Product Key Service
+        /// 840027 - Exception occurred while get product key from Product Key Service
         /// </summary>
         GetProductKeysRequestFailed = 840027,
 
