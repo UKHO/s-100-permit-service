@@ -30,7 +30,7 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
-        private const string ManufacturerKeyVault = "ManufacturerKeyVault";
+        private const string ManufacturerKeyVaultConfiguration = "ManufacturerKeyVault";
         private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string AzureAdScheme = "AzureAd";
 
@@ -124,7 +124,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
-            builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
+            builder.Services.Configure<ManufacturerKeyVaultConfiguration>(configuration.GetSection(ManufacturerKeyVaultConfiguration));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
@@ -172,18 +172,9 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
-            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
-
-            builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
-            {
-                var cacheProvider = sp.GetRequiredService<ICacheProvider>();
-                var logger = sp.GetRequiredService<ILogger<ManufacturerKeyService>>();
-                var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
-                var secretClient = sp.GetRequiredService<ISecretClient>();
-                return new ManufacturerKeyService(config, logger, cacheProvider, secretClient);
-            });          
+            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();            
+            builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
+            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
@@ -193,9 +184,12 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
             builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
 
+            builder.Services.AddTransient<ISecretClient, KeyVaultSecretClient>();
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
             builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
+
+            builder.Services.AddHostedService<ManufacturerKeyHostedService>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

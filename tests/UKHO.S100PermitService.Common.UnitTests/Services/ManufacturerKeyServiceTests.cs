@@ -2,9 +2,7 @@
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using UKHO.S100PermitService.Common.Clients;
-using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -15,50 +13,46 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     [TestFixture]
     public class ManufacturerKeyServiceTests
     {
-        private IOptions<ManufacturerKeyConfiguration> _fakeManufacturerKeyVault;
         private ILogger<ManufacturerKeyService> _fakeLogger;
         private ICacheProvider _fakeCacheProvider;
         private ISecretClient _fakeSecretClient;
-        private IManufacturerKeyService _manufacturerKeyService;
+        private ManufacturerKeyService _manufacturerKeyService;
 
         [SetUp]
         public void Setup()
         {
-            _fakeManufacturerKeyVault = A.Fake<IOptions<ManufacturerKeyConfiguration>>();
             _fakeLogger = A.Fake<ILogger<ManufacturerKeyService>>();
             _fakeCacheProvider = A.Fake<ICacheProvider>();
-            _fakeSecretClient = A.Fake<ISecretClient>();            
+            _fakeSecretClient = A.Fake<ISecretClient>();
 
-            _manufacturerKeyService = new ManufacturerKeyService(_fakeManufacturerKeyVault, _fakeLogger, _fakeCacheProvider, _fakeSecretClient);
+            _manufacturerKeyService = new ManufacturerKeyService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullLogger = () => new ManufacturerKeyService(_fakeManufacturerKeyVault, null, _fakeCacheProvider, _fakeSecretClient);
+            Action nullLogger = () => new ManufacturerKeyService(null, _fakeCacheProvider, _fakeSecretClient);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullCacheProvider = () => new ManufacturerKeyService(_fakeManufacturerKeyVault, _fakeLogger, null, _fakeSecretClient);
+            Action nullCacheProvider = () => new ManufacturerKeyService(_fakeLogger, null, _fakeSecretClient);
             nullCacheProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("cacheProvider");
 
-            Action nullSecretClient = () => new ManufacturerKeyService(_fakeManufacturerKeyVault, _fakeLogger, _fakeCacheProvider, null);
+            Action nullSecretClient = () => new ManufacturerKeyService(_fakeLogger, _fakeCacheProvider, null);
             nullSecretClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("secretClient");
         }
 
         [Test]
         public void WhenApplicationStarts_ThenFetchSecretsFromKeyVaultInMemoryCache()
         {
-            _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";
             var secretKey = "mpn";
             var secretValue = "M_IDmpm";
-
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).Returns(GetSecretProperties(secretKey));
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
-            _manufacturerKeyService.CacheManufacturerKeys();
+            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored));
 
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            _manufacturerKeyService.CacheManufacturerKeys();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -78,8 +72,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenNoSecretsInMemoryCache_ThenThrowException()
         {
-            _fakeManufacturerKeyVault.Value.ServiceUri = "https://test.com/";
-
             var result = () => _manufacturerKeyService.CacheManufacturerKeys();
             result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault");
 
@@ -89,10 +81,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenNoSecretsInMemoryCacheOrKeyVault_ThenThrowException()
         {
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);            
+            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
 
             var result = () => _manufacturerKeyService.GetManufacturerKeys("pqr");
-            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}");   
+            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}");
         }
 
         [Test]

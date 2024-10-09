@@ -146,12 +146,12 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Caching of Manufacturer Key from keyvault started.
+        /// 840029 - Caching of Manufacturer Key from Key Vault started.
         /// </summary>
         ManufacturerKeyCachingStart = 840029,
 
         /// <summary>
-        /// 840030 - Caching of Manufacturer Key from keyvault end.
+        /// 840030 - Caching of Manufacturer Key from  Key Vault end.
         /// </summary>
         ManufacturerKeyCachingEnd = 840030,
 

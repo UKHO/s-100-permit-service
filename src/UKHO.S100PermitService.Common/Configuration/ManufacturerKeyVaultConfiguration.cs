@@ -3,7 +3,7 @@
 namespace UKHO.S100PermitService.Common.Configuration
 {
     [ExcludeFromCodeCoverage]
-    public class ManufacturerKeyConfiguration
+    public class ManufacturerKeyVaultConfiguration
     {
         public string ServiceUri { get; set; }        
     }

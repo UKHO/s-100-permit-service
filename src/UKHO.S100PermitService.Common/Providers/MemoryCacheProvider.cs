@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace UKHO.S100PermitService.Common.Providers
 {
     [ExcludeFromCodeCoverage]
-    public class CacheProvider : ICacheProvider
+    public class MemoryCacheProvider : ICacheProvider
     {
         private readonly IMemoryCache _memoryCache;
 
-        public CacheProvider(IMemoryCache memoryCache)
+        public MemoryCacheProvider(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         }
