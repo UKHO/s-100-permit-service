@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Xml.Schema;
+using System.Reflection;
 using System.Xml;
+using System.Xml.Schema;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
@@ -10,9 +13,6 @@ using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Validations;
-using System.Reflection;
-using Microsoft.Extensions.Options;
-using UKHO.S100PermitService.Common.Configuration;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -26,6 +26,9 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IOptions<PermitConfiguration> _permitConfiguration;
+
+        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
@@ -73,7 +76,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
-                CreatePermitXml(DateTimeOffset.Now, userPermit.Upn, "1.0", productsList); 
+                CreatePermitXml(userPermit.Upn, productsList);
             }
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
@@ -81,26 +84,27 @@ namespace UKHO.S100PermitService.Common.Services
             return HttpStatusCode.OK;
         }
 
-        private void CreatePermitXml(DateTimeOffset issueDate, string userPermit, string version, List<Products> products)
+        private void CreatePermitXml(string userPermit, List<Products> products)
         {
+            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
             var productsList = new List<Products>();
             productsList.AddRange(products);
             var permit = new Permit
             {
                 Header = new Header
                 {
-                    IssueDate = issueDate.ToString(DateFormat),
+                    IssueDate = _issueDate,
                     DataServerIdentifier = _permitConfiguration.Value.DataServerIdentifier,
                     DataServerName = _permitConfiguration.Value.DataServerName,
                     Userpermit = userPermit,
-                    Version = version
+                    Version = ReadXsdVersion()
                 },
                 Products = [.. productsList]
             };
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
-            ValidateSchema(permitXml, (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\\XmlSchema\\Permit_Schema.xsd"));
+            ValidateSchema(permitXml, xsdPath);
             _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
             if(!string.IsNullOrEmpty(permitXml))
@@ -115,17 +119,15 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private static List<Products> GetProductsList(List<HoldingsServiceResponse> holdings)
+        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings)
         {
-            var issueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz");
-
             var productsList = new List<Products>();
             var products = new Products();
             foreach(var holding in holdings)
             {
-               foreach(var cell in holding.Cells.OrderBy(x=>x.CellCode))
+                foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
                 {
-                    products.Id =string.Format("S-{0}",cell.CellCode.Substring(0, 3));
+                    products.Id = string.Format("S-{0}", cell.CellCode.Substring(0, 3));
 
                     var dataPermit = new ProductsProductDatasetPermit()
                     {
@@ -133,7 +135,7 @@ namespace UKHO.S100PermitService.Common.Services
                         EncryptedKey = "encryptedkey",
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate,
-                        IssueDate = issueDate,
+                        IssueDate = _issueDate,
                     };
                     if(productsList.Where(x => x.Id == products.Id).Any())
                     {
@@ -174,6 +176,19 @@ namespace UKHO.S100PermitService.Common.Services
                 return false;
             }
             return true;
+        }
+
+        private string ReadXsdVersion()
+        {
+            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
+
+            XmlSchema? schema;
+            using(var reader = XmlReader.Create(xsdPath))
+            {
+                schema = XmlSchema.Read(reader, null);
+            }
+
+            return schema.Version ?? null;
         }
     }
 }
