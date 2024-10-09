@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.Common.Validations
     {
         private const int EncryptedHardwareIdLength = 32;
         private const int ReverseChecksumIndex = 6;
-        public static bool IsValidChecksum(string upn)
+        public static bool IsValid(string upn)
         {
             var hwIdEncrypted = upn[..EncryptedHardwareIdLength];
             var checksum = upn[EncryptedHardwareIdLength..^ReverseChecksumIndex];

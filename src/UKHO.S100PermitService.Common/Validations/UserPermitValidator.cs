@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.Common.Validations
                     .DependentRules(() =>
                     {
                         userPermits.RuleFor(userPermit => userPermit.Upn)
-                            .Must(ChecksumValidation.IsValidChecksum).WithMessage("Invalid checksum");
+                            .Must(ChecksumValidation.IsValid).WithMessage("Invalid checksum");
                     });
             });
         }

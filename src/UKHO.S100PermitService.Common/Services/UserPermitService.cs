@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
         {
-            ValidationResult result = _userPermitValidator.Validate(userPermitServiceResponse);
+            var result = _userPermitValidator.Validate(userPermitServiceResponse);
 
             if(result.IsValid)
             {
@@ -92,11 +92,11 @@ namespace UKHO.S100PermitService.Common.Services
             var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
                 .Select(group => new { Errors = string.Join(", ", group.Key) });
 
-            string errorMessage = string.Join(", ", errorMessages
+            var errorMessage = string.Join(", ", errorMessages
                 .Select(group => group.Errors)
                 .Distinct());
 
-            string error = $"Error(s) found for Licence Id: {userPermitServiceResponse.LicenceId}, ";
+            var error = $"Error(s) found for Licence Id: {userPermitServiceResponse.LicenceId}, ";
 
             throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
                 $"{error}{errorMessage}");

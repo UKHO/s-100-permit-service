@@ -126,19 +126,19 @@
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get permit key from Product Key Service started
+        /// 840025 - Get product key from Product Key Service started
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+        GetProductKeysRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get permit key from Product Key Service completed
+        /// 840026 - Get product key from Product Key Service completed
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+        GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get permit key from Product Key Service
+        /// 840027 - Exception occurred while get product key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+        GetProductKeysRequestFailed = 840027,
 
         /// <summary>
         /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
@@ -186,23 +186,48 @@
         HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
 
         /// <summary>
-        /// 840037 - Invalid mKey length or mKey not found in KeyVault
+        /// 840037 - Expected hex string length not found
         /// </summary>
-        InvalidMKey = 840037,
+        HexStringLengthError = 840037,
 
         /// <summary>
-        /// 840038 - Get hardware id from user permit started
+        /// 840038 - Expected hex key length not found
         /// </summary>
-        GetHwIdFromUserPermitStarted = 840038,
+        HexKeyLengthError = 840038,
 
         /// <summary>
-        /// 840039 - Get hardware id from user permit completed
+        /// 840039 - Get decrypted keys from product keys started
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840039,
+        GetDecryptedKeysFromProductKeysStarted = 840039,
 
         /// <summary>
-        /// 840040 - Upn length or checksum validation failed
+        /// 840040 - Get decrypted keys from product keys completed
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840040
+        GetDecryptedKeysFromProductKeysCompleted = 840040,
+
+        /// <summary>
+        /// 840041 - Aes encryption exception
+        /// </summary>
+        AesEncryptionException = 840041,
+
+        /// <summary>
+        /// 840042 - Invalid mKey length or mKey not found in KeyVault
+        /// </summary>
+        InvalidMKey = 840042,
+
+        /// <summary>
+        /// 840043 - Get hardware id from user permit started
+        /// </summary>
+        GetHwIdFromUserPermitStarted = 840043,
+
+        /// <summary>
+        /// 840044 - Get hardware id from user permit completed
+        /// </summary>
+        GetHwIdFromUserPermitCompleted = 840044,
+
+        /// <summary>
+        /// 840045 - Upn length or checksum validation failed
+        /// </summary>
+        UpnLengthOrChecksumValidationFailed = 840045
     }
 }

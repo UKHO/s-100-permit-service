@@ -22,3 +22,4 @@ steps:
       TF_VAR_spoke_rg: $(spokeRG)
       TF_VAR_spoke_vnet_name: $(spokeVnetName)
       TF_VAR_spoke_subnet_name: $(spokeSubnetName)
+      TF_VAR_hardwareid: $(HardwareId)

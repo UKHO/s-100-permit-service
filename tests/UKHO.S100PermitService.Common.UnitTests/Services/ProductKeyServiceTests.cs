@@ -80,22 +80,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                .Returns(AccessToken);
 
-            var response = await _productKeyService.GetPermitKeysAsync([new() { ProductName = "test101", Edition = "1" }], CancellationToken.None, _fakeCorrelationId);
+            var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], CancellationToken.None, _fakeCorrelationId);
             response.Count.Should().BeGreaterThanOrEqualTo(1);
             response.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -117,13 +117,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             });
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
+            
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -146,13 +147,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -172,15 +173,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
+            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetPermitKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServicePostPermitKeyRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>

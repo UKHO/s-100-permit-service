@@ -1,24 +1,27 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
+using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.Encryption
 {
-    [ExcludeFromCodeCoverage]
     public class AesEncryption : IAesEncryption
     {
-        private const int KeySize = 128, BlockSize = 128, IvLength = 16;
+        private const int KeySize = 128, BlockSize = 128, IvLength = 16, HexSize = 32;
 
-        public string Decrypt(string hexString, string keyHexEncoded)
+        public string Decrypt(string hexString, string hexKey)
         {
-            using var aes = CreateAes(keyHexEncoded);
+            if(hexString.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexStringLengthError.ToEventId(), "Expected hex string length {HexSize}, but found {HexString Length}.", HexSize, hexString.Length);
+            }
+
+            if(hexKey.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexKeyLengthError.ToEventId(), "Expected hex key length {HexSize}, but found {HexKey Length}.", HexSize, hexKey.Length);
+            }
+
+            using var aes = CreateAes(hexKey);
             using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
-            return PerformCryptography(hexString, decrypt);
-        }
-
-        public string Encrypt(string hexString, string keyHexEncoded)
-        {
-            using var aes = CreateAes(keyHexEncoded);
-            using var decrypt = aes.CreateEncryptor(aes.Key, aes.IV);
             return PerformCryptography(hexString, decrypt);
         }
 

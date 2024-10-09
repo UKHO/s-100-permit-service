@@ -13,9 +13,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
     [TestFixture]
     public class ProductKeyServiceApiClientTests
     {
+        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
+        
         private ILogger<ProductKeyServiceApiClient> _fakeLogger;
         private IHttpClientFactory _fakeHttpClientFactory;
-        private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         private IProductKeyServiceApiClient? _productKeyServiceApiClient;
 
         [SetUp]
