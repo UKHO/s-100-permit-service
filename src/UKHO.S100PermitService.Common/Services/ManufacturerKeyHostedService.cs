@@ -10,7 +10,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public ManufacturerKeyHostedService(IManufacturerKeyService manufacturerKeyService)
         {
-            _manufacturerKeyService = manufacturerKeyService;
+            _manufacturerKeyService = manufacturerKeyService ?? throw new ArgumentNullException(nameof(manufacturerKeyService));
         }
 
         public Task StartAsync(CancellationToken cancellationToken)

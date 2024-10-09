@@ -27,11 +27,11 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.ManufacturerKeyCachingStart.ToEventId(), "Caching Of Manufacturer Keys started.");
 
             var secretProperties = _secretClient.GetPropertiesOfSecrets();
-
             if(!secretProperties.Any())
             {
                 throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Key Vault");
             }
+
             foreach(var secretProperty in secretProperties)
             {
                 var secretName = secretProperty.Name;
@@ -64,6 +64,7 @@ namespace UKHO.S100PermitService.Common.Services
             var secretValue = _secretClient.GetSecret(secretName);
 
             _cacheProvider.SetCacheKey(secretName, secretValue.Value);
+
             return secretValue;
         }
     }

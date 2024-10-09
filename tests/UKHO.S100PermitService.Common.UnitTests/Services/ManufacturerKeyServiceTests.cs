@@ -46,6 +46,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             var secretKey = "mpn";
             var secretValue = "M_IDmpm";
+
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).Returns(GetSecretProperties(secretKey));
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
@@ -73,6 +74,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void WhenNoSecretsInMemoryCache_ThenThrowException()
         {
             var result = () => _manufacturerKeyService.CacheManufacturerKeys();
+
             result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault");
 
             A.CallTo(() => _fakeSecretClient.GetPropertiesOfSecrets()).MustHaveHappenedOnceExactly();
@@ -84,6 +86,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
 
             var result = () => _manufacturerKeyService.GetManufacturerKeys("pqr");
+
             result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}");
         }
 
