@@ -19,6 +19,7 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API
@@ -33,6 +34,7 @@ namespace UKHO.S100PermitService.API
         private const string ManufacturerKeyVault = "ManufacturerKeyVault";
         private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string AzureAdScheme = "AzureAd";
+        private const string AzureAdConfiguration = "AzureAdConfiguration";
 
         private static void Main(string[] args)
         {
@@ -127,7 +129,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
 
-            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            var azureAdConfiguration = configuration.GetSection(AzureAdConfiguration).Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer(AzureAdScheme, options =>
                    {
@@ -135,18 +137,12 @@ namespace UKHO.S100PermitService.API
                        options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
                    });
 
-            builder.Services.AddAuthorization(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            builder.Services.AddAuthorizationBuilder()
+                .SetDefaultPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AzureAdScheme)
-                .Build();
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
-            });
+                .Build())
+                .AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
 
             var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
@@ -192,6 +188,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
             builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
+            builder.Services.AddScoped<IS100Crypt, S100Crypt>();
+            builder.Services.AddScoped<IAesEncryption, AesEncryption>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

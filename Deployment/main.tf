@@ -64,6 +64,7 @@ module "key_vault" {
     "EventHubLoggingConfiguration--ConnectionString"            = module.eventhub.log_primary_connection_string
     "EventHubLoggingConfiguration--EntityPath"                  = module.eventhub.entity_path
     "ApplicationInsights--ConnectionString"                     = module.app_insights.connection_string
+    "ProductKeyServiceApiConfiguration--HardwareId"             = var.hardwareid
   }
   tags                                                          = local.tags
 }

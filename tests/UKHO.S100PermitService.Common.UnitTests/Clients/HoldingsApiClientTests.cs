@@ -13,11 +13,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
     [TestFixture]
     public class HoldingsApiClientTests
     {
-        private ILogger<HoldingsApiClient> _fakeLogger;
-        private HoldingsApiClient? _holdingsApiClient;
-        private IHttpClientFactory _fakeHttpClientFactory;
+        
         private readonly string _correlationId = Guid.NewGuid().ToString();
         const string FakeUri = "http://test.com";
+
+        private ILogger<HoldingsApiClient> _fakeLogger;
+        private IHttpClientFactory _fakeHttpClientFactory;
+        private IHoldingsApiClient? _holdingsApiClient;
 
         [SetUp]
         public void Setup()

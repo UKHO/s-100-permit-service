@@ -126,19 +126,19 @@
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get permit key from Product Key Service started
+        /// 840025 - Get product key from Product Key Service started
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+        GetProductKeysRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get permit key from Product Key Service completed
+        /// 840026 - Get product key from Product Key Service completed
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+        GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get permit key from Product Key Service
+        /// 840027 - Exception occurred while get product key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+        GetProductKeysRequestFailed = 840027,
 
         /// <summary>
         /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
@@ -183,6 +183,31 @@
         /// <summary>
         /// 840036 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
+
+        /// <summary>
+        /// 840037 - Expected hex string length not found
+        /// </summary>
+        HexStringLengthError = 840037,
+
+        /// <summary>
+        /// 840038 - Expected hex key length not found
+        /// </summary>
+        HexKeyLengthError = 840038,
+
+        /// <summary>
+        /// 840039 - Get decrypted keys from product keys started
+        /// </summary>
+        GetDecryptedKeysFromProductKeysStarted = 840039,
+
+        /// <summary>
+        /// 840040 - Get decrypted keys from product keys completed
+        /// </summary>
+        GetDecryptedKeysFromProductKeysCompleted = 840040,
+
+        /// <summary>
+        /// 840041 - Aes encryption exception
+        /// </summary>
+        AesEncryptionException = 840041
     }
 }
