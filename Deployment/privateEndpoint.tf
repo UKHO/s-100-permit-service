@@ -28,7 +28,7 @@ module "private_endpoint_link" {
     azurerm.spoke   = azurerm.ps
   }
   vnet_link           = local.vnet_link
-  private_connection  = ["local.private_connection"]
+  private_connection  = [local.private_connection]
   zone_group          = local.zone_group 
   pe_identity         = local.pe_identity
   pe_environment      = local.env_name 
