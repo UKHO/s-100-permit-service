@@ -31,4 +31,10 @@
     <PackageReference Include="System.Text.Json" Version="8.0.4" />
     <PackageReference Include="UKHO.Logging.EventHubLogProvider" Version="1.24163.8" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Update="XmlSchema\Permit.xsd">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

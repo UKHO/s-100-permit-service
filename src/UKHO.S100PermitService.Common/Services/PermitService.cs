@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Xml.Schema;
+using System.Xml;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
@@ -8,6 +10,10 @@ using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Validations;
+using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Schema;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -57,15 +63,16 @@ namespace UKHO.S100PermitService.Common.Services
                 return HttpStatusCode.NoContent;
             }
 
-            var productsList = GetProductsList();
+            var productsList = GetProductsList(holdingsServiceResponse);
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
             var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
-
-            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
+            {
+                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermit.Upn, "1.0", productsList); 
+            }
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
@@ -91,6 +98,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
+            //ValidateSchema(permitXml, (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\\XmlSchema\\Permit.xsd"));
             _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
             if(!string.IsNullOrEmpty(permitXml))
@@ -105,26 +113,38 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private static List<Products> GetProductsList()
+        private static List<Products> GetProductsList(List<HoldingsServiceResponse> holdings)
         {
-            var productsList = new List<Products>
-            {
-                new()
-                {
-                    Id = "ID",
-                    DatasetPermit =
-                    [
-                        new() {
-                            IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
-                            EditionNumber = 1,
-                            EncryptedKey = "encryptedkey",
-                            Expiry = DateTime.Now,
-                            Filename = "filename",
+            var issueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz");
 
-                        }
-                    ]
+            var productsList = new List<Products>();
+            var products = new Products();
+            foreach(var holding in holdings)
+            {
+               foreach(var cell in holding.Cells.OrderBy(x=>x.CellCode))
+                {
+                    products.Id =string.Format("S-{0}",cell.CellCode.Substring(0, 3));
+
+                    var dataPermit = new ProductsProductDatasetPermit()
+                    {
+                        EditionNumber = byte.Parse(cell.LatestEditionNumber),
+                        EncryptedKey = "encryptedkey",
+                        Filename = cell.CellCode,
+                        Expiry = holding.ExpiryDate,
+                        IssueDate = issueDate,
+                    };
+                    if(productsList.Where(x => x.Id == products.Id).Any())
+                    {
+                        productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
+                    }
+                    else
+                    {
+                        products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
+                        productsList.Add(products);
+                    }
+                    products = new Products();
                 }
-            };
+            }
             return productsList;
         }
 
@@ -135,5 +155,23 @@ namespace UKHO.S100PermitService.Common.Services
                 ProductName = y.CellCode,
                 Edition = y.LatestEditionNumber
             })).ToList();
+
+        private bool ValidateSchema(string permitXml, string xsdPath)
+        {
+            XmlDocument xml = new XmlDocument();
+            xml.LoadXml(permitXml);
+
+            xml.Schemas.Add(null, xsdPath);
+
+            try
+            {
+                xml.Validate(null);
+            }
+            catch(XmlSchemaValidationException)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 }
