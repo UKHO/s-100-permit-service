@@ -54,6 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 return HttpStatusCode.NoContent;
             }
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
@@ -62,9 +63,6 @@ namespace UKHO.S100PermitService.Common.Services
 
                 return HttpStatusCode.NoContent;
             }
-            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
-
-            var listOfUpnInfo = _userPermitService.MapUserPermitResponse(userPermitServiceResponse);
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
@@ -74,9 +72,9 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productsList = GetProductsList();
 
-            listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(listOfUpnInfo);
+            var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            foreach (var upnInfo in listOfUpnInfo)
+            foreach(var upnInfo in listOfUpnInfo)
             {
                 CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upnInfo.Upn, "1.0", productsList);
             }

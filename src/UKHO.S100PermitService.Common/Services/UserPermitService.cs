@@ -1,5 +1,4 @@
-﻿using FluentValidation.Results;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
@@ -24,8 +23,6 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitValidator _userPermitValidator;
 
         private const string UserPermitUrl = "/userpermits/{0}/s100";
-        private const int MIdLength = 6;
-        private const int EncryptedHardwareIdLength = 32;
 
         public UserPermitService(ILogger<UserPermitService> logger,
                                  IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration,
@@ -100,25 +97,6 @@ namespace UKHO.S100PermitService.Common.Services
 
             throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
                 $"{error}{errorMessage}");
-        }
-
-        public List<UpnInfo> MapUserPermitResponse(UserPermitServiceResponse userPermitServiceResponse)
-        {
-            List<UpnInfo> listOfUpnInfo = [];
-            foreach(var userPermit in userPermitServiceResponse.UserPermits)
-            {
-                var upnInfo = new UpnInfo
-                {
-                    EncryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength],
-                    MId = userPermit.Upn[^MIdLength..],
-                    Crc32 = userPermit.Upn[EncryptedHardwareIdLength..^MIdLength],
-                    Upn = userPermit.Upn,
-                    Title = userPermit.Title
-                };
-                listOfUpnInfo.Add(upnInfo);
-            }
-
-            return listOfUpnInfo;
         }
     }
 }

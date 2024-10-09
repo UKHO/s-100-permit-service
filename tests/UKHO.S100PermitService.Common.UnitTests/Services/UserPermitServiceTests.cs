@@ -220,50 +220,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Error(s) found for Licence Id: 1, Invalid checksum");
         }
 
-        [Test]
-        public void GetUpnInfoList_ShouldReturnCorrectList()
-        {
-            var expectedUpnInfoList = new List<UpnInfo>
-            {
-                new()
-                {
-                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
-                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
-                    MId = "A1B2C3",
-                    Crc32 = "DB74C038"
-                },
-                new()
-                {
-                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
-                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
-                    MId = "D4E5F6",
-                    Crc32 = "C1FDEC8B"
-                },
-                new()
-                {
-                    EncryptedHardwareId = "7B5CED73389DECDB110E6E803F957253",
-                    Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9",
-                    MId = "G7H8I9",
-                    Crc32 = "F0DE13D1"
-                }
-            };
-
-            var response = _userPermitService.MapUserPermitResponse(GeUserPermitServiceResponse());
-
-            response.Equals(true);
-
-            response.Count.Equals(expectedUpnInfoList.Count);
-
-            for(var i = 0 ; i < expectedUpnInfoList.Count ; i++)
-            {
-                response[i].EncryptedHardwareId.Equals(expectedUpnInfoList[i].EncryptedHardwareId);
-                response[i].Crc32.Equals(expectedUpnInfoList[i].Crc32);
-                response[i].MId.Equals(expectedUpnInfoList[i].MId);
-                response[i].Upn.Equals(expectedUpnInfoList[i].Upn);
-                response[i].Title.Equals(expectedUpnInfoList[i].Title);
-            }
-        }
-
         private static UserPermitServiceResponse GeUserPermitServiceResponse()
         {
             return new UserPermitServiceResponse()
