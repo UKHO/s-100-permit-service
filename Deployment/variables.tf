@@ -68,3 +68,7 @@ variable "pe_vnet_name" {
 variable "pe_subnet_name" {
   type = string
 }
+
+variable "pe_rg" {
+  type = string
+}
