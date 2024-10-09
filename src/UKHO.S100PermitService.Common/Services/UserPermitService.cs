@@ -81,22 +81,13 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var result = _userPermitValidator.Validate(userPermitServiceResponse);
 
-            if(result.IsValid)
+            if(!result.IsValid)
             {
-                return;
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+
+                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
+                    "Validation failed for Licence Id: {licenceId} {errorMessage}", userPermitServiceResponse.LicenceId, errorMessage);
             }
-
-            var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
-                .Select(group => new { Errors = string.Join(", ", group.Key) });
-
-            var errorMessage = string.Join(", ", errorMessages
-                .Select(group => group.Errors)
-                .Distinct());
-
-            var error = $"Error(s) found for Licence Id: {userPermitServiceResponse.LicenceId}, ";
-
-            throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
-                $"{error}{errorMessage}");
         }
     }
 }

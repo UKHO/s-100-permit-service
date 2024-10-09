@@ -214,10 +214,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
                 .Returns(new ValidationResult(new[]
                 {
-                    new ValidationFailure("ErrorMessage", "Invalid checksum")
+                    new ValidationFailure("ErrorMessage", "Invalid checksum found for: Aqua Radar")
                 }));
 
-            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Error(s) found for Licence Id: 1, Invalid checksum");
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} {errorMessage}");
         }
 
         private static UserPermitServiceResponse GeUserPermitServiceResponse()

@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             var result = _userPermitValidator.TestValidate(GeUserPermitServiceResponseWithInvalidUpnLength());
 
             result.Errors.Count.Should().Be(2);
-            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid UPN. UPN must be 46 characters long");
+            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid UPN found for: Aqua Radar. UPN must be 46 characters long");
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             var result = _userPermitValidator.TestValidate(GeUserPermitServiceResponseWithInvalidChecksum());
 
             result.Errors.Count.Should().Be(3);
-            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid checksum");
+            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid checksum found for: Aqua Radar");
         }
 
         private static UserPermitServiceResponse GetValidUserPermitServiceResponse()

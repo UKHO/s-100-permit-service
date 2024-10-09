@@ -11,11 +11,11 @@ namespace UKHO.S100PermitService.Common.Validations
             RuleForEach(x => x.UserPermits).ChildRules(userPermits =>
             {
                 userPermits.RuleFor(userPermit => userPermit.Upn).NotNull().Length(46)
-                    .WithMessage("Invalid UPN. UPN must be 46 characters long")
+                    .WithMessage(userPermit => $"Invalid UPN found for: {userPermit.Title}. UPN must be 46 characters long")
                     .DependentRules(() =>
                     {
                         userPermits.RuleFor(userPermit => userPermit.Upn)
-                            .Must(ChecksumValidation.IsValid).WithMessage("Invalid checksum");
+                            .Must(ChecksumValidation.IsValid).WithMessage(userPermit => $"Invalid checksum found for: {userPermit.Title}");
                     });
             });
         }
