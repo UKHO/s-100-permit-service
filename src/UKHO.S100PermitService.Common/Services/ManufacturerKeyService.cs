@@ -22,37 +22,21 @@ namespace UKHO.S100PermitService.Common.Services
             _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
         }
 
-        public void CacheManufacturerKeys()
-        {
-            _logger.LogInformation(EventIds.ManufacturerKeyCachingStart.ToEventId(), "Caching Of Manufacturer Keys started.");
-
-            var secretProperties = _secretClient.GetPropertiesOfSecrets();
-            if(!secretProperties.Any())
-            {
-                throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Key Vault");
-            }
-
-            foreach(var secretProperty in secretProperties)
-            {
-                var secretName = secretProperty.Name;
-                GetSetManufacturerValue(secretName);
-            }
-
-            _logger.LogInformation(EventIds.ManufacturerKeyCachingEnd.ToEventId(), "Caching Of Manufacturer Keys End.");
-        }
-
         public string GetManufacturerKeys(string secretName)
-        {
+        {            
             try
             {
                 var secretValue = _cacheProvider.GetCacheKey(secretName);
                 if(string.IsNullOrEmpty(secretValue))
                 {
-                    var secret = GetSetManufacturerValue(secretName);
-                    return secret.Value;
+                    secretValue = GetSetManufacturerValue(secretName).Value;                    
                 }
+                else
+                {
+                    _logger.LogInformation(EventIds.ManufacturerKeyFoundInCache.ToEventId(), "Manufacturer Key found in Cache | {DateTime}", DateTime.Now.ToUniversalTime());
+                }               
                 return secretValue;
-            }
+            }             
             catch(Exception ex)
             {
                 throw new PermitServiceException(EventIds.ManufacturerIdNotFoundInKeyVault.ToEventId(), "No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}", ex.Message);
@@ -65,6 +49,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _cacheProvider.SetCacheKey(secretName, secretValue.Value);
 
+            _logger.LogInformation(EventIds.AddingNewManufacturerKeyInCache.ToEventId(), "New Manufacturer Key added in Cache | {DateTime}", DateTime.Now.ToUniversalTime());
             return secretValue;
         }
     }

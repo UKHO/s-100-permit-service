@@ -185,9 +185,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddTransient<ISecretClient, KeyVaultSecretClient>();
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
-            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
-
-            builder.Services.AddHostedService<ManufacturerKeyHostedService>();
+            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();            
         }
 
         private static void ConfigureLogging(WebApplication webApplication)
