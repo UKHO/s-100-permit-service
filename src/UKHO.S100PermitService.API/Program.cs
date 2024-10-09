@@ -32,6 +32,7 @@ namespace UKHO.S100PermitService.API
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
         private const string ManufacturerKeyVault = "ManufacturerKeyVault";
         private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
+        private const string PermitConfiguration = "PermitConfiguration";
         private const string AzureAdScheme = "AzureAd";
 
         private static void Main(string[] args)
@@ -126,6 +127,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
             builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
+            builder.Services.Configure<PermitConfiguration>(configuration.GetSection(PermitConfiguration));
 
             var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

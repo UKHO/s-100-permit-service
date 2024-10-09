@@ -11,9 +11,8 @@ using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Validations;
 using System.Reflection;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
+using Microsoft.Extensions.Options;
+using UKHO.S100PermitService.Common.Configuration;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -26,18 +25,21 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
+        private readonly IOptions<PermitConfiguration> _permitConfiguration;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                                 ILogger<PermitService> logger,
                                 IHoldingsService holdingsService,
                                 IUserPermitService userPermitService,
-                                IProductKeyService productKeyService)
+                                IProductKeyService productKeyService,
+                                IOptions<PermitConfiguration> permitConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
+            _permitConfiguration = permitConfiguration ?? throw new ArgumentNullException(nameof(permitConfiguration));
         }
 
         public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken,
@@ -71,7 +73,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
-                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermit.Upn, "1.0", productsList); 
+                CreatePermitXml(DateTimeOffset.Now, userPermit.Upn, "1.0", productsList); 
             }
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
@@ -79,7 +81,7 @@ namespace UKHO.S100PermitService.Common.Services
             return HttpStatusCode.OK;
         }
 
-        private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
+        private void CreatePermitXml(DateTimeOffset issueDate, string userPermit, string version, List<Products> products)
         {
             var productsList = new List<Products>();
             productsList.AddRange(products);
@@ -88,8 +90,8 @@ namespace UKHO.S100PermitService.Common.Services
                 Header = new Header
                 {
                     IssueDate = issueDate.ToString(DateFormat),
-                    DataServerIdentifier = dataServerIdentifier,
-                    DataServerName = dataServerName,
+                    DataServerIdentifier = _permitConfiguration.Value.DataServerIdentifier,
+                    DataServerName = _permitConfiguration.Value.DataServerName,
                     Userpermit = userPermit,
                     Version = version
                 },
@@ -98,7 +100,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
-            //ValidateSchema(permitXml, (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\\XmlSchema\\Permit.xsd"));
+            ValidateSchema(permitXml, (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) + @"\\XmlSchema\\Permit_Schema.xsd"));
             _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
 
             if(!string.IsNullOrEmpty(permitXml))

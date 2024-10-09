@@ -1,9 +1,7 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ============================================================================================= -->
-<!-- XML Schema for S-100 Edition 5.2.0 signature/encryption. 								                     -->
-<!-- ============================================================================================= -->
-
-<!--
+﻿<!--  =============================================================================================  -->
+<!--  XML Schema for S-100 Edition 5.2.0 signature/encryption. 								                      -->
+<!--  =============================================================================================  -->
+<!-- 
 © Copyright 2022-2024 (IHO)
 
 License
@@ -44,15 +42,11 @@ Version 5.1.0 Build 20230327 Namespaces updated; descriptions added for schemeAd
     types and elements; type added for id in productsPermitType
 Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow multiple header/permit pairs (cf. US comments
     on HSSC draft of S-100 Ed. 5.2.0). Namespace updated because this is an incompatible change.
-	-->
-
-<!-- 
-	-->
-<xs:schema targetNamespace="http://www.iho.int/s100/se/5.2" elementFormDefault="qualified" xmlns="http://www.iho.int/s100/se/5.2" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" version="5.2.0-20240415">
-
+	 -->
+<!--  
+	 -->
+<xs:schema xmlns="http://www.iho.int/s100/se/5.2" xmlns:gco="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.iho.int/s100/se/5.2" elementFormDefault="qualified" version="5.2.0-20240415">
   <xs:import namespace="http://standards.iso.org/iso/19115/-3/gco/1.0" schemaLocation="../../../../schemas.isotc211.org/19115/-3/gco/1.0/gco.xsd"/>
-
-
   <xs:complexType name="PermitType">
     <xs:annotation>
       <xs:documentation>The root element of the permit file.</xs:documentation>
@@ -70,7 +64,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
   <xs:complexType name="PermitHeaderType">
     <xs:annotation>
       <xs:documentation>File creation date, the name of the Data Server and the format version</xs:documentation>
@@ -103,7 +96,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
   <xs:complexType name="DatasetPermitType">
     <xs:annotation>
       <xs:documentation>Permit record element (S-100 15-7.4.4).</xs:documentation>
@@ -116,7 +108,7 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
       <xs:element name="editionNumber" type="xs:positiveInteger" minOccurs="0">
         <xs:annotation>
-          <xs:documentation>The edition number of the product file as defined in S100_DatasetDiscoveryMetadata  - editionNumber. For products without an edition number the permit will apply to all issued datasets.</xs:documentation>
+          <xs:documentation>The edition number of the product file as defined in S100_DatasetDiscoveryMetadata - editionNumber. For products without an edition number the permit will apply to all issued datasets.</xs:documentation>
         </xs:annotation>
       </xs:element>
       <xs:element minOccurs="0" name="issueDate" type="xs:date">
@@ -136,7 +128,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
   <xs:complexType name="ProductsPermitType">
     <xs:annotation>
       <xs:documentation>Permits from the Data Server for the specified product</xs:documentation>
@@ -163,38 +154,37 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
   <xs:complexType name="S100_SE_DigitalSignature_PropertyType">
     <xs:annotation>
       <xs:documentation>Property type for S100_SE_DigitalSignature</xs:documentation>
     </xs:annotation>
+    <!--Commented as this is out of scope in permit service work package, it will be added later
     <xs:simpleContent>
       <xs:extension base="S100_SE_DigitalSignature">
         <xs:attribute ref="gco:nilReason"/>
       </xs:extension>
     </xs:simpleContent>
+    -->
   </xs:complexType>
-
   <xs:complexType name="S100_SE_DigitalSignatureReference_PropertyType">
     <xs:annotation>
       <xs:documentation>Property type for S100_SE_DigitalSignatureReference</xs:documentation>
     </xs:annotation>
-    <xs:simpleContent>
+    <!--Commented as this is out of scope in permit service work package, it will be added later
+	<xs:simpleContent>
       <xs:extension base="S100_SE_DigitalSignatureReference">
         <xs:attribute ref="gco:nilReason"/>
       </xs:extension>
     </xs:simpleContent>
+    -->
   </xs:complexType>
-
   <xs:element name="Permit" type="PermitType">
     <xs:annotation>
       <xs:documentation>The root element of the permit file.</xs:documentation>
     </xs:annotation>
   </xs:element>
-
-
-  <!-- CERTIFICATE TYPES -->
-  <!-- A SINGLE CERTIFICATE -->
+  <!--  CERTIFICATE TYPES  -->
+  <!--  A SINGLE CERTIFICATE  -->
   <xs:complexType name="S100_SE_CertificateType">
     <xs:annotation>
       <xs:documentation>for embedding in files that contains signatures e.g exchange set catalogues or standalone signature file.</xs:documentation>
@@ -214,8 +204,7 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-
-  <!-- A CONTAINER FOR CERTIFICATES -->
+  <!--  A CONTAINER FOR CERTIFICATES  -->
   <xs:complexType name="S100_SE_CertificateContainerType">
     <xs:annotation>
       <xs:documentation>A set of signed public key certificates</xs:documentation>
@@ -240,18 +229,11 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
-  <!-- SIGNATURE TYPES -->
-  <!-- TYPE FOR A SINGLE SIGNATURE -->
+  <!--  SIGNATURE TYPES  -->
+  <!--  TYPE FOR A SINGLE SIGNATURE  -->
   <xs:complexType name="S100_SE_DigitalSignature">
     <xs:annotation>
-      <xs:documentation>
-        Type contains the signature value, an identifier and a reference to the certificate that contains the public key.
-        The value is an base64 encoded ASN.1
-        Dss-Sig-Value  ::=  SEQUENCE  {
-        r       INTEGER,
-        s       INTEGER  }
-      </xs:documentation>
+      <xs:documentation> Type contains the signature value, an identifier and a reference to the certificate that contains the public key. The value is an base64 encoded ASN.1 Dss-Sig-Value ::= SEQUENCE { r INTEGER, s INTEGER } </xs:documentation>
     </xs:annotation>
     <xs:simpleContent>
       <xs:extension base="xs:base64Binary">
@@ -268,7 +250,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-
   <xs:complexType name="StandaloneDigitalSignature">
     <xs:annotation>
       <xs:documentation>A single digital signature</xs:documentation>
@@ -291,26 +272,24 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:sequence>
   </xs:complexType>
-
   <xs:element name="StandaloneDigitalSignature" type="StandaloneDigitalSignature">
     <xs:annotation>
       <xs:documentation>The root elements for CATALOG.SIGN or PERMIT.SIGN</xs:documentation>
     </xs:annotation>
-    <xs:key name="CertificateKey" xmlns:se="http://www.iho.int/s100/se/5.1">
+    <xs:key xmlns:se="http://www.iho.int/s100/se/5.1" name="CertificateKey">
       <xs:selector xpath="se:certificates/se:certificate | se:certificates/se:schemeAdministrator"/>
       <xs:field xpath="@id"/>
     </xs:key>
-    <xs:keyref name="CertificateKeyref" refer="CertificateKey" xmlns:se="http://www.iho.int/s100/se/5.1">
+    <xs:keyref xmlns:se="http://www.iho.int/s100/se/5.1" name="CertificateKeyref" refer="CertificateKey">
       <xs:selector xpath="se:certificates/se:certificate"/>
       <xs:field xpath="@issuer"/>
     </xs:keyref>
-    <xs:keyref name="SignatureKeyref" refer="CertificateKey" xmlns:se="http://www.iho.int/s100/se/5.1">
+    <xs:keyref xmlns:se="http://www.iho.int/s100/se/5.1" name="SignatureKeyref" refer="CertificateKey">
       <xs:selector xpath="se:digitalSignature"/>
       <xs:field xpath="@certificateRef"/>
     </xs:keyref>
   </xs:element>
-
-  <!-- EXTENSION FOR SIGNATURES ON SIGNATURES -->
+  <!--  EXTENSION FOR SIGNATURES ON SIGNATURES  -->
   <xs:complexType name="S100_SE_SignatureOnSignature">
     <xs:annotation>
       <xs:documentation/>
@@ -325,7 +304,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-
   <xs:simpleType name="DataStatus">
     <xs:annotation>
       <xs:documentation>The state of data when a digital signature is created</xs:documentation>
@@ -348,7 +326,6 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-
   <xs:simpleType name="S100_SE_DigitalSignatureReference">
     <xs:annotation>
       <xs:documentation>A reference to a cryptographic algorithm used in an implementation of Part 15</xs:documentation>
@@ -417,13 +394,11 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
-
-  <!-- Elements for use in digitalSignatureValue in exchange set metadata -->
+  <!--  Elements for use in digitalSignatureValue in exchange set metadata  -->
   <xs:element name="S100_SE_DigitalSignature" type="S100_SE_DigitalSignature"/>
   <xs:element name="S100_SE_SignatureOnSignature" type="S100_SE_SignatureOnSignature" substitutionGroup="S100_SE_DigitalSignature"/>
   <xs:element name="S100_SE_SignatureOnData" type="S100_SE_SignatureOnData" substitutionGroup="S100_SE_DigitalSignature"/>
-
-  <!-- EXTENSION FOR SIGNATURES ON OTHER FORMS OF THE FILE (USUALLY UNENCRYPTED VERSION) -->
+  <!--  EXTENSION FOR SIGNATURES ON OTHER FORMS OF THE FILE (USUALLY UNENCRYPTED VERSION)  -->
   <xs:complexType name="S100_SE_SignatureOnData">
     <xs:annotation>
       <xs:documentation/>
@@ -438,8 +413,7 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
-
-  <!-- TYPE FOR ADDITIONAL SIGNATURES -->
+  <!--  TYPE FOR ADDITIONAL SIGNATURES  -->
   <xs:complexType name="S100_SE_AdditionalSignature">
     <xs:annotation>
       <xs:documentation>Elements of this type can be used within the dataset discovery metadata elements of an exchanges set catalogue.</xs:documentation>
@@ -457,5 +431,4 @@ Version 5.2.0 Build 20240415 Complex type PermitType structure updated to allow 
       </xs:element>
     </xs:choice>
   </xs:complexType>
-
 </xs:schema>
