@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ILogger<ManufacturerKeyService> _fakeLogger;
         private ICacheProvider _fakeCacheProvider;
         private ISecretClient _fakeSecretClient;
-        private ManufacturerKeyService _manufacturerKeyService;
+        private IManufacturerKeyService _manufacturerKeyService;
 
         [SetUp]
         public void Setup()
