@@ -27,6 +27,10 @@ namespace UKHO.S100PermitService.API.Middleware
             {
                 await HandleExceptionAsync(httpContext, permitServiceException, permitServiceException.EventId, permitServiceException.Message, permitServiceException.MessageArguments);
             }
+            catch(AesEncryptionException aesEncryptionException)
+            {
+                await HandleExceptionAsync(httpContext, aesEncryptionException, aesEncryptionException.EventId, aesEncryptionException.Message, aesEncryptionException.MessageArguments);
+            }
             catch(Exception exception)
             {
                 await HandleExceptionAsync(httpContext, exception, EventIds.UnhandledException.ToEventId(), exception.Message);

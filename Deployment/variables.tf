@@ -46,3 +46,7 @@ variable "spoke_vnet_name" {
 variable "spoke_subnet_name" {
   type = string
 }
+
+variable "hardwareid" {
+  type = string
+}

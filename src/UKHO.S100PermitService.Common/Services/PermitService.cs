@@ -1,6 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
@@ -20,22 +23,27 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
+        private readonly IS100Crypt _s100Crypt;
+        private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
-                                ILogger<PermitService> logger,
-                                IHoldingsService holdingsService,
-                                IUserPermitService userPermitService,
-                                IProductKeyService productKeyService)
+                             ILogger<PermitService> logger,
+                             IHoldingsService holdingsService,
+                             IUserPermitService userPermitService,
+                             IProductKeyService productKeyService,
+                             IS100Crypt s100Crypt,
+                             IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
+            _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
+            _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
         }
 
-        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken,
-            string correlationId)
+        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
@@ -57,15 +65,18 @@ namespace UKHO.S100PermitService.Common.Services
                 return HttpStatusCode.NoContent;
             }
 
-            var productsList = GetProductsList();
-
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
-            var pksResponseData = await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
+            var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            const string Upn = "ABCDEFGHIJKLMNOPQRSTUVYXYZ";
+            var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", Upn, "1.0", productsList);
+            var productsList = GetProductsList();
+
+            foreach(var userPermits in userPermitServiceResponse.UserPermits)
+            {
+                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
+            };
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
