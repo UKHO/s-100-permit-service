@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).Returns(true);
+            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored));
 
             A.CallTo(() => _fakeUserPermitService.MapUserPermitResponse(A<UserPermitServiceResponse>.Ignored)).Returns(GetUpnInfo());
 
@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).Returns(true);
+            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored));
 
             A.CallTo(() => _fakeUserPermitService.MapUserPermitResponse(A<UserPermitServiceResponse>.Ignored)).Returns(GetUpnInfo());
 

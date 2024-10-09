@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using FluentValidation.Results;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
 using System.Text.Json;
@@ -79,25 +80,26 @@ namespace UKHO.S100PermitService.Common.Services
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
-        public bool ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
+        public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
         {
-            var result = _userPermitValidator.Validate(userPermitServiceResponse);
+            ValidationResult result = _userPermitValidator.Validate(userPermitServiceResponse);
+
             if(result.IsValid)
             {
-                return true;
+                return;
             }
 
             var errorMessages = result.Errors.GroupBy(item => item.ErrorMessage)
-                .Select(group => new
-                {
-                    Errors = string.Join(", ", group.Key)
-                });
+                .Select(group => new { Errors = string.Join(", ", group.Key) });
 
-            var errorMessage = string.Join(", ", errorMessages
+            string errorMessage = string.Join(", ", errorMessages
                 .Select(group => group.Errors)
                 .Distinct());
 
-            throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(), errorMessage);
+            string error = $"Error(s) found for Licence Id: {userPermitServiceResponse.LicenceId}, ";
+
+            throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
+                $"{error}{errorMessage}");
         }
 
         public List<UpnInfo> MapUserPermitResponse(UserPermitServiceResponse userPermitServiceResponse)

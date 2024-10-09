@@ -212,16 +212,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenValidUpns_ThenReturnsTrue()
-        {
-            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored)).Returns(new ValidationResult());
-
-            var response = _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse());
-
-            response.Equals(true);
-        }
-
-        [Test]
         public void WhenUpnOrChecksumValidationFails_ThenThrowPermitServiceException()
         {
             A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
@@ -230,7 +220,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     new ValidationFailure("ErrorMessage", "Invalid checksum")
                 }));
 
-            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Invalid checksum");
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Error(s) found for Licence Id: 1, Invalid checksum");
         }
 
         [Test]

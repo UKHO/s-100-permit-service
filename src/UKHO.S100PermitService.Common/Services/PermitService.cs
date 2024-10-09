@@ -61,32 +61,28 @@ namespace UKHO.S100PermitService.Common.Services
                 return HttpStatusCode.NoContent;
             }
 
-            var isValid = _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
-            if(isValid)
+            var listOfUpnInfo = _userPermitService.MapUserPermitResponse(userPermitServiceResponse);
+
+            var productsList = GetProductsList();
+
+            var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
+
+            var pksResponseData =
+                await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken,
+                    correlationId);
+
+            listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(listOfUpnInfo);
+
+            foreach(var upnInfo in listOfUpnInfo)
             {
-                var listOfUpnInfo = _userPermitService.MapUserPermitResponse(userPermitServiceResponse);
-
-                var productsList = GetProductsList();
-
-                var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
-
-                var pksResponseData =
-                    await _productKeyService.GetPermitKeysAsync(productKeyServiceRequest, cancellationToken,
-                        correlationId);
-
-                listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(listOfUpnInfo);
-
-                foreach(var upnInfo in listOfUpnInfo)
-                {
-                    CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upnInfo.Upn, "1.0", productsList);
-                }
-
-                _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
-
-                return HttpStatusCode.OK;
+                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upnInfo.Upn, "1.0", productsList);
             }
-            return HttpStatusCode.InternalServerError;
+
+            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+
+            return HttpStatusCode.OK;
         }
 
         private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
