@@ -48,16 +48,15 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
-
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
 
                 return HttpStatusCode.NoContent;
             }
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
@@ -73,10 +72,12 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productsList = GetProductsList();
 
-            foreach(var userPermits in userPermitServiceResponse.UserPermits)
+            var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
+
+            foreach(var upnInfo in listOfUpnInfo)
             {
-                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
-            };
+                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", upnInfo.Upn, "1.0", productsList);
+            }
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
