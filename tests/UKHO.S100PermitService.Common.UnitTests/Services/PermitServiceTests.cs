@@ -1,7 +1,10 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Net;
+using System.Reflection;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
@@ -20,6 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IHoldingsService _fakeHoldingsService;
         private IUserPermitService _fakeUserPermitService;
         private IProductKeyService _fakeProductKeyService;
+        private IOptions<PermitConfiguration> _fakePermitConfiguration;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string NoContent = "noContent";
         const string OkResponse = "okResponse";
@@ -34,37 +38,43 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeHoldingsService = A.Fake<IHoldingsService>();
             _fakeUserPermitService = A.Fake<IUserPermitService>();
             _fakeProductKeyService = A.Fake<IProductKeyService>();
+            _fakePermitConfiguration = A.Fake<IOptions<PermitConfiguration>>();
 
-            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService);
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakePermitConfiguration);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakePermitConfiguration);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakePermitConfiguration);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullHoldingsService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeUserPermitService, _fakeProductKeyService);
+            Action nullHoldingsService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeUserPermitService, _fakeProductKeyService, _fakePermitConfiguration);
             nullHoldingsService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsService");
 
-            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, null, _fakeProductKeyService);
+            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, null, _fakeProductKeyService, _fakePermitConfiguration);
             nullUserPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitService");
 
-            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, null);
+            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, null, _fakePermitConfiguration);
             nullProductKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyService");
+
+            Action nullPermitConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, null);
+            nullPermitConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitConfiguration");
         }
 
         [Test]
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
+            var fakePermit = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<Permit xmlns:S100SE=\"http://www.iho.int/s100/se/5.1\" xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\" xmlns=\"http://www.iho.int/s100/se/5.0\">\r\n  <S100SE:header>\r\n    <S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate>\r\n    <S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName>\r\n    <S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier>\r\n    <S100SE:version>1</S100SE:version>\r\n    <S100SE:userpermit>fakeUserPermit</S100SE:userpermit>\r\n  </S100SE:header>\r\n  <S100SE:products>\r\n    <S100SE:product id=\"fakeID\">\r\n      <S100SE:datasetPermit>\r\n        <S100SE:filename>fakefilename</S100SE:filename>\r\n        <S100SE:editionNumber>1</S100SE:editionNumber>\r\n       <S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey>\r\n      </S100SE:datasetPermit>\r\n    </S100SE:product>\r\n  </S100SE:products>\r\n</Permit>";
+
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
-            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns("fakepermit");
+            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns(fakePermit);
             A.CallTo(() => _fakeProductKeyService.GetPermitKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                             .Returns([new ProductKeyServiceResponse { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
@@ -149,13 +159,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
            && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStart.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization started"
-           ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.XmlSerializationEnd.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml serialization completed"
            ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>

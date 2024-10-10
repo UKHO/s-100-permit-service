@@ -104,13 +104,19 @@ namespace UKHO.S100PermitService.Common.Services
 
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
-            ValidateSchema(permitXml, xsdPath);
-            _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
-
             if(!string.IsNullOrEmpty(permitXml))
             {
-                _permitReaderWriter.WritePermit(permitXml);
-                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
+                _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
+
+                if(ValidateSchema(permitXml, xsdPath))
+                {
+                    _permitReaderWriter.WritePermit(permitXml);
+                    _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
+                }
+                else
+                {
+                    _logger.LogError(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid xml schema is received");
+                }
             }
             else
             {
@@ -135,7 +141,6 @@ namespace UKHO.S100PermitService.Common.Services
                         EncryptedKey = "encryptedkey",
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate,
-                        IssueDate = _issueDate,
                     };
                     if(productsList.Where(x => x.Id == products.Id).Any())
                     {
@@ -160,22 +165,30 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
-        private bool ValidateSchema(string permitXml, string xsdPath)
+        public bool ValidateSchema(string permitXml, string xsdPath)
         {
-            XmlDocument xml = new XmlDocument();
+            var xml = new XmlDocument();
             xml.LoadXml(permitXml);
 
-            xml.Schemas.Add(null, xsdPath);
+            var xmlSchemaSet = new XmlSchemaSet();
+            xmlSchemaSet.Add(null, xsdPath);
 
+            xml.Schemas = xmlSchemaSet;
+
+            var ValidXml = true;
             try
             {
-                xml.Validate(null);
+                xml.Validate((sender,e) =>
+                {
+                    ValidXml = false;
+                });
             }
             catch(XmlSchemaValidationException)
             {
-                return false;
+                ValidXml = false;
+                return ValidXml;
             }
-            return true;
+            return ValidXml;
         }
 
         private string ReadXsdVersion()

@@ -183,6 +183,11 @@
         /// <summary>
         /// 840036 - Request to Holdings service GetHoldings completed with no content
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036
+        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
+
+        /// <summary>
+        /// 840037 - Invalid Permit Xml Schema is recieved
+        /// </summary>
+        InvalidPermitXmlSchema = 840037
     }
 }
