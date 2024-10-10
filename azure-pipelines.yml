@@ -432,8 +432,6 @@ stages:
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-          - name : ManufacturerKeyVault.ServiceUri
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceMidUri'] ]
         workspace:
           clean: all
         strategy:
@@ -517,8 +515,6 @@ stages:
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-          - name : ManufacturerKeyVault.ServiceUri
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceMidUri'] ]
         workspace:
           clean: all
         strategy:
@@ -574,8 +570,6 @@ stages:
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-          - name : ManufacturerKeyVault.ServiceUri
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceMidUri'] ]
         workspace:
           clean: all
         strategy:
@@ -631,8 +625,6 @@ stages:
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
           - name : KeyVaultSettings.ServiceUri
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-          - name : ManufacturerKeyVault.ServiceUri
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceMidUri'] ]
         workspace:
           clean: all
         strategy:
