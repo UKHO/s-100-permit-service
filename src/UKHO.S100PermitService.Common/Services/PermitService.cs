@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
         }
 
-        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode, MemoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
 
-                return HttpStatusCode.NoContent;
+                return (HttpStatusCode.NoContent, new MemoryStream());
             }
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
 
-                return HttpStatusCode.NoContent;
+                return (HttpStatusCode.NoContent, new MemoryStream());
             }
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
@@ -71,48 +71,44 @@ namespace UKHO.S100PermitService.Common.Services
 
             var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var productsList = GetProductsList();
+            var productsList = new List<Products>();
+            productsList.AddRange(GetProductsList());
+
+            var permits = new List<Permit>();
 
             foreach(var userPermits in userPermitServiceResponse.UserPermits)
             {
-                CreatePermitXml(DateTimeOffset.Now, "AB", "ABC", userPermits.Upn, "1.0", productsList);
+                permits.Add(new Permit
+                {
+                    Header = new Header
+                    {
+                        IssueDate = DateTimeOffset.Now.ToString(DateFormat),
+                        DataServerIdentifier = "GB00",
+                        DataServerName = "UK Hydrographic Office",
+                        Userpermit = userPermits.Upn,
+                        Version = "1.0",
+                    },
+                    Products = [.. productsList],
+                    Title = userPermits.Title,
+                });
             };
+
+            var permitDetails = CreatePermits(permits);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
-            return HttpStatusCode.OK;
+            return (HttpStatusCode.OK, permitDetails);
         }
 
-        private void CreatePermitXml(DateTimeOffset issueDate, string dataServerIdentifier, string dataServerName, string userPermit, string version, List<Products> products)
+        private MemoryStream CreatePermits(List<Permit> permits)
         {
-            var productsList = new List<Products>();
-            productsList.AddRange(products);
-            var permit = new Permit
-            {
-                Header = new Header
-                {
-                    IssueDate = issueDate.ToString(DateFormat),
-                    DataServerIdentifier = dataServerIdentifier,
-                    DataServerName = dataServerName,
-                    Userpermit = userPermit,
-                    Version = version
-                },
-                Products = [.. productsList]
-            };
+            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation started");
+           
+            var permitXml = _permitReaderWriter.CreatePermits(permits);
+            
+            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
 
-            _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
-            var permitXml = _permitReaderWriter.ReadPermit(permit);
-            _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
-
-            if(!string.IsNullOrEmpty(permitXml))
-            {
-                _permitReaderWriter.WritePermit(permitXml);
-                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
-            }
-            else
-            {
-                _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
-            }
+            return permitXml;
         }
 
         [ExcludeFromCodeCoverage]
@@ -122,7 +118,21 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 new()
                 {
-                    Id = "ID",
+                    Id = "ID1",
+                    DatasetPermit =
+                    [
+                        new() {
+                            IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
+                            EditionNumber = 1,
+                            EncryptedKey = "encryptedkey",
+                            Expiry = DateTime.Now,
+                            Filename = "filename",
+
+                        }
+                    ]
+                },new()
+                {
+                    Id = "ID2",
                     DatasetPermit =
                     [
                         new() {

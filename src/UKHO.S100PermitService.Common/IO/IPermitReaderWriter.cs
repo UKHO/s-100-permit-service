@@ -4,7 +4,6 @@ namespace UKHO.S100PermitService.Common.IO
 {
     public interface IPermitReaderWriter
     {
-        public string ReadPermit(Permit permit);
-        public void WritePermit(string fileContent);
+        public MemoryStream CreatePermits(List<Permit> permits);
     }
 }

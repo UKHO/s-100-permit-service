@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Xml.Serialization;
 
 namespace UKHO.S100PermitService.Common.Models.Permits
 {
@@ -7,14 +8,14 @@ namespace UKHO.S100PermitService.Common.Models.Permits
     [ExcludeFromCodeCoverage]
     [Serializable()]
     [System.ComponentModel.DesignerCategory("code")]
-    [System.Xml.Serialization.XmlType(AnonymousType = true, Namespace = "http://www.iho.int/s100/se/5.0")]
-    [System.Xml.Serialization.XmlRoot(Namespace = "http://www.iho.int/s100/se/5.0", IsNullable = false)]
+    [XmlType(AnonymousType = true, Namespace = "http://www.iho.int/s100/se/5.0")]
+    [XmlRoot(Namespace = "http://www.iho.int/s100/se/5.0", IsNullable = false)]
     public partial class Permit
     {
         private Header _headerField;
         private Products[] _productsField;
 
-        [System.Xml.Serialization.XmlElement("S100SE:header")]
+        [XmlElement("S100SE:header")]
         public Header Header
         {
             get
@@ -27,8 +28,8 @@ namespace UKHO.S100PermitService.Common.Models.Permits
             }
         }
 
-        [System.Xml.Serialization.XmlArray("S100SE:products")]
-        [System.Xml.Serialization.XmlArrayItem("S100SE:product", IsNullable = false)]
+        [XmlArray("S100SE:products")]
+        [XmlArrayItem("S100SE:product", IsNullable = false)]
         public Products[] Products
         {
             get
@@ -40,5 +41,8 @@ namespace UKHO.S100PermitService.Common.Models.Permits
                 _productsField = value;
             }
         }
+
+        [XmlIgnore]
+        public string Title { get; set; }
     }
 }
