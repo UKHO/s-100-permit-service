@@ -218,12 +218,12 @@
         /// <summary>
         /// 840043 - Get hardware id from user permit started
         /// </summary>
-        GetHwIdFromUserPermitStarted = 840043,
+        GetDecryptedHardwareIdFromUserPermitStarted = 840043,
 
         /// <summary>
         /// 840044 - Get hardware id from user permit completed
         /// </summary>
-        GetHwIdFromUserPermitCompleted = 840044,
+        GetDecryptedHardwareIdFromUserPermitCompleted = 840044,
 
         /// <summary>
         /// 840045 - Upn length or checksum validation failed

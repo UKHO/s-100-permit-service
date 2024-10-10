@@ -5,6 +5,6 @@ namespace UKHO.S100PermitService.Common.Validations
 {
     public interface IUserPermitValidator
     {
-        ValidationResult Validate(UserPermitServiceResponse userPermits);
+        ValidationResult Validate(UserPermitServiceResponse userPermitServiceResponse);
     }
 }

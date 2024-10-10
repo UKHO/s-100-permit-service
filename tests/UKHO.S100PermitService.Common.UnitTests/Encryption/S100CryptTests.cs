@@ -75,6 +75,36 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             ).MustHaveHappenedOnceExactly();
         }
 
+        [Test]
+        public void WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
+        {
+            const string FakeDecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB";
+            const string FakeMKey = "validMKey12345678901234567890123";
+
+            A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
+
+            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
+
+            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponse());
+
+            result.Equals(GetUpnInfo());
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedHardwareIdFromUserPermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+
+                call.Method.Name == "Log"
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                    && call.GetArgument<EventId>(1) == EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
+                ).MustHaveHappenedOnceExactly();
+        }
+
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()
         {
             return
@@ -94,37 +124,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             ];
         }
 
-        [Test]
-        public void WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
-        {
-            const string FakeDecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB";
-
-            const string FakeMKey = "validMKey12345678901234567890123";
-
-            A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
-
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
-
-            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GeUserPermitServiceResponse());
-
-            result.Equals(GetUpnInfo());
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-
-                call.Method.Name == "Log"
-                    && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                    && call.GetArgument<EventId>(1) == EventIds.GetHwIdFromUserPermitCompleted.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
-                ).MustHaveHappenedOnceExactly();
-        }
-
         private static List<UpnInfo> GetUpnInfo()
         {
             return
@@ -142,7 +141,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             ];
         }
 
-        private static UserPermitServiceResponse GeUserPermitServiceResponse()
+        private static UserPermitServiceResponse GetUserPermitServiceResponse()
         {
             return new UserPermitServiceResponse()
             {
