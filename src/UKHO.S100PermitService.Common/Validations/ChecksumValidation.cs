@@ -1,14 +1,13 @@
 ﻿using ICSharpCode.SharpZipLib.Checksum;
-using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace UKHO.S100PermitService.Common.Validations
 {
-    [ExcludeFromCodeCoverage]
     public static class ChecksumValidation
     {
         private const int EncryptedHardwareIdLength = 32;
         private const int ReverseChecksumIndex = 6;
+
         public static bool IsValid(string upn)
         {
             var hwIdEncrypted = upn[..EncryptedHardwareIdLength];
