@@ -12,7 +12,6 @@ using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {
@@ -96,6 +95,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Should().Be(HttpStatusCode.OK);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
+
+            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
