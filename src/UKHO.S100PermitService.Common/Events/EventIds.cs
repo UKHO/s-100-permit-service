@@ -146,14 +146,14 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Caching of Manufacturer Key started.
+        /// 840029 -  Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyCachingStart = 840029,
+        ManufacturerKeyFoundInCache = 840029,
 
         /// <summary>
-        /// 840030 - Caching of Manufacturer Key end.
+        /// 840030 - New Manufacturer Key is added in Cache.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030,
+        AddingNewManufacturerKeyInCache = 840030,
 
         /// <summary>
         /// 840031 - Access token is empty or null

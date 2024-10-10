@@ -4,11 +4,11 @@ using System.Diagnostics.CodeAnalysis;
 namespace UKHO.S100PermitService.Common.Providers
 {
     [ExcludeFromCodeCoverage]
-    public class CacheProvider : ICacheProvider
+    public class MemoryCacheProvider : ICacheProvider
     {
         private readonly IMemoryCache _memoryCache;
 
-        public CacheProvider(IMemoryCache memoryCache)
+        public MemoryCacheProvider(IMemoryCache memoryCache)
         {
             _memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
         }
@@ -19,9 +19,9 @@ namespace UKHO.S100PermitService.Common.Providers
             return Value;
         }
 
-        public void SetCacheKey(string key, string value, TimeSpan timeSpan)
+        public void SetCacheKey(string key, string value)
         {            
-            _memoryCache.Set(key, value, timeSpan);
-        } 
+            _memoryCache.Set(key, value);
+        }
     }
 }
