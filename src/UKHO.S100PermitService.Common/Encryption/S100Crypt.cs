@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             return productKeys;
         }
 
-        public List<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse)
+        public IEnumerable<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse)
         {
             _logger.LogInformation(EventIds.GetHwIdFromUserPermitStarted.ToEventId(), "Get decrypted hardware id from user permits started");
 
@@ -54,15 +54,12 @@ namespace UKHO.S100PermitService.Common.Encryption
             {
                 var upnInfo = new UpnInfo
                 {
-                    EncryptedHardwareId = userPermit.Upn[..EncryptedHardwareIdLength], 
-                    MId = userPermit.Upn[^MIdLength..],
-                    Crc32 = userPermit.Upn[EncryptedHardwareIdLength..^MIdLength],
                     Upn = userPermit.Upn,
                     Title = userPermit.Title
                 };
 
-                var mKey = _manufacturerKeyService.GetManufacturerKeys(upnInfo.MId);
-                upnInfo.HardwareId = _aesEncryption.Decrypt(upnInfo.EncryptedHardwareId, mKey);
+                var mKey = _manufacturerKeyService.GetManufacturerKeys(userPermit.Upn[^MIdLength..]);
+                upnInfo.DecryptedHardwareId = _aesEncryption.Decrypt(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
 
                 listOfUpnInfo.Add(upnInfo);
             }

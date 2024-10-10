@@ -93,24 +93,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 }
             ];
         }
-        private List<ProductKeyServiceResponse> GetInvalidProductKeyServiceResponse()
-        {
-            return
-            [
-                new()
-                {
-                    Edition = "1",
-                    Key = "0123456",
-                    ProductName = "test101"
-                },
-                new()
-                {
-                    Edition = "1",
-                    Key = "67891011",
-                    ProductName = "test102"
-                }
-            ];
-        }
 
         [Test]
         public void WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
@@ -149,40 +131,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             [
                 new UpnInfo()
                 {
-                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
-                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
-                    MId = "A1B2C3",
-                    Crc32 = "DB74C038"
+                    DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
                 },
                 new UpnInfo()
                 {
-                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
-                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
-                    MId = "D4E5F6",
-                    Crc32 = "C1FDEC8B"
-                }
-            ];
-        }
-
-        private static List<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
-        {
-            return
-            [
-                new UpnInfo()
-                {
-                    HardwareId = "86C520323CEA3056B5ED7000F98814CB",
-                    EncryptedHardwareId = "FE5A853DEF9E83C9FFEF5AA001478103",
-                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
-                    MId = "A1B2C3",
-                    Crc32 = "DB74C038"
-                },
-                new UpnInfo()
-                {
-                    HardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
-                    EncryptedHardwareId = "869D4E0E902FA2E1B934A3685E5D0E85",
-                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6",
-                    MId = "D4E5F6",
-                    Crc32 = "C1FDEC8B"
+                    DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                 }
             ];
         }
