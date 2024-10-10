@@ -146,14 +146,14 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Caching of Manufacturer Key started.
+        /// 840029 -  Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyCachingStart = 840029,
+        ManufacturerKeyFoundInCache = 840029,
 
         /// <summary>
-        /// 840030 - Caching of Manufacturer Key end.
+        /// 840030 - New Manufacturer Key is added in Cache.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030,
+        AddingNewManufacturerKeyInCache = 840030,
 
         /// <summary>
         /// 840031 - Access token is empty or null
@@ -211,23 +211,18 @@
         AesEncryptionException = 840041,
 
         /// <summary>
-        /// 840042 - Invalid mKey length or mKey not found in KeyVault
+        /// 840042 - Get decrypted hardware id from user permit started
         /// </summary>
-        InvalidMKey = 840042,
+        GetDecryptedHardwareIdFromUserPermitStarted = 840042,
 
         /// <summary>
-        /// 840043 - Get hardware id from user permit started
+        /// 840043 - Get decrypted hardware id from user permit completed
         /// </summary>
-        GetDecryptedHardwareIdFromUserPermitStarted = 840043,
+        GetDecryptedHardwareIdFromUserPermitCompleted = 840043,
 
         /// <summary>
-        /// 840044 - Get hardware id from user permit completed
+        /// 840044 - Upn length or checksum validation failed
         /// </summary>
-        GetDecryptedHardwareIdFromUserPermitCompleted = 840044,
-
-        /// <summary>
-        /// 840045 - Upn length or checksum validation failed
-        /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840045
+        UpnLengthOrChecksumValidationFailed = 840044
     }
 }
