@@ -342,11 +342,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             [
                 new UpnInfo()
                 {
+                    Title = "FakeTitle1",
                     DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
                     Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
                 },
                 new UpnInfo()
                 {
+                    Title = "FakeTitle2",
                     DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
                     Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                 }

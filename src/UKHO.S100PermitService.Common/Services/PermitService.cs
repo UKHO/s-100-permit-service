@@ -33,6 +33,8 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
+        private Dictionary<string,Permit> _permitDictionary = new Dictionary<string, Permit>();
+
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
                              IHoldingsService holdingsService,
@@ -76,7 +78,6 @@ namespace UKHO.S100PermitService.Common.Services
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsServiceResponse);
 
             var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
-            var productsList = GetProductsList(holdingsServiceResponse);
 
             var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
@@ -84,7 +85,9 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var upnInfo in listOfUpnInfo)
             {
-                CreatePermitXml(upnInfo.Upn, productsList);
+                var productsList = GetProductsList(holdingsServiceResponse);
+
+                CreatePermitXml(upnInfo.Upn, upnInfo.Title, productsList);
             }
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
@@ -92,7 +95,7 @@ namespace UKHO.S100PermitService.Common.Services
             return HttpStatusCode.OK;
         }
 
-        private void CreatePermitXml(string userPermit, List<Products> products)
+        private void CreatePermitXml(string userPermit, string title, List<Products> products)
         {
             var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
             var productsList = new List<Products>();
@@ -110,6 +113,7 @@ namespace UKHO.S100PermitService.Common.Services
                 Products = [.. productsList]
             };
 
+            _permitDictionary.Add(title, permit);
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
             var permitXml = _permitReaderWriter.ReadPermit(permit);
             if(!string.IsNullOrEmpty(permitXml))
@@ -186,7 +190,7 @@ namespace UKHO.S100PermitService.Common.Services
             var ValidXml = true;
             try
             {
-                xml.Validate((sender,e) =>
+                xml.Validate((sender, e) =>
                 {
                     ValidXml = false;
                 });
