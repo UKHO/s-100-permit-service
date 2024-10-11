@@ -102,13 +102,19 @@ namespace UKHO.S100PermitService.Common.Services
 
         private MemoryStream CreatePermits(List<Permit> permits)
         {
-            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation started");
-           
-            var permitXml = _permitReaderWriter.CreatePermits(permits);
-            
-            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
+            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
 
-            return permitXml;
+            var permitDetails = _permitReaderWriter.CreatePermits(permits);
+
+            if(permitDetails.Length > 0)
+            {
+                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
+            }
+            else
+            {
+                _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
+            }
+            return permitDetails;
         }
 
         [ExcludeFromCodeCoverage]
