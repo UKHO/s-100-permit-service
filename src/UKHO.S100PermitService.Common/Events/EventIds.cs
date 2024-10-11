@@ -208,6 +208,21 @@
         /// <summary>
         /// 840041 - Aes encryption exception
         /// </summary>
-        AesEncryptionException = 840041
+        AesEncryptionException = 840041,
+
+        /// <summary>
+        /// 840042 - Get decrypted hardware id from user permit started
+        /// </summary>
+        GetDecryptedHardwareIdFromUserPermitStarted = 840042,
+
+        /// <summary>
+        /// 840043 - Get decrypted hardware id from user permit completed
+        /// </summary>
+        GetDecryptedHardwareIdFromUserPermitCompleted = 840043,
+
+        /// <summary>
+        /// 840044 - Upn length or checksum validation failed
+        /// </summary>
+        UpnLengthOrChecksumValidationFailed = 840044
     }
 }

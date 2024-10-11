@@ -48,16 +48,15 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
-
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
@@ -71,12 +70,14 @@ namespace UKHO.S100PermitService.Common.Services
 
             var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
+            var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
+
             var productsList = new List<Products>();
             productsList.AddRange(GetProductsList());
 
             var permits = new List<Permit>();
 
-            foreach(var userPermits in userPermitServiceResponse.UserPermits)
+            foreach(var upnInfo in listOfUpnInfo)
             {
                 permits.Add(new Permit
                 {
@@ -85,11 +86,11 @@ namespace UKHO.S100PermitService.Common.Services
                         IssueDate = DateTimeOffset.Now.ToString(DateFormat),
                         DataServerIdentifier = "GB00",
                         DataServerName = "UK Hydrographic Office",
-                        Userpermit = userPermits.Upn,
+                        Userpermit = upnInfo.Upn,
                         Version = "1.0",
                     },
                     Products = [.. productsList],
-                    Title = userPermits.Title,
+                    Title = upnInfo.Title,
                 });
             };
 

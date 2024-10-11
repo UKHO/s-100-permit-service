@@ -20,6 +20,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.API
 {
@@ -170,6 +171,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();            
             builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
             builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
+            builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
@@ -179,7 +181,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();
             builder.Services.AddScoped<IAesEncryption, AesEncryption>();
-            builder.Services.AddScoped<ISecretClient, KeyVaultSecretClient>();
+            builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
