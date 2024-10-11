@@ -30,7 +30,7 @@ module "private_endpoint_link" {
   vnet_link           = local.vnet_link
   private_connection  = [local.private_connection]
   zone_group          = local.zone_group 
-  pe_identity         = local.pe_identity
+  pe_identity         = [local.pe_identity]
   pe_environment      = local.env_name 
   pe_vnet_rg          = var.spoke_rg 
   pe_vnet_name        = var.pe_vnet_name
