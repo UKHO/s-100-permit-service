@@ -20,6 +20,7 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
+        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -33,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
-        private Dictionary<string,Permit> _permitDictionary = new Dictionary<string, Permit>();
+        private Dictionary<string, Permit> _permitDictionary = new Dictionary<string, Permit>();
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -97,7 +98,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         private void CreatePermitXml(string userPermit, string title, List<Products> products)
         {
-            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
+            var xsdPath = Path.Combine(_schemaDirectory, SchemaFile);
             var productsList = new List<Products>();
             productsList.AddRange(products);
             var permit = new Permit
@@ -187,20 +188,20 @@ namespace UKHO.S100PermitService.Common.Services
 
             xml.Schemas = xmlSchemaSet;
 
-            var ValidXml = true;
+            var validXml = true;
             try
             {
                 xml.Validate((sender, e) =>
                 {
-                    ValidXml = false;
+                    validXml = false;
                 });
             }
             catch(XmlSchemaValidationException)
             {
-                ValidXml = false;
-                return ValidXml;
+                validXml = false;
+                return validXml;
             }
-            return ValidXml;
+            return validXml;
         }
 
         private string ReadXsdVersion()
@@ -213,7 +214,7 @@ namespace UKHO.S100PermitService.Common.Services
                 schema = XmlSchema.Read(reader, null);
             }
 
-            return schema.Version ?? null;
+            return schema?.Version[..5] ?? null;
         }
     }
 }
