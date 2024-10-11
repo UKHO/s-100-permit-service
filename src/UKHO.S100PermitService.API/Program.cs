@@ -19,7 +19,9 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.API
 {
@@ -30,10 +32,11 @@ namespace UKHO.S100PermitService.API
         private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
-        private const string ManufacturerKeyVault = "ManufacturerKeyVault";
+        private const string ManufacturerKeyVaultConfiguration = "ManufacturerKeyVault";
         private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string PermitConfiguration = "PermitConfiguration";
         private const string AzureAdScheme = "AzureAd";
+        private const string AzureAdConfiguration = "AzureAdConfiguration";
 
         private static void Main(string[] args)
         {
@@ -125,11 +128,11 @@ namespace UKHO.S100PermitService.API
             builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
             builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
-            builder.Services.Configure<ManufacturerKeyConfiguration>(configuration.GetSection(ManufacturerKeyVault));
+            builder.Services.Configure<ManufacturerKeyVaultConfiguration>(configuration.GetSection(ManufacturerKeyVaultConfiguration));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
             builder.Services.Configure<PermitConfiguration>(configuration.GetSection(PermitConfiguration));
 
-            var azureAdConfiguration = builder.Configuration.GetSection("AzureAdConfiguration").Get<AzureAdConfiguration>();
+            var azureAdConfiguration = configuration.GetSection(AzureAdConfiguration).Get<AzureAdConfiguration>();
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                    .AddJwtBearer(AzureAdScheme, options =>
                    {
@@ -137,18 +140,12 @@ namespace UKHO.S100PermitService.API
                        options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
                    });
 
-            builder.Services.AddAuthorization(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+            builder.Services.AddAuthorizationBuilder()
+                .SetDefaultPolicy(new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .AddAuthenticationSchemes(AzureAdScheme)
-                .Build();
-            });
-
-            builder.Services.AddAuthorization(options =>
-            {
-                options.AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
-            });
+                .Build())
+                .AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
 
             var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
             builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
@@ -174,18 +171,10 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
+            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();            
+            builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
+            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
             builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
-            builder.Services.AddSingleton<ICacheProvider, CacheProvider>();
-
-            builder.Services.AddSingleton<IManufacturerKeyService>(sp =>
-            {
-                var cacheProvider = sp.GetRequiredService<ICacheProvider>();
-                var logger = sp.GetRequiredService<ILogger<ManufacturerKeyService>>();
-                var config = sp.GetRequiredService<IOptions<ManufacturerKeyConfiguration>>();
-                var secretClient = sp.GetRequiredService<ISecretClient>();
-                return new ManufacturerKeyService(config, logger, cacheProvider, secretClient);
-            });          
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IFileSystem, FileSystem>();
@@ -194,10 +183,13 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
             builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
+            builder.Services.AddScoped<IS100Crypt, S100Crypt>();
+            builder.Services.AddScoped<IAesEncryption, AesEncryption>();
+            builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
-            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
+            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();            
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

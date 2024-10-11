@@ -126,19 +126,19 @@
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get permit key from Product Key Service started
+        /// 840025 - Get product key from Product Key Service started
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestStarted = 840025,
+        GetProductKeysRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get permit key from Product Key Service completed
+        /// 840026 - Get product key from Product Key Service completed
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestCompleted = 840026,
+        GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get permit key from Product Key Service
+        /// 840027 - Exception occurred while get product key from Product Key Service
         /// </summary>
-        ProductKeyServicePostPermitKeyRequestFailed = 840027,
+        GetProductKeysRequestFailed = 840027,
 
         /// <summary>
         /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
@@ -146,14 +146,14 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 - Caching of Manufacturer Key started.
+        /// 840029 -  Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyCachingStart = 840029,
+        ManufacturerKeyFoundInCache = 840029,
 
         /// <summary>
-        /// 840030 - Caching of Manufacturer Key end.
+        /// 840030 - New Manufacturer Key is added in Cache.
         /// </summary>
-        ManufacturerKeyCachingEnd = 840030,
+        AddingNewManufacturerKeyInCache = 840030,
 
         /// <summary>
         /// 840031 - Access token is empty or null
@@ -186,8 +186,48 @@
         HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
 
         /// <summary>
-        /// 840037 - Invalid Permit Xml Schema is recieved
+        /// 840037 - Expected hex string length not found
         /// </summary>
-        InvalidPermitXmlSchema = 840037
+        HexStringLengthError = 840037,
+
+        /// <summary>
+        /// 840038 - Expected hex key length not found
+        /// </summary>
+        HexKeyLengthError = 840038,
+
+        /// <summary>
+        /// 840039 - Get decrypted keys from product keys started
+        /// </summary>
+        GetDecryptedKeysFromProductKeysStarted = 840039,
+
+        /// <summary>
+        /// 840040 - Get decrypted keys from product keys completed
+        /// </summary>
+        GetDecryptedKeysFromProductKeysCompleted = 840040,
+
+        /// <summary>
+        /// 840041 - Aes encryption exception
+        /// </summary>
+        AesEncryptionException = 840041,
+
+        /// <summary>
+        /// 840042 - Get decrypted hardware id from user permit started
+        /// </summary>
+        GetDecryptedHardwareIdFromUserPermitStarted = 840042,
+
+        /// <summary>
+        /// 840043 - Get decrypted hardware id from user permit completed
+        /// </summary>
+        GetDecryptedHardwareIdFromUserPermitCompleted = 840043,
+
+        /// <summary>
+        /// 840044 - Upn length or checksum validation failed
+        /// </summary>
+        UpnLengthOrChecksumValidationFailed = 840044,
+
+        /// <summary>
+        /// 840045 - Invalid Permit Xml Schema is recieved
+        /// </summary>
+        InvalidPermitXmlSchema = 840045
     }
 }

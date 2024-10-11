@@ -2,7 +2,6 @@
 {
     public interface IManufacturerKeyService
     {
-        void CacheManufacturerKeys();
-        string GetManufacturerKeys(string secretName);       
+        string GetManufacturerKeys(string secretName);
     }
 }

@@ -9,6 +9,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -19,15 +20,23 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitServiceAuthTokenProvider _userPermitServiceAuthTokenProvider;
         private readonly IUserPermitApiClient _userPermitApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
+        private readonly IUserPermitValidator _userPermitValidator;
+
         private const string UserPermitUrl = "/userpermits/{0}/s100";
 
-        public UserPermitService(ILogger<UserPermitService> logger, IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration, IUserPermitServiceAuthTokenProvider userPermitServiceAuthTokenProvider, IUserPermitApiClient userPermitApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
+        public UserPermitService(ILogger<UserPermitService> logger,
+                                 IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration,
+                                 IUserPermitServiceAuthTokenProvider userPermitServiceAuthTokenProvider,
+                                 IUserPermitApiClient userPermitApiClient,
+                                 IWaitAndRetryPolicy waitAndRetryPolicy,
+                                 IUserPermitValidator userPermitValidator)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userPermitServiceApiConfiguration = userPermitServiceApiConfiguration ?? throw new ArgumentNullException(nameof(userPermitServiceApiConfiguration));
             _userPermitServiceAuthTokenProvider = userPermitServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(userPermitServiceAuthTokenProvider));
             _userPermitApiClient = userPermitApiClient ?? throw new ArgumentNullException(nameof(userPermitApiClient));
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
+            _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
         }
 
         public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -40,7 +49,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientUserPermitRequest).Execute(() =>
             {
-               return _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
+                return _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
             });
 
             if(httpResponseMessage.IsSuccessStatusCode)
@@ -66,6 +75,19 @@ namespace UKHO.S100PermitService.Common.Services
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                 "Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+        }
+
+        public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            var result = _userPermitValidator.Validate(userPermitServiceResponse);
+
+            if(!result.IsValid)
+            {
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+
+                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
+                    "Validation failed for Licence Id: {licenceId} {errorMessage}", userPermitServiceResponse.LicenceId, errorMessage);
+            }
         }
     }
 }
