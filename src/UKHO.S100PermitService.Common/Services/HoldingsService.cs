@@ -69,5 +69,28 @@ namespace UKHO.S100PermitService.Common.Services
                 "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
+
+        public List<HoldingsServiceResponse> GetHoldingsWithLatestExpiry(List<HoldingsServiceResponse> holdingsServiceResponse)
+        {
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c })).ToList();
+
+            var latestCells = allCells
+                .GroupBy(c => c.Cell.CellCode)
+                .Select(g => g.OrderByDescending(c => c.ExpiryDate).First())
+                .ToList();
+
+            var filteredProducts = latestCells
+                .GroupBy(c => new { c.ProductCode, c.ProductTitle, c.ExpiryDate })
+                .Select(g => new HoldingsServiceResponse
+                {
+                    ProductCode = g.Key.ProductCode,
+                    ProductTitle = g.Key.ProductTitle,
+                    ExpiryDate = g.Key.ExpiryDate,
+                    Cells = g.Select(c => c.Cell).ToList()
+                })
+                .ToList();
+
+            return filteredProducts;
+        }
     }
 }
