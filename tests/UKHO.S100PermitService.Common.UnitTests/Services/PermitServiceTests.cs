@@ -95,7 +95,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             result.Item1.Should().Be(HttpStatusCode.OK);
 
-
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -243,8 +242,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Item1.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

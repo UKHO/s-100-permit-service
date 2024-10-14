@@ -40,18 +40,18 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
-        public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
+        public async Task WhenPermitGeneratedSuccessfully_ThenReturnsZipStreamResponse()
         {
-            var expectedStreamLength = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
+            var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
             A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                            .Returns((HttpStatusCode.OK, expectedStreamLength));
+                            .Returns((HttpStatusCode.OK, expectedStream));
 
             var result = await _permitController.GeneratePermits(007);
 
             result.Should().BeOfType<FileStreamResult>();
             ((FileStreamResult)result).FileDownloadName.Should().Be("Permits.zip");
-            ((FileStreamResult)result).FileStream.Length.Should().Be(expectedStreamLength.Length);
+            ((FileStreamResult)result).FileStream.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -69,7 +69,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
-        public async Task WhenGetPermitIsCalled_ThenReturnsNoContentResponse()
+        public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
         {
             A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns((HttpStatusCode.NoContent, new MemoryStream()));
