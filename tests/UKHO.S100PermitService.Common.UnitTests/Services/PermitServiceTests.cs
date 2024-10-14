@@ -299,6 +299,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     CellCode = "CellCode",
                                     LatestEditionNumber = "1",
                                     LatestUpdateNumber = "1"
+                                },
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse
+                        {
+                            ProductTitle = "ProductTitle1",
+                            ProductCode = "ProductCode1",
+                            ExpiryDate = DateTime.UtcNow.AddDays(4),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle1",
+                                    CellCode = "CellCode1",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse
+                        {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(3),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
                                 }
                             ]
                         }
