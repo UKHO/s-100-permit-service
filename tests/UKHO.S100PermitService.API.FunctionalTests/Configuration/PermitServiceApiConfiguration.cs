@@ -10,5 +10,6 @@
         public List<int>? InvalidUPNLicenceId { get; set; }
         public List<int>? InvalidPKSLicenceId { get; set; }
         public List<int>? NoDataLicenceId { get; set; }
+        public List<string>? InvalidChars { get; set; }
     }
 }

@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
-            _authToken = await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
+            _authToken = "abcd";////await _authTokenProvider!.GetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
         // PBI 172720: Add AD Auth to get permits EndPoint
@@ -104,6 +104,14 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
                 var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)204);
             }
+        }
+
+        [Test]
+        public async Task CheckFolderStructureAndDuplicateFileNameInPermitXml()
+        {
+            PermitXmlFactory.CheckZipStructureAndContent(@"D:\Work\Aasvhith\Permit Service\Docs\Permits.zip", @"D:\Work\Aasvhith\Permit Service\Docs\Permits", _permitServiceApiConfiguration!.InvalidChars);
+            var isDuplicatePresent = PermitXmlFactory.CheckDuplicateFileNameNotPresentInPermitXml("@\"D:\\Work\\Aasvhith\\Permit Service\\Docs\\Permits");
+            isDuplicatePresent.Should().BeFalse();
         }
 
         [OneTimeTearDown]
