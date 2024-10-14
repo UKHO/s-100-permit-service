@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.Common.Services
                     DataServerIdentifier = _permitConfiguration.Value.DataServerIdentifier,
                     DataServerName = _permitConfiguration.Value.DataServerName,
                     Userpermit = userPermit,
-                    Version = ReadXsdVersion()
+                    Version = ReadXsdVersionAndNamespace().Version
                 },
                 Products = [.. productsList]
             };
@@ -184,7 +184,7 @@ namespace UKHO.S100PermitService.Common.Services
             xml.LoadXml(permitXml);
 
             var xmlSchemaSet = new XmlSchemaSet();
-            xmlSchemaSet.Add(null, xsdPath);
+            xmlSchemaSet.Add(ReadXsdVersionAndNamespace().TargetNameSpace, xsdPath);
 
             xml.Schemas = xmlSchemaSet;
 
@@ -204,7 +204,7 @@ namespace UKHO.S100PermitService.Common.Services
             return validXml;
         }
 
-        private string ReadXsdVersion()
+        private (string Version,string TargetNameSpace) ReadXsdVersionAndNamespace()
         {
             var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
 
@@ -214,7 +214,7 @@ namespace UKHO.S100PermitService.Common.Services
                 schema = XmlSchema.Read(reader, null);
             }
 
-            return schema?.Version[..5] ?? null;
+            return (schema?.Version[..5] ?? null, schema?.TargetNamespace ?? null);
         }
     }
 }
