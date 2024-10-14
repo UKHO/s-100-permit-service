@@ -99,8 +99,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
 
-            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns(fakePermit);
-
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             result.Should().Be(HttpStatusCode.OK);
@@ -173,8 +171,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
-
-            A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns(fakePermit);
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
