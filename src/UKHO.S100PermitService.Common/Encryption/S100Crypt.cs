@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Text;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
@@ -28,7 +30,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysStarted.ToEventId(), "Get decrypted keys from product keys started.");
 
             var productKeys = new List<ProductKey>();
-            foreach (var productKeyServiceResponse in productKeyServiceResponses)
+            foreach(var productKeyServiceResponse in productKeyServiceResponses)
             {
                 productKeys.Add(new ProductKey()
                 {
@@ -39,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get decrypted keys from product keys completed.");
+            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get Encrypted keys from Product keys completed.");
 
             return productKeys;
         }
@@ -49,7 +51,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitStarted.ToEventId(), "Get decrypted hardware id from user permits started");
 
             var listOfUpnInfo = new List<UpnInfo>();
-            foreach (var userPermit in userPermitServiceResponse.UserPermits)
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
                 var upnInfo = new UpnInfo
                 {
@@ -66,6 +68,11 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permits completed");
 
             return listOfUpnInfo;
+        }       
+
+        public string CreateEncryptedKey(string key, string hardwareId)
+        {
+            return _aesEncryption.Encrypt(key, hardwareId);
         }
     }
-}
+ }

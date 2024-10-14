@@ -25,6 +25,23 @@ namespace UKHO.S100PermitService.Common.Encryption
             return PerformCryptography(hexString, decrypt);
         }
 
+        public string Encrypt(string hexString, string hexKey)
+        {
+            if(hexString.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexStringLengthError.ToEventId(), "Expected hex string length {HexSize}, but found {HexString Length}.", HexSize, hexString.Length);
+            }
+
+            if(hexKey.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexKeyLengthError.ToEventId(), "Expected hex key length {HexSize}, but found {HexKey Length}.", HexSize, hexKey.Length);
+            }
+
+            using var aes = CreateAes(hexKey);
+            using var encrypt = aes.CreateEncryptor(aes.Key, aes.IV);
+            return PerformCryptography(hexString, encrypt);
+        }
+
         private static Aes CreateAes(string keyHexEncoded)
         {
             var aes = Aes.Create();

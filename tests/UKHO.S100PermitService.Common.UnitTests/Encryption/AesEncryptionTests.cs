@@ -41,5 +41,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                                             ThrowExactly<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
 
         }
+
+        [Test]
+        public void WhenProvidedValidData_ThenSuccessfullyReturnsEncryptedData()
+        {
+            var result = _aesEncryption.Encrypt(FakeText, FakeKey);
+
+            result.Should().NotBeNullOrEmpty();
+            result.Should().NotBe(FakeText);
+        }
     }
 }

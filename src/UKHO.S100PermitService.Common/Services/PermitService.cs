@@ -2,11 +2,11 @@
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using UKHO.S100PermitService.Common.Configuration;
-using UKHO.S100PermitService.Common.Encryption;
 using System.Reflection;
 using System.Xml;
 using System.Xml.Schema;
+using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
-        private Dictionary<string,Permit> _permitDictionary = new Dictionary<string, Permit>();
+        private Dictionary<string, Permit> _permitDictionary = new Dictionary<string, Permit>();
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -85,8 +85,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var upnInfo in listOfUpnInfo)
             {
-                var productsList = GetProductsList(holdingsServiceResponse);
-
+                var productsList = GetProductsList(holdingsServiceResponse, decryptedProductKeys, upnInfo.DecryptedHardwareId);
                 CreatePermitXml(upnInfo.Upn, upnInfo.Title, productsList);
             }
 
@@ -137,7 +136,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings)
+        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings, IEnumerable<ProductKey> productKey, string hardwareId)
         {
             var productsList = new List<Products>();
             var products = new Products();
@@ -150,7 +149,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var dataPermit = new ProductsProductDatasetPermit()
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = "encryptedkey",
+                        EncryptedKey = EncryptKey(productKey, hardwareId, holding),
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate,
                     };
@@ -168,14 +167,6 @@ namespace UKHO.S100PermitService.Common.Services
             }
             return productsList;
         }
-
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
-            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
-            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
-            {
-                ProductName = y.CellCode,
-                Edition = y.LatestEditionNumber
-            })).ToList();
 
         public bool ValidateSchema(string permitXml, string xsdPath)
         {
@@ -215,5 +206,18 @@ namespace UKHO.S100PermitService.Common.Services
 
             return schema.Version ?? null;
         }
+
+        private List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+            IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
+            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            {
+                ProductName = y.CellCode,
+                Edition = y.LatestEditionNumber
+            })).ToList();
+
+        private string EncryptKey(IEnumerable<ProductKey> productKey, string hardwareId, HoldingsServiceResponse holding) =>
+            _s100Crypt.CreateEncryptedKey((from str1 in holding.Cells
+                                         join str2 in productKey on str1.CellCode.ToString() equals str2.ProductName
+                                         select str2.DecryptedKey).FirstOrDefault(), hardwareId);
     }
 }
