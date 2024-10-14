@@ -1,0 +1,28 @@
+[
+  {
+    "productCode": "P1231",
+    "productTitle": "P1231",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  },
+  {
+    "productCode": "P1232",
+    "productTitle": "P1232",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  }
+]
