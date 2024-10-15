@@ -16,6 +16,8 @@ namespace UKHO.S100PermitService.Common.IO
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
         private const string Namespace = "http://www.iho.int/s100/se/5.0";
+        private const string SchemaFolder = "XmlSchema";
+        private const string PermitSchema = "Permit_Schema.xsd";
 
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly IFileSystem _fileSystem;
@@ -73,7 +75,7 @@ namespace UKHO.S100PermitService.Common.IO
 
         private string GetTargetNamespace()
         {
-            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
+            var xsdPath = Path.Combine(_schemaDirectory, SchemaFolder, PermitSchema);
 
             XmlSchema? schema;
             using(var reader = XmlReader.Create(xsdPath))

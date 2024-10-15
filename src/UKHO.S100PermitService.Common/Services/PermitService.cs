@@ -34,7 +34,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
-        private Dictionary<string, Permit> _permitDictionary = new Dictionary<string, Permit>();
+        private Dictionary<string, Permit> _permitDictionary = new();
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -148,13 +148,14 @@ namespace UKHO.S100PermitService.Common.Services
                 {
                     products.Id = $"S-{cell.CellCode[..3]}";
 
-                    var dataPermit = new ProductsProductDatasetPermit()
+                    var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
                         EncryptedKey = "encryptedkey",
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate,
                     };
+
                     if(productsList.Any(x => x.Id == products.Id))
                     {
                         productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
