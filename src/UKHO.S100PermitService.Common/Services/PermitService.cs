@@ -153,7 +153,7 @@ namespace UKHO.S100PermitService.Common.Services
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
                         EncryptedKey = "encryptedkey",
                         Filename = cell.CellCode,
-                        Expiry = holding.ExpiryDate,
+                        Expiry = holding.ExpiryDate
                     };
 
                     if(productsList.Any(x => x.Id == products.Id))
@@ -165,7 +165,7 @@ namespace UKHO.S100PermitService.Common.Services
                         products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
                         productsList.Add(products);
                     }
-                    products = new Products();
+                    products = new();
                 }
             }
             return productsList;
