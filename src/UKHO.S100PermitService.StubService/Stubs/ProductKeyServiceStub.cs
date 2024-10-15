@@ -1,9 +1,12 @@
 ﻿using System.Net;
 using UKHO.S100PermitService.StubService.Configuration;
+using WireMock;
 using WireMock.Matchers;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
+using WireMock.Types;
+using WireMock.Util;
 
 namespace UKHO.S100PermitService.StubService.Stubs
 {
@@ -61,10 +64,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.OK)
-                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
-                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
-                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200.json")));
+                .WithCallback(request => CreateResponse(request, "response-200.json", HttpStatusCode.OK)));
 
             server //400 when incorrect request passed
                 .Given(Request.Create()
@@ -73,15 +73,49 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-400.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
-                .WithStatusCode(HttpStatusCode.BadRequest)
-                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
-                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString()));
+                .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));
         }
 
         private static string GetJsonData(string filePath)
         {
             using var fileStream = new StreamReader(filePath);
             return fileStream.ReadToEnd();
+        }
+
+        private static ResponseMessage CreateResponse(IRequestMessage request, string fileName, HttpStatusCode statusCode)
+        {
+            var correlationId = GetCorrelationId(request);
+            var responseBody = GetUpdatedResponse(fileName, statusCode, correlationId);
+
+            var responseMessage = new ResponseMessage
+            {
+                BodyData = new BodyData
+                {
+                    DetectedBodyType = BodyType.String
+                }
+            };
+
+            responseMessage.StatusCode = statusCode;
+            responseMessage.BodyData.BodyAsString = responseBody;
+            responseMessage.AddHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType);
+            responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, correlationId);
+
+            return responseMessage;
+        }
+
+        private static string GetUpdatedResponse(string fileName, HttpStatusCode statusCode, string correlationId)
+        {
+            var filePath = Path.Combine(ResponseFileDirectory, fileName);
+            return ResponseHelper.UpdateCorrelationIdInResponse(filePath, correlationId, statusCode);
+        }
+
+        private static string GetCorrelationId(IRequestMessage request)
+        {
+            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
+            {
+                return correlationId.First();
+            }
+            return Guid.NewGuid().ToString();
         }
     }
 }

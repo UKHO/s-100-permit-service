@@ -88,6 +88,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             var value = request.AbsolutePath.Split('/')[2];
             return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
+
         private static string ExtractCorrelationId(IRequestMessage request)
         {
             if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
