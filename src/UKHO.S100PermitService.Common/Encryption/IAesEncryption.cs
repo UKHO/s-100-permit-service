@@ -4,6 +4,6 @@
     {
         string Decrypt(string hexString, string keyHexEncoded);
 
-        string Encrypt(string hexString, string hexKey);
+        string Encrypt(string hexString, string keyHexEncoded);
     }
 }

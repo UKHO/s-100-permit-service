@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get Encrypted keys from Product keys completed.");
+            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get decrypted keys from Product keys completed.");
 
             return productKeys;
         }
@@ -70,9 +70,9 @@ namespace UKHO.S100PermitService.Common.Encryption
             return listOfUpnInfo;
         }       
 
-        public string CreateEncryptedKey(string key, string hardwareId)
+        public string CreateEncryptedKey(string productKeyServiceKey, string hardwareId)
         {           
-           return _aesEncryption.Encrypt(key, hardwareId);
+           return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
         }
     }
  }

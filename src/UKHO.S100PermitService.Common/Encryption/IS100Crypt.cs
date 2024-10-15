@@ -8,6 +8,6 @@ namespace UKHO.S100PermitService.Common.Encryption
     {
         IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId);
         IEnumerable<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse);
-        string CreateEncryptedKey(string key, string hardwareId);
+        string CreateEncryptedKey(string productKeyServiceKey, string hardwareId);
     }    
 }

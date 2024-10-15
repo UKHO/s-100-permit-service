@@ -168,7 +168,7 @@ namespace UKHO.S100PermitService.Common.Services
                     products = new Products();
                 }
             }
-            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Product List is completed");
+            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List completed for title : {title}", UpnTitle);
             return productsList;
         }
 
