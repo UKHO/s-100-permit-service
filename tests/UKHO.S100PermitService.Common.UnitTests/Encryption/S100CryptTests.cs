@@ -105,6 +105,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 ).MustHaveHappenedOnceExactly();
         }
 
+        [Test]
+        public void WhenValidHardwareIdandPKSKeyPassed_ThenEncryptedKeyIsReturned()
+        {
+            const string FakeEncryptedKey = "86C520323CEA3056B5ED7000F98814CB";
+            const string FakeKey = "2F72DDDD2144B24939KBKPS76FH52FDD1";
+            const string FakeHardwareId = "H5P2P62BDDBHS32PM6PSSA256P2000A1";
+
+            A.CallTo(() => _fakeAesEncryption.Encrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeEncryptedKey);
+
+            var result = _s100Crypt.CreateEncryptedKey(FakeKey, FakeHardwareId);
+            
+            result.Equals(FakeEncryptedKey);            
+        }
+
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()
         {
             return

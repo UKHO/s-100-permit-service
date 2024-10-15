@@ -228,6 +228,16 @@
         /// <summary>
         /// 840045 - Invalid Permit Xml Schema is recieved
         /// </summary>
-        InvalidPermitXmlSchema = 840045
+        InvalidPermitXmlSchema = 840045,
+
+        /// <summary>
+        /// 840046 - Get Product list started 
+        /// </summary>
+        GetProductListStarted = 840046,
+
+        /// <summary>
+        /// 840047 - Get Product list completed
+        /// </summary>
+        GetProductListCompleted = 840047
     }
 }

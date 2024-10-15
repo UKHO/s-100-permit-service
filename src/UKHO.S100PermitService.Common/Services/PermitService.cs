@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var upnInfo in listOfUpnInfo)
             {
-                var productsList = GetProductsList(holdingsServiceResponse, decryptedProductKeys, upnInfo.DecryptedHardwareId);
+                var productsList = GetProductsList(holdingsServiceResponse, decryptedProductKeys, upnInfo.DecryptedHardwareId, upnInfo.Title);
                 CreatePermitXml(upnInfo.Upn, upnInfo.Title, productsList);
             }
 
@@ -136,10 +136,13 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings, IEnumerable<ProductKey> productKey, string hardwareId)
+        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings, IEnumerable<ProductKey> productKey, string hardwareId, string UpnTitle)
         {
             var productsList = new List<Products>();
             var products = new Products();
+
+            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List started for Title: {title}", UpnTitle);
+
             foreach(var holding in holdings)
             {
                 foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
@@ -165,6 +168,7 @@ namespace UKHO.S100PermitService.Common.Services
                     products = new Products();
                 }
             }
+            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Product List is completed");
             return productsList;
         }
 

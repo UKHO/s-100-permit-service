@@ -58,11 +58,11 @@ namespace UKHO.S100PermitService.Common.Encryption
         {
             var cypherBytes = StringToByteArray(hexString);
 
-            using var ms = new MemoryStream();
-            using var cryptoStream = new CryptoStream(ms, cryptoTransform, CryptoStreamMode.Write);
+            using var memoryStream = new MemoryStream();
+            using var cryptoStream = new CryptoStream(memoryStream, cryptoTransform, CryptoStreamMode.Write);
             cryptoStream.Write(cypherBytes, 0, cypherBytes.Length);
             cryptoStream.FlushFinalBlock();
-            return BitConverter.ToString(ms.ToArray()).Replace("-", "");
+            return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
         }
 
         private static byte[] StringToByteArray(string hexString)

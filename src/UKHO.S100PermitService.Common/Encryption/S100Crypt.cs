@@ -71,8 +71,8 @@ namespace UKHO.S100PermitService.Common.Encryption
         }       
 
         public string CreateEncryptedKey(string key, string hardwareId)
-        {
-            return _aesEncryption.Encrypt(key, hardwareId);
+        {           
+           return _aesEncryption.Encrypt(key, hardwareId);
         }
     }
  }
