@@ -146,7 +146,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
                 {
-                    products.Id = string.Format("S-{0}", cell.CellCode.Substring(0, 3));
+                    products.Id = $"S-{cell.CellCode[..3]}";
 
                     var dataPermit = new ProductsProductDatasetPermit()
                     {
@@ -155,7 +155,7 @@ namespace UKHO.S100PermitService.Common.Services
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate,
                     };
-                    if(productsList.Where(x => x.Id == products.Id).Any())
+                    if(productsList.Any(x => x.Id == products.Id))
                     {
                         productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
                     }
