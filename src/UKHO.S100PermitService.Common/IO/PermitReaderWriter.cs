@@ -15,6 +15,7 @@ namespace UKHO.S100PermitService.Common.IO
         private const string SecondNamespace = "http://standards.iso.org/iso/19115/-3/gco/1.0";
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
+        private const string Namespace = "http://www.iho.int/s100/se/5.0";
 
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly IFileSystem _fileSystem;
@@ -42,7 +43,7 @@ namespace UKHO.S100PermitService.Common.IO
             using var writer = XmlWriter.Create(stringWriter, settings);
             serializer.Serialize(writer, permit, namespaces);
             var xml = stringWriter.ToString().Replace("_x003A_", ":");
-            xml = xml.Replace("http://www.iho.int/s100/se/5.0", GetTargetNamespace());
+            xml = xml.Replace(Namespace, GetTargetNamespace());
             return (XmlDeclaration + xml);
         }
 
