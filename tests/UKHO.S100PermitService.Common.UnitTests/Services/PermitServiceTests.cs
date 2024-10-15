@@ -75,6 +75,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
+            var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
+
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
@@ -89,13 +91,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
 
-            A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<List<Permit>>.Ignored)).Returns(new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString())));
+            A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<List<Permit>>.Ignored)).Returns(expectedStream);
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             result.Item1.Should().Be(HttpStatusCode.OK);
-
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
+            result.Item2.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
@@ -152,7 +153,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<List<Permit>>.Ignored)).Returns(new MemoryStream());
 
-            await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            
+            //empty memory stream returns, file not created
+            result.Item2.Length.Should().Be(0);
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
