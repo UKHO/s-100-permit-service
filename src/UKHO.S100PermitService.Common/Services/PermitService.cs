@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
-        private readonly IOptions<PermitConfiguration> _permitConfiguration;
+        private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
@@ -43,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
                              IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
-                             IOptions<PermitConfiguration> permitConfiguration)
+                             IOptions<PermitFileConfiguration> permitFileConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
-            _permitConfiguration = permitConfiguration ?? throw new ArgumentNullException(nameof(permitConfiguration));
+            _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
         public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -106,8 +106,8 @@ namespace UKHO.S100PermitService.Common.Services
                 Header = new Header
                 {
                     IssueDate = _issueDate,
-                    DataServerIdentifier = _permitConfiguration.Value.DataServerIdentifier,
-                    DataServerName = _permitConfiguration.Value.DataServerName,
+                    DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
+                    DataServerName = _permitFileConfiguration.Value.DataServerName,
                     Userpermit = userPermit,
                     Version = ReadXsdVersion()
                 },
