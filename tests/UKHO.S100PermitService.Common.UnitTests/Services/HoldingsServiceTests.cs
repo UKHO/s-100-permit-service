@@ -198,5 +198,76 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                   ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
         }
+
+        [Test]
+        public void WhenHoldingServiceResponseContainsDuplicateDatasets_ThenReturnsFilteredHoldingsByLatestExpiry()
+        {
+            var holdingsServiceResponse = GetHoldingsServiceResponse();
+
+            var result = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
+
+            result.Should().HaveCount(2);
+        }
+
+        private static List<HoldingsServiceResponse> GetHoldingsServiceResponse()
+        {
+            var holdingsServiceResponses = new List<HoldingsServiceResponse>
+            {
+                new() {
+                    ProductTitle = "ProductTitle",
+                    ProductCode = "ProductCode",
+                    ExpiryDate = DateTime.UtcNow.AddDays(5),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle",
+                            CellCode = "CellCode",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        },
+                        new Cell
+                        {
+                            CellTitle = "CellTitle",
+                            CellCode = "CellCode",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                },
+                new() {
+                    ProductTitle = "ProductTitle1",
+                    ProductCode = "ProductCode1",
+                    ExpiryDate = DateTime.UtcNow.AddDays(4),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle1",
+                            CellCode = "CellCode1",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                },
+                new() {
+                    ProductTitle = "ProductTitle",
+                    ProductCode = "ProductCode",
+                    ExpiryDate = DateTime.UtcNow.AddDays(3),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle",
+                            CellCode = "CellCode",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                }
+            };
+
+            return holdingsServiceResponses;
+        }
     }
 }

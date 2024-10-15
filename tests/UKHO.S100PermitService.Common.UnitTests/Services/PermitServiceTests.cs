@@ -82,6 +82,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
 
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
+                .Returns(GetFilteredHoldingDetails());
+
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                             .Returns([new ProductKeyServiceResponse { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
@@ -97,6 +100,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
@@ -152,6 +158,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
 
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
+                .Returns(GetFilteredHoldingDetails());
+
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                          .Returns([new ProductKeyServiceResponse { ProductName = "test101", Edition = "1", Key = "123456" }]);
 
@@ -163,6 +172,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             A.CallTo(() => _fakePermitReaderWriter.WritePermit(A<string>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
@@ -224,6 +236,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
+
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
@@ -260,6 +275,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -385,6 +401,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 {
                     DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
                     Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                }
+            ];
+        }
+
+        private static List<HoldingsServiceResponse> GetFilteredHoldingDetails()
+        {
+            return
+            [
+                new HoldingsServiceResponse
+                {
+                    ProductTitle = "ProductTitle",
+                    ProductCode = "ProductCode",
+                    ExpiryDate = DateTime.UtcNow.AddDays(5),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle",
+                            CellCode = "CellCode",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                },
+                new HoldingsServiceResponse
+                {
+                    ProductTitle = "ProductTitle1",
+                    ProductCode = "ProductCode1",
+                    ExpiryDate = DateTime.UtcNow.AddDays(4),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle1",
+                            CellCode = "CellCode1",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
                 }
             ];
         }

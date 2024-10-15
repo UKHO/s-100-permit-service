@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.Services
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
-        public List<HoldingsServiceResponse> GetHoldingsWithLatestExpiry(List<HoldingsServiceResponse> holdingsServiceResponse)
+        public List<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(List<HoldingsServiceResponse> holdingsServiceResponse)
         {
             var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c })).ToList();
 

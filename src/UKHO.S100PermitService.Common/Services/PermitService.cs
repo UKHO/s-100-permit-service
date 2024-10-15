@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.Services
                 return HttpStatusCode.NoContent;
             }
 
-            var holdingsWithLatestExpiry = _holdingsService.GetHoldingsWithLatestExpiry(holdingsServiceResponse);
+            var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
 
             var productKeyServiceRequest = ProductKeyServiceRequest(holdingsWithLatestExpiry);
 
