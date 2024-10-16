@@ -106,7 +106,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenValidHardwareIdandPKSKeyPassed_ThenEncryptedKeyIsReturned()
+        public void WhenValidHardwareIdAndPKSKeyPassed_ThenEncryptedKeyIsReturned()
         {
             const string FakeEncryptedKey = "86C520323CEA3056B5ED7000F98814CB";
             const string FakeKey = "2F72DDDD2144B24939KBKPS76FH52FDD1";
