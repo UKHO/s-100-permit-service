@@ -46,7 +46,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakePermitFileConfiguration = A.Fake<IOptions<PermitFileConfiguration>>();
 
             _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService,
-                                                _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration,_fakePermitFileConfiguration);
+                                                _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
         }
 
         [Test]
@@ -84,8 +84,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
+
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
+
             A.CallTo(() => _fakePermitReaderWriter.ReadPermit(A<Permit>.Ignored)).Returns(fakePermit);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored));
@@ -98,7 +100,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
-
+           
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             result.Should().Be(HttpStatusCode.OK);
@@ -120,6 +122,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.CreatePermitEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit completed"
            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+           call.Method.Name == "Log"
+           && call.GetArgument<LogLevel>(0) == LogLevel.Information
+           && call.GetArgument<EventId>(1) == EventIds.GetProductListStarted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}"
+           ).MustHaveHappenedTwiceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+           call.Method.Name == "Log"
+           && call.GetArgument<LogLevel>(0) == LogLevel.Information
+           && call.GetArgument<EventId>(1) == EventIds.GetProductListCompleted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}"
+           ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
