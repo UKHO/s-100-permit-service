@@ -224,7 +224,7 @@ namespace UKHO.S100PermitService.Common.Services
         private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdingsServiceResponse)
         {
             var decryptedProductKey = holdingsServiceResponse.Cells.Join(decryptedProductKeys,
-                cell => cell.CellCode.ToString(),
+                cell => cell.CellCode,
                 key => key.ProductName,
                 (cell, key) => key.DecryptedKey).FirstOrDefault();
 
