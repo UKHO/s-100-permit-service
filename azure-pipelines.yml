@@ -209,15 +209,21 @@ stages:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
 
-          - task: PowerShell@2
-            displayName: "Delay of 60 seconds to start BuildQualityChecks" 
-            inputs:
-              targetType: 'inline'
-              script: |                
-                Write-Host "Starting delay..."  
-                Start-Sleep -Seconds 60  
-                Write-Host "Delay of 60 seconds complete."
+          # - task: PowerShell@2
+          #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
+          #   inputs:
+          #     targetType: 'inline'
+          #     script: |                
+          #       Write-Host "Starting delay..."  
+          #       Start-Sleep -Seconds 60  
+          #       Write-Host "Delay of 60 seconds complete."
 
+      - job: BuildQualityChecks
+        workspace:
+          clean: all
+        displayName: "Build Quality Checks"
+        dependsOn: UnitTestsAndCodeCoverage
+        steps:
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
             inputs:
