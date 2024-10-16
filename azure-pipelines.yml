@@ -209,6 +209,11 @@ stages:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
 
+          - task: CmdLine@2
+            displayName: timeout before code quality check
+            inputs:
+              script: 'timeout /t 60'
+
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
             inputs:
@@ -216,6 +221,8 @@ stages:
               coverageFailOption: 'fixed'
               coverageType: 'lines'
               coverageThreshold: '$(CoverageThresholdLimit)'
+
+
 
       - job: BuildAndPublishAPI
         workspace:
