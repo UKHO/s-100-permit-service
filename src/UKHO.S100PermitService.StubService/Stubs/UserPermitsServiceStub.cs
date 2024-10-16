@@ -27,9 +27,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*" + ProductStandard, true))
-                .UsingGet()
-                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
+                    .WithPath(new WildcardMatcher(_userPermitsServiceConfiguration.Url + "/*" + ProductStandard, true))
+                    .UsingGet()
+                    .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
@@ -48,6 +48,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         private ResponseMessage SetResponseFromLicenseId(IRequestMessage requestMessage)
         {
             var licenceId = ExtractLicenceId(requestMessage);
+            var correlationId = ExtractCorrelationId(requestMessage);
 
             var responseMessage = new ResponseMessage
             {
@@ -76,7 +77,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                     break;
             }
 
-            responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
+            responseMessage.BodyData.BodyAsString = ResponseHelper.UpdateCorrelationIdInResponse(filePath, correlationId, (HttpStatusCode)responseMessage.StatusCode);
             responseMessage.AddHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType);
             responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString());
 
@@ -87,6 +88,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var value = requestMessage.AbsolutePath.Split('/')[2];
             return int.TryParse(value, out var licenceId) ? licenceId : 0;
+        }
+
+        private static string ExtractCorrelationId(IRequestMessage request)
+        {
+            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
+            {
+                return correlationId.First();
+            }
+            return Guid.NewGuid().ToString();
         }
     }
 }

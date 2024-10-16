@@ -27,9 +27,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             server
                 .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*" + ProductStandard, true))
-                .UsingGet()
-                .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
+                    .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*" + ProductStandard, true))
+                    .UsingGet()
+                    .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
                 .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
