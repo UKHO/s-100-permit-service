@@ -221,9 +221,9 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
-        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdings)
+        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdingsServiceResponse)
         {
-            var decryptedProductKey = holdings.Cells.Join(decryptedProductKeys,
+            var decryptedProductKey = holdingsServiceResponse.Cells.Join(decryptedProductKeys,
                 cell => cell.CellCode.ToString(),
                 key => key.ProductName,
                 (cell, key) => key.DecryptedKey).FirstOrDefault();
