@@ -159,11 +159,6 @@ stages:
         workspace:
           clean: all
         displayName: "Dotnet Test and Publish Code Coverage"
-        dependsOn:
-          - Dependencychecker
-          - BuildAndPublishAPI
-          - BuildAndPublishS100PermitServiceStubService
-          - PublishFunctionalTestsAndTerraform
         steps:
           - task: UseDotNet@2
             displayName: 'Use .NET 8.0.x sdk'
@@ -213,6 +208,15 @@ stages:
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
+
+          - task: PowerShell@2
+            displayName: "Delay of 60 seconds to start BuildQualityChecks" 
+            inputs:
+              targetType: 'inline'
+              script: |                
+                Write-Host "Starting delay..."  
+                Start-Sleep -Seconds 60  
+                Write-Host "Delay of 60 seconds complete."
 
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
