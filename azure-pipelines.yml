@@ -203,7 +203,7 @@ stages:
               filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
               arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
-          - task: PublishCodeCoverageResults@2
+          - task: PublishCodeCoverageResults@1
             displayName: "Publish Code Coverage Report Result"
             inputs:
               codeCoverageTool: 'cobertura'
