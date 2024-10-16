@@ -20,20 +20,21 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
+        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
-        private readonly IOptions<PermitConfiguration> _permitConfiguration;
+        private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
-        private Dictionary<string, Permit> _permitDictionary = new Dictionary<string, Permit>();
+        private Dictionary<string, Permit> _permitDictionary = new();
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -42,7 +43,7 @@ namespace UKHO.S100PermitService.Common.Services
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
                              IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
-                             IOptions<PermitConfiguration> permitConfiguration)
+                             IOptions<PermitFileConfiguration> permitFileConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -51,7 +52,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
-            _permitConfiguration = permitConfiguration ?? throw new ArgumentNullException(nameof(permitConfiguration));
+            _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
         public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -96,7 +97,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         private void CreatePermitXml(string userPermit, string title, List<Products> products)
         {
-            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
+            var xsdPath = Path.Combine(_schemaDirectory, SchemaFile);
             var productsList = new List<Products>();
             productsList.AddRange(products);
             var permit = new Permit
@@ -104,8 +105,8 @@ namespace UKHO.S100PermitService.Common.Services
                 Header = new Header
                 {
                     IssueDate = _issueDate,
-                    DataServerIdentifier = _permitConfiguration.Value.DataServerIdentifier,
-                    DataServerName = _permitConfiguration.Value.DataServerName,
+                    DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
+                    DataServerName = _permitFileConfiguration.Value.DataServerName,
                     Userpermit = userPermit,
                     Version = ReadXsdVersion()
                 },
@@ -147,16 +148,17 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
                 {
-                    products.Id = string.Format("S-{0}", cell.CellCode.Substring(0, 3));
+                    products.Id = $"S-{cell.CellCode[..3]}";
 
-                    var dataPermit = new ProductsProductDatasetPermit()
+                    var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
                         EncryptedKey = EncryptKey(productKey, hardwareId, holding),
                         Filename = cell.CellCode,
-                        Expiry = holding.ExpiryDate,
+                        Expiry = holding.ExpiryDate
                     };
-                    if(productsList.Where(x => x.Id == products.Id).Any())
+
+                    if(productsList.Any(x => x.Id == products.Id))
                     {
                         productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
                     }
@@ -165,7 +167,7 @@ namespace UKHO.S100PermitService.Common.Services
                         products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
                         productsList.Add(products);
                     }
-                    products = new Products();
+                    products = new();
                 }
             }
             _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", UpnTitle);
@@ -182,20 +184,20 @@ namespace UKHO.S100PermitService.Common.Services
 
             xml.Schemas = xmlSchemaSet;
 
-            var ValidXml = true;
+            var validXml = true;
             try
             {
                 xml.Validate((sender, e) =>
                 {
-                    ValidXml = false;
+                    validXml = false;
                 });
             }
             catch(XmlSchemaValidationException)
             {
-                ValidXml = false;
-                return ValidXml;
+                validXml = false;
+                return validXml;
             }
-            return ValidXml;
+            return validXml;
         }
 
         private string ReadXsdVersion()
@@ -208,7 +210,7 @@ namespace UKHO.S100PermitService.Common.Services
                 schema = XmlSchema.Read(reader, null);
             }
 
-            return schema.Version ?? null;
+            return schema?.Version[..5] ?? null;
         }
 
         private List<ProductKeyServiceRequest> ProductKeyServiceRequest(
