@@ -212,7 +212,6 @@ stages:
           - task: PublishCodeCoverageResults@2
             displayName: "Publish Code Coverage Report Result"
             inputs:
-#              codeCoverageTool: 'cobertura'
               summaryFileLocation: '$(Build.ArtifactStagingDirectory)/codecoveragereport'
               failIfCoverageEmpty: true
 
