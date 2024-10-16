@@ -200,12 +200,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(1)]
-        [TestCase(2)]
-        [TestCase(3)]
-        public void WhenHoldingServiceResponseContainsDuplicateDatasetsOrMultipleExpiry_ThenReturnsFilteredHoldingsByLatestExpiry(int i)
+        [TestCase("MultipleUpdateNumber")]
+        [TestCase("DifferentExpiry")]
+        [TestCase("DuplicateDataset")]
+        public void WhenHoldingServiceResponseContainsDuplicateDatasetsOrMultipleExpiry_ThenReturnsFilteredHoldingsByLatestExpiry(string holdingResponseType)
         {
-            var holdingsServiceResponse = GetHoldingsServiceResponse(i);
+            var holdingsServiceResponse = GetHoldingsServiceResponse(holdingResponseType);
 
             var result = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
 
@@ -228,12 +228,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappened();
         }
 
-        private static List<HoldingsServiceResponse> GetHoldingsServiceResponse(int i)
+        private static List<HoldingsServiceResponse> GetHoldingsServiceResponse(string holdingResponseType)
         {
-            return i switch
+            return holdingResponseType switch
             {
                 //Duplicate dataset with different edition number
-                1 => [
+                "MultipleUpdateNumber" => [
                         new HoldingsServiceResponse {
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
@@ -279,9 +279,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 }
                             ]
                         }
-                                    ],
+                    ],
+
                 //Duplicate dataset with different expiry
-                2 => [
+                "DifferentExpiry" => [
                         new HoldingsServiceResponse {
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
@@ -327,9 +328,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 }
                             ]
                         }
-                                    ],
+                    ],
+
                 //Duplicate dataset
-                3 => [
+                "DuplicateDataset" => [
                         new HoldingsServiceResponse {
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
@@ -375,7 +377,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 }
                             ]
                         }
-                                    ],
+                    ],
+
                 _ => []
             };
         }
