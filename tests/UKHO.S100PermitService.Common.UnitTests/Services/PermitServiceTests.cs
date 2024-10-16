@@ -109,6 +109,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
+            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKey(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
+
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information

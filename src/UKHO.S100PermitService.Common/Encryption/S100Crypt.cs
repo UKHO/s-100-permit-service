@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
@@ -41,7 +39,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get decrypted keys from Product keys completed.");
+            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Get decrypted keys from product keys completed.");
 
             return productKeys;
         }

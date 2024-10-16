@@ -137,14 +137,14 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdings, IEnumerable<ProductKey> productKey, string hardwareId, string UpnTitle)
+        private List<Products> GetProductsList(List<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
         {
             var productsList = new List<Products>();
             var products = new Products();
 
-            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}", UpnTitle);
+            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}", upnTitle);
 
-            foreach(var holding in holdings)
+            foreach(var holding in holdingsServiceResponse)
             {
                 foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
                 {
@@ -153,7 +153,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = EncryptKey(productKey, hardwareId, holding),
+                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, holding),
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate
                     };
@@ -170,7 +170,7 @@ namespace UKHO.S100PermitService.Common.Services
                     products = new();
                 }
             }
-            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", UpnTitle);
+            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", upnTitle);
             return productsList;
         }
 
@@ -221,9 +221,14 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
-        private string EncryptKey(IEnumerable<ProductKey> productKey, string hardwareId, HoldingsServiceResponse holding) =>
-            _s100Crypt.CreateEncryptedKey((from str1 in holding.Cells
-                                         join str2 in productKey on str1.CellCode.ToString() equals str2.ProductName
-                                         select str2.DecryptedKey).FirstOrDefault(), hardwareId);
+        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdings)
+        {
+            var decryptedProductKey = holdings.Cells.Join(decryptedProductKeys,
+                cell => cell.CellCode.ToString(),
+                key => key.ProductName,
+                (cell, key) => key.DecryptedKey).FirstOrDefault();
+
+            return _s100Crypt.CreateEncryptedKey(decryptedProductKey, hardwareId);
+        }
     }
 }
