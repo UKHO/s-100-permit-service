@@ -209,6 +209,13 @@ stages:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
 
+          - task: PublishCodeCoverageResults@2
+            displayName: "Publish Code Coverage Report Result"
+            inputs:
+              codeCoverageTool: 'cobertura'
+              codeCoverageReportDirectory: '$(Pipeline.Workspace)/codecoveragereport'
+              failIfCoverageEmpty: true
+
           # - task: PowerShell@2
           #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
           #   inputs:
