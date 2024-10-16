@@ -141,7 +141,7 @@ namespace UKHO.S100PermitService.Common.Services
             var productsList = new List<Products>();
             var products = new Products();
 
-            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List started for Title: {title}", UpnTitle);
+            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}", UpnTitle);
 
             foreach(var holding in holdings)
             {
@@ -168,7 +168,7 @@ namespace UKHO.S100PermitService.Common.Services
                     products = new Products();
                 }
             }
-            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List completed for title : {title}", UpnTitle);
+            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", UpnTitle);
             return productsList;
         }
 
