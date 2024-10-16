@@ -213,7 +213,7 @@ stages:
             displayName: "Publish Code Coverage Report Result"
             inputs:
               codeCoverageTool: 'cobertura'
-              codeCoverageReportDirectory: '$(Pipeline.Workspace)/codecoveragereport'
+              summaryFileLocation: '$(Pipeline.Workspace)/codecoveragereport/Cobertura.xml'
               failIfCoverageEmpty: true
 
           # - task: PowerShell@2
