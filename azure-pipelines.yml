@@ -159,6 +159,11 @@ stages:
         workspace:
           clean: all
         displayName: "Dotnet Test and Publish Code Coverage"
+        dependsOn:
+          - Dependencychecker
+          - BuildAndPublishAPI
+          - BuildAndPublishS100PermitServiceStubService
+          - PublishFunctionalTestsAndTerraform
         steps:
           - task: UseDotNet@2
             displayName: 'Use .NET 8.0.x sdk'
