@@ -223,6 +223,16 @@
         /// <summary>
         /// 840044 - Upn length or checksum validation failed
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840044
+        UpnLengthOrChecksumValidationFailed = 840044,
+
+        /// <summary>
+        /// 840045 - Holdings total cell count
+        /// </summary>
+        HoldingsTotalCellCount = 840045,
+
+        /// <summary>
+        /// 840046 - Holdings filtered cell count
+        /// </summary>
+        HoldingsFilteredCellCount = 840046
     }
 }

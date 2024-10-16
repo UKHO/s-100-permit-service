@@ -74,6 +74,8 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c })).ToList();
 
+            _logger.LogInformation(EventIds.HoldingsTotalCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count);
+
             var latestCells = allCells
                 .GroupBy(c => c.Cell.CellCode)
                 .Select(g => g.OrderByDescending(c => c.ExpiryDate).First())
@@ -89,6 +91,8 @@ namespace UKHO.S100PermitService.Common.Services
                     Cells = g.Select(c => c.Cell).ToList()
                 })
                 .ToList();
+
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredProducts.Count);
 
             return filteredProducts;
         }

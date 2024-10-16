@@ -200,74 +200,184 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenHoldingServiceResponseContainsDuplicateDatasets_ThenReturnsFilteredHoldingsByLatestExpiry()
+        [TestCase(1)]
+        [TestCase(2)]
+        [TestCase(3)]
+        public void WhenHoldingServiceResponseContainsDuplicateDatasetsOrMultipleExpiry_ThenReturnsFilteredHoldingsByLatestExpiry(int i)
         {
-            var holdingsServiceResponse = GetHoldingsServiceResponse();
+            var holdingsServiceResponse = GetHoldingsServiceResponse(i);
 
             var result = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
 
             result.Should().HaveCount(2);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsTotalCellCount.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Holdings total cell count : {Count}"
+            ).MustHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsFilteredCellCount.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Holdings filtered cell count : {Count}"
+            ).MustHaveHappened();
         }
 
-        private static List<HoldingsServiceResponse> GetHoldingsServiceResponse()
+        private static List<HoldingsServiceResponse> GetHoldingsServiceResponse(int i)
         {
-            var holdingsServiceResponses = new List<HoldingsServiceResponse>
+            return i switch
             {
-                new() {
-                    ProductTitle = "ProductTitle",
-                    ProductCode = "ProductCode",
-                    ExpiryDate = DateTime.UtcNow.AddDays(5),
-                    Cells =
-                    [
-                        new Cell
-                        {
-                            CellTitle = "CellTitle",
-                            CellCode = "CellCode",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                //Duplicate dataset with different edition number
+                1 => [
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(5),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "2",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
                         },
-                        new Cell
-                        {
-                            CellTitle = "CellTitle",
-                            CellCode = "CellCode",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle1",
+                            ProductCode = "ProductCode1",
+                            ExpiryDate = DateTime.UtcNow.AddDays(4),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle1",
+                                    CellCode = "CellCode1",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(3),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
                         }
-                    ]
-                },
-                new() {
-                    ProductTitle = "ProductTitle1",
-                    ProductCode = "ProductCode1",
-                    ExpiryDate = DateTime.UtcNow.AddDays(4),
-                    Cells =
-                    [
-                        new Cell
-                        {
-                            CellTitle = "CellTitle1",
-                            CellCode = "CellCode1",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                                    ],
+                //Duplicate dataset with different expiry
+                2 => [
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(5),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(3),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle1",
+                            ProductCode = "ProductCode1",
+                            ExpiryDate = DateTime.UtcNow.AddDays(4),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle1",
+                                    CellCode = "CellCode1",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
                         }
-                    ]
-                },
-                new() {
-                    ProductTitle = "ProductTitle",
-                    ProductCode = "ProductCode",
-                    ExpiryDate = DateTime.UtcNow.AddDays(3),
-                    Cells =
-                    [
-                        new Cell
-                        {
-                            CellTitle = "CellTitle",
-                            CellCode = "CellCode",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                                    ],
+                //Duplicate dataset
+                3 => [
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(5),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(5),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse {
+                            ProductTitle = "ProductTitle1",
+                            ProductCode = "ProductCode1",
+                            ExpiryDate = DateTime.UtcNow.AddDays(4),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle1",
+                                    CellCode = "CellCode1",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
                         }
-                    ]
-                }
+                                    ],
+                _ => []
             };
-
-            return holdingsServiceResponses;
         }
     }
 }
