@@ -210,11 +210,11 @@ stages:
               summaryFileLocation: '$(Build.ArtifactStagingDirectory)/codecoveragereport/Cobertura.xml'
               failIfCoverageEmpty: true
 
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Code coverage"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
-              ArtifactName: codecoveragereport
+          # - task: PublishBuildArtifacts@1
+          #   displayName: "Publish Code coverage"
+          #   inputs:
+          #     PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
+          #     ArtifactName: codecoveragereport
 
           # - task: PowerShell@2
           #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
