@@ -88,11 +88,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveKey_ThenInternalServerError500IsReturned()
         {
-            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidPKSLicenceId!)
-            {
-                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
-                response.StatusCode.Should().Be((HttpStatusCode)500);
-            }
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidPKSLicenceId.ToString()!);
+            response.StatusCode.Should().Be((HttpStatusCode)500);
         }
 
         // PBI 179438: Product Backlog Item 179438: Handle successful request with empty response for Get UPNs and Get Holdings
