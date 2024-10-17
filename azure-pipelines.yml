@@ -204,7 +204,7 @@ stages:
               arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
           - task: publishcodecoverageresults@2
-            displayname: "publish code coverage report result"
+#            displayname: "publish code coverage report result"
             inputs:
 #              codecoveragetool: 'cobertura'
               summaryfilelocation: '$(build.artifactstagingdirectory)/codecoveragereport/cobertura.xml'              
