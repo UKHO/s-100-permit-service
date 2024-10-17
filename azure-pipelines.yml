@@ -231,6 +231,14 @@ stages:
         displayName: "Build Quality Checks"
         dependsOn: UnitTestsAndCodeCoverage
         steps:
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packagetype: sdk
+              useglobaljson: true
+              workingdirectory: '$(build.sourcesdirectory)\src'
+
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
             inputs:
