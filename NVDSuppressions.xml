@@ -195,4 +195,12 @@ See https://msrc.microsoft.com/update-guide/en-us/vulnerability/CVE-2018-8409
 		<cve>CVE-2020-1108</cve>
 		<cve>CVE-2021-1721</cve>
 	</suppress>
+	<suppress>
+		<notes>
+			<![CDATA[
+   file name: Azure.Core.dll,Azure.Identity.dll .There is no apparent reference as latest version 1.13.0 is installed but still showing as a vulnerability.
+   ]]>
+		</notes>		
+		<cve>CVE-2024-43591</cve>
+	</suppress>
 </suppressions>

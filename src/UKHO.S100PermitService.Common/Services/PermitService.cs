@@ -2,6 +2,9 @@
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Reflection;
+using System.Xml;
+using System.Xml.Schema;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -10,6 +13,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -17,14 +21,19 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
+        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
         private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
+        private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
+
+        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -32,7 +41,8 @@ namespace UKHO.S100PermitService.Common.Services
                              IUserPermitService userPermitService,
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
-                             IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration)
+                             IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
+                             IOptions<PermitFileConfiguration> permitFileConfiguration)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -41,6 +51,7 @@ namespace UKHO.S100PermitService.Common.Services
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
+            _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
         public async Task<(HttpStatusCode, MemoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
@@ -72,96 +83,113 @@ namespace UKHO.S100PermitService.Common.Services
 
             var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            var productsList = new List<Products>();
-            productsList.AddRange(GetProductsList());
-
-            var permits = new List<Permit>();
-
-            foreach(var upnInfo in listOfUpnInfo)
-            {
-                permits.Add(new Permit
-                {
-                    Header = new Header
-                    {
-                        IssueDate = DateTimeOffset.Now.ToString(DateFormat),
-                        DataServerIdentifier = "GB00",
-                        DataServerName = "UK Hydrographic Office",
-                        Userpermit = upnInfo.Upn,
-                        Version = "1.0",
-                    },
-                    Products = [.. productsList],
-                    Title = upnInfo.Title,
-                });
-            };
-
-            var permitDetails = CreatePermits(permits);
+            var permitDetails = CreatePermits(holdingsServiceResponse, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private MemoryStream CreatePermits(List<Permit> permits)
+        private MemoryStream CreatePermits(List<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
 
-            var permitDetails = _permitReaderWriter.CreatePermits(permits);
+            var permitDictionary = new Dictionary<string, Permit>();
 
-            if(permitDetails.Length > 0)
+            foreach(var upnInfo in upnInfos)
             {
-                _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
+                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId, upnInfo.Title);
+
+                var permit = new Permit
+                {
+                    Header = new Header
+                    {
+                        IssueDate = _issueDate,
+                        DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
+                        DataServerName = _permitFileConfiguration.Value.DataServerName,
+                        Userpermit = upnInfo.Upn,
+                        Version = ReadXsdVersion()
+                    },
+                    Products = [.. productsList]
+                };
+
+                permitDictionary.Add(upnInfo.Title, permit);
             }
-            else
-            {
-                _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
-            }
+
+            var permitDetails = _permitReaderWriter.CreatePermits(permitDictionary);
+
+            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
+
             return permitDetails;
         }
 
         [ExcludeFromCodeCoverage]
-        private static List<Products> GetProductsList()
+        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
         {
-            var productsList = new List<Products>
+            var productsList = new List<Products>();
+            var products = new Products();
+
+            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}", upnTitle);
+
+            foreach(var holding in holdingsServiceResponse)
             {
-                new()
+                foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
                 {
-                    Id = "ID1",
-                    DatasetPermit =
-                    [
-                        new() {
-                            IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
-                            EditionNumber = 1,
-                            EncryptedKey = "encryptedkey",
-                            Expiry = DateTime.Now,
-                            Filename = "filename",
+                    products.Id = $"S-{cell.CellCode[..3]}";
 
-                        }
-                    ]
-                },new()
-                {
-                    Id = "ID2",
-                    DatasetPermit =
-                    [
-                        new() {
-                            IssueDate = DateTimeOffset.Now.ToString("yyyy-MM-ddzzz"),
-                            EditionNumber = 1,
-                            EncryptedKey = "encryptedkey",
-                            Expiry = DateTime.Now,
-                            Filename = "filename",
+                    var dataPermit = new ProductsProductDatasetPermit
+                    {
+                        EditionNumber = byte.Parse(cell.LatestEditionNumber),
+                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, holding),
+                        Filename = cell.CellCode,
+                        Expiry = holding.ExpiryDate
+                    };
 
-                        }
-                    ]
+                    if(productsList.Any(x => x.Id == products.Id))
+                    {
+                        productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
+                    }
+                    else
+                    {
+                        products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
+                        productsList.Add(products);
+                    }
+                    products = new();
                 }
-            };
+            }
+            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", upnTitle);
             return productsList;
         }
 
-        private static List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+        private string ReadXsdVersion()
+        {
+            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
+
+            XmlSchema? schema;
+            using(var reader = XmlReader.Create(xsdPath))
+            {
+                schema = XmlSchema.Read(reader, null);
+            }
+
+            return schema?.Version[..5] ?? null;
+        }
+
+        private List<ProductKeyServiceRequest> ProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
             {
                 ProductName = y.CellCode,
                 Edition = y.LatestEditionNumber
             })).ToList();
+
+        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdingsServiceResponse)
+        {
+            var decryptedProductKey = holdingsServiceResponse.Cells.Join(decryptedProductKeys,
+                cell => cell.CellCode,
+                key => key.ProductName,
+                (cell, key) => key.DecryptedKey).FirstOrDefault();
+
+            return _s100Crypt.CreateEncryptedKey(decryptedProductKey, hardwareId);
+        }
     }
 }

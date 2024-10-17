@@ -9,7 +9,6 @@ namespace UKHO.S100PermitService.Common.Models.Permits
     {
         private string _fileNameField;
         private byte _editionNumberField;
-        private string _issueDateField;
         private DateTime _expiryField;
         private string _encryptedKeyField;
 
@@ -36,19 +35,6 @@ namespace UKHO.S100PermitService.Common.Models.Permits
             set
             {
                 _editionNumberField = value;
-            }
-        }
-
-        [System.Xml.Serialization.XmlElement("S100SE:issueDate")]
-        public string IssueDate
-        {
-            get
-            {
-                return _issueDateField;
-            }
-            set
-            {
-                _issueDateField = value;
             }
         }
 

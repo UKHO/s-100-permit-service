@@ -25,6 +25,23 @@ namespace UKHO.S100PermitService.Common.Encryption
             return PerformCryptography(hexString, decrypt);
         }
 
+        public string Encrypt(string hexString, string keyHexEncoded)
+        {
+            if(hexString.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexStringLengthError.ToEventId(), "Expected hex string length {HexSize}, but found {HexString Length}.", HexSize, hexString.Length);
+            }
+
+            if(keyHexEncoded.Length != HexSize)
+            {
+                throw new AesEncryptionException(EventIds.HexKeyLengthError.ToEventId(), "Expected hex key length {HexSize}, but found {HexKey Length}.", HexSize, keyHexEncoded.Length);
+            }
+
+            using var aes = CreateAes(keyHexEncoded);
+            using var encrypt = aes.CreateEncryptor(aes.Key, aes.IV);
+            return PerformCryptography(hexString, encrypt);
+        }
+
         private static Aes CreateAes(string keyHexEncoded)
         {
             var aes = Aes.Create();
@@ -41,11 +58,11 @@ namespace UKHO.S100PermitService.Common.Encryption
         {
             var cypherBytes = StringToByteArray(hexString);
 
-            using var ms = new MemoryStream();
-            using var cryptoStream = new CryptoStream(ms, cryptoTransform, CryptoStreamMode.Write);
+            using var memoryStream = new MemoryStream();
+            using var cryptoStream = new CryptoStream(memoryStream, cryptoTransform, CryptoStreamMode.Write);
             cryptoStream.Write(cypherBytes, 0, cypherBytes.Length);
             cryptoStream.FlushFinalBlock();
-            return BitConverter.ToString(ms.ToArray()).Replace("-", "");
+            return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
         }
 
         private static byte[] StringToByteArray(string hexString)

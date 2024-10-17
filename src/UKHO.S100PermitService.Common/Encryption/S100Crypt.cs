@@ -66,6 +66,11 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permits completed");
 
             return listOfUpnInfo;
+        }       
+
+        public string CreateEncryptedKey(string productKeyServiceKey, string hardwareId)
+        {           
+           return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
         }
     }
-}
+ }

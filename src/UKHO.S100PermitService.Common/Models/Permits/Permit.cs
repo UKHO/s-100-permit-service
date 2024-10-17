@@ -41,8 +41,5 @@ namespace UKHO.S100PermitService.Common.Models.Permits
                 _productsField = value;
             }
         }
-
-        [XmlIgnore]
-        public string Title { get; set; }
     }
 }
