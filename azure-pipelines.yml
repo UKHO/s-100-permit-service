@@ -203,30 +203,31 @@ stages:
               filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
               arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
-          - task: PublishCodeCoverageResults@2
-            displayName: "Publish Code Coverage Report Result"
-            inputs:
-#              codeCoverageTool: 'cobertura'
-              summaryFileLocation: '$(Build.SourcesDirectory)/**/*coverage.cobertura.xml'
-              failIfCoverageEmpty: true
+#           - task: PublishCodeCoverageResults@2
+#             displayName: "Publish Code Coverage Report Result"
+#             inputs:
+# #              codeCoverageTool: 'cobertura'
+#               summaryFileLocation: |
+#                          '$(Build.SourcesDirectory)/**/*coverage.cobertura.xml'
+#                          '$(Build.ArtifactStagingDirectory)/**/*coverage.cobertura.xml'
+              
+#               failIfCoverageEmpty: true
 
-          - task: PowerShell@2
-            displayName: 'List Files'
-            inputs:
-              targetType: 'inline'
-              script: |
-                echo $(Build.ArtifactStagingDirectory)
-                Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse -File -Filter "*.xml"
-                echo $(Build.SourcesDirectory)
-                Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -File -Filter "*.xml"
-
-
-
-          # - task: PublishBuildArtifacts@1
-          #   displayName: "Publish Code coverage"
+          # - task: PowerShell@2
+          #   displayName: 'List Files'
           #   inputs:
-          #     PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
-          #     ArtifactName: codecoveragereport
+          #     targetType: 'inline'
+          #     script: |
+          #       echo $(Build.ArtifactStagingDirectory)
+          #       Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse -File -Filter "*.xml"
+          #       echo $(Build.SourcesDirectory)
+          #       Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -File -Filter "*.xml"
+
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish Code coverage"
+            inputs:
+              PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
+              ArtifactName: codecoveragereport
 
           # - task: PowerShell@2
           #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
@@ -237,27 +238,27 @@ stages:
           #       Start-Sleep -Seconds 60  
           #       Write-Host "Delay of 60 seconds complete."
 
-      - job: BuildQualityChecks
-        workspace:
-          clean: all
-        displayName: "Build Quality Checks"
-        dependsOn: UnitTestsAndCodeCoverage
-        steps:
+      # - job: BuildQualityChecks
+      #   workspace:
+      #     clean: all
+      #   displayName: "Build Quality Checks"
+      #   dependsOn: UnitTestsAndCodeCoverage
+      #   steps:
 
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packagetype: sdk
-              useglobaljson: true
-              workingdirectory: '$(build.sourcesdirectory)\src'
+      #     - task: UseDotNet@2
+      #       displayName: 'Use .NET 8.0.x sdk'
+      #       inputs:
+      #         packagetype: sdk
+      #         useglobaljson: true
+      #         workingdirectory: '$(build.sourcesdirectory)\src'
 
-          - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold not meet"            
-            inputs:
-              checkCoverage: true
-              coverageFailOption: 'fixed'
-              coverageType: 'lines'
-              coverageThreshold: '$(CoverageThresholdLimit)'
+      #     - task: BuildQualityChecks@9
+      #       displayName: "Code coverage fails if threshold not meet"            
+      #       inputs:
+      #         checkCoverage: true
+      #         coverageFailOption: 'fixed'
+      #         coverageType: 'lines'
+      #         coverageThreshold: '$(CoverageThresholdLimit)'
 
       - job: BuildAndPublishAPI
         workspace:
@@ -430,6 +431,32 @@ stages:
             inputs:
               PathtoPublish: '$(Build.SourcesDirectory)\Deployment'
               ArtifactName: terraformartifact
+
+  - stage: BuildQualityChecks
+    displayName: "Build Quality Checks"
+    dependsOn: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
+    jobs:
+      - job: BuildQualityChecks
+        pool: NautilusBuild  
+        workspace:
+          clean: all
+        displayName: "Build Quality Checks"
+        steps:
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packagetype: sdk
+              useglobaljson: true
+              workingdirectory: '$(build.sourcesdirectory)\src'
+
+          - task: BuildQualityChecks@9
+            displayName: "Code coverage fails if threshold not meet"            
+            inputs:
+              checkCoverage: true
+              coverageFailOption: 'fixed'
+              coverageType: 'lines'
+              coverageThreshold: '$(CoverageThresholdLimit)'
 
   - stage: Devdeploy
     displayName: "Devdeploy (inc terraform, webapp deploy)"
