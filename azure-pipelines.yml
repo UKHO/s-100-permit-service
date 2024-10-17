@@ -216,9 +216,9 @@ stages:
               targetType: 'inline'
               script: |
                 echo $(Build.ArtifactStagingDirectory)
-                find $(Build.ArtifactStagingDirectory) -type f -name '**/*.xml'
+                Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse -File -Filter "*.xml"
                 echo $(Build.SourcesDirectory)
-                find $(Build.SourcesDirectory) -name '**/*.xml'
+                Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -File -Filter "*.xml"
 
 
 
