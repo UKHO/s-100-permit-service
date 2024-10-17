@@ -399,3 +399,5 @@ FodyWeavers.xsd
 /S100PermitService.v3.ncrunchsolution
 *.stryker-config.json
 /src/UKHO.S100PermitService.API/appsettings.local.overrides.json
+/tests/UKHO.S100PermitService.API.FunctionalTests/UKHO.S100PermitService.API.FunctionalTests.v3.ncrunchproject
+/tests/UKHO.S100PermitService.StubService.UnitTests/UKHO.S100PermitService.StubService.UnitTests.v3.ncrunchproject
