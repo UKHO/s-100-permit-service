@@ -88,8 +88,7 @@ namespace UKHO.S100PermitService.Common.Services
                     ProductTitle = g.Key.ProductTitle,
                     ExpiryDate = g.Max(c => c.ExpiryDate),
                     Cells = g.Select(c => c.Cell).ToList()
-                })
-                .ToList();
+                }).ToList();
 
             _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredHoldings.Count);
 
