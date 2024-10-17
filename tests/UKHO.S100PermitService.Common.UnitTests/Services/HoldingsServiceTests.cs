@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text;
 using System.Text.Json;
@@ -228,6 +229,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappened();
         }
 
+        [ExcludeFromCodeCoverage]
         private static List<HoldingsServiceResponse> GetHoldingsServiceResponse(string holdingResponseType)
         {
             return holdingResponseType switch
