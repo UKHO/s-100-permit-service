@@ -59,7 +59,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
             string filePath;
             switch(licenceId)
             {
-                case int n when(n >= 1 && n <= 7) || (n == 22):
+                case int n when(n >= 1 && n <= 11) || (n == 22):
                     filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;

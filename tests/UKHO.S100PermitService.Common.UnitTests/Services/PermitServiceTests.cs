@@ -120,6 +120,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
+           call.Method.Name == "Log"
+           && call.GetArgument<LogLevel>(0) == LogLevel.Information
+           && call.GetArgument<EventId>(1) == EventIds.GetProductListStarted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}"
+           ).MustHaveHappenedTwiceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+           call.Method.Name == "Log"
+           && call.GetArgument<LogLevel>(0) == LogLevel.Information
+           && call.GetArgument<EventId>(1) == EventIds.GetProductListCompleted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}"
+           ).MustHaveHappenedTwiceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.FileCreationEnd.ToEventId()
@@ -132,13 +146,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.CreatePermitEnd.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit completed"
            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Error
-           && call.GetArgument<EventId>(1) == EventIds.EmptyPermitXml.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Empty permit xml is received"
-           ).MustNotHaveHappened();
         }
 
         [Test]
@@ -157,6 +164,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Item1.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -193,6 +203,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Item1.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -222,6 +233,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                },
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle",
+                                    CellCode = "CellCode",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse
+                        {
+                            ProductTitle = "ProductTitle1",
+                            ProductCode = "ProductCode1",
+                            ExpiryDate = DateTime.UtcNow.AddDays(4),
+                            Cells =
+                            [
+                                new Cell
+                                {
+                                    CellTitle = "CellTitle1",
+                                    CellCode = "CellCode1",
+                                    LatestEditionNumber = "1",
+                                    LatestUpdateNumber = "1"
+                                }
+                            ]
+                        },
+                        new HoldingsServiceResponse
+                        {
+                            ProductTitle = "ProductTitle",
+                            ProductCode = "ProductCode",
+                            ExpiryDate = DateTime.UtcNow.AddDays(3),
                             Cells =
                             [
                                 new Cell
@@ -283,6 +333,45 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ];
         }
 
+        private static List<HoldingsServiceResponse> GetFilteredHoldingDetails()
+        {
+            return
+            [
+                new HoldingsServiceResponse
+                {
+                    ProductTitle = "ProductTitle",
+                    ProductCode = "ProductCode",
+                    ExpiryDate = DateTime.UtcNow.AddDays(5),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle",
+                            CellCode = "CellCode",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                },
+                new HoldingsServiceResponse
+                {
+                    ProductTitle = "ProductTitle1",
+                    ProductCode = "ProductCode1",
+                    ExpiryDate = DateTime.UtcNow.AddDays(4),
+                    Cells =
+                    [
+                        new Cell
+                        {
+                            CellTitle = "CellTitle1",
+                            CellCode = "CellCode1",
+                            LatestEditionNumber = "1",
+                            LatestUpdateNumber = "1"
+                        }
+                    ]
+                }
+            ];
+        }
+
         private string GetExpectedXmlString()
         {
             var expectedResult = "<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.1\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.0\"><S100SE:header>";
@@ -292,5 +381,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             return expectedResult;
         }
+
     }
 }

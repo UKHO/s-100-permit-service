@@ -66,6 +66,42 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
                 .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200.json")));
 
+            server //200
+                .Given(Request.Create()
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-8-DuplicateCell.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200-8-DuplicateCell.json")));
+
+            server //200
+                .Given(Request.Create()
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-9-DuplicateCell.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200-9-DuplicateCell.json")));
+
+            server //200
+                .Given(Request.Create()
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                .UsingPost()
+                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-11-DuplicateCell.json"))))
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithStatusCode(HttpStatusCode.OK)
+                .WithHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType)
+                .WithHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString())
+                .WithBodyFromFile(Path.Combine(ResponseFileDirectory, "response-200-11-DuplicateCell.json")));
+
             server //400 when incorrect request passed
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))

@@ -226,7 +226,7 @@
         UpnLengthOrChecksumValidationFailed = 840044,
 
         /// <summary>
-        /// 840045 - Invalid Permit Xml Schema is recieved
+        /// 840045 - Invalid Permit Xml Schema is received
         /// </summary>
         InvalidPermitXmlSchema = 840045,
 
@@ -238,6 +238,16 @@
         /// <summary>
         /// 840047 - Get Product list completed
         /// </summary>
-        GetProductListCompleted = 840047
+        GetProductListCompleted = 840047,
+
+        /// <summary>
+        /// 840048 - Holdings total cell count
+        /// </summary>
+        HoldingsCellCount = 840048,
+
+        /// <summary>
+        /// 840049 - Holdings filtered cell count
+        /// </summary>
+        HoldingsFilteredCellCount = 840049
     }
 }

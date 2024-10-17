@@ -69,5 +69,30 @@ namespace UKHO.S100PermitService.Common.Services
                 "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
+
+        public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
+        {
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
+
+            _logger.LogInformation(EventIds.HoldingsCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count());
+
+            var latestCells = allCells
+                .GroupBy(c => c.Cell.CellCode)
+                .Select(g => g.OrderByDescending(c => c.ExpiryDate).First());
+
+            var filteredHoldings = latestCells
+                .GroupBy(c => new { c.ProductCode, c.ProductTitle })
+                .Select(g => new HoldingsServiceResponse
+                {
+                    ProductCode = g.Key.ProductCode,
+                    ProductTitle = g.Key.ProductTitle,
+                    ExpiryDate = g.Max(c => c.ExpiryDate),
+                    Cells = g.Select(c => c.Cell).ToList()
+                }).ToList();
+
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredHoldings.Count);
+
+            return filteredHoldings;
+        }
     }
 }
