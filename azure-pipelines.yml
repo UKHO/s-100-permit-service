@@ -209,9 +209,9 @@ stages:
               targetType: 'inline'
               script: |
                 echo $(Build.ArtifactStagingDirectory)
-                find $(Build.ArtifactStagingDirectory) -name '*coverage.cobertura.xml'
+                find $(Build.ArtifactStagingDirectory) -type f -name '*.xml'
                 echo $(Build.SourcesDirectory)
-                find $(Build.SourcesDirectory) -name '*coverage.cobertura.xml'
+                find $(Build.SourcesDirectory) -name '*.xml'
 
           - task: PublishCodeCoverageResults@2
             displayName: "Publish Code Coverage Report Result"
