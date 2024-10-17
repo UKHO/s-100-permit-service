@@ -88,7 +88,7 @@ namespace UKHO.S100PermitService.Common.IO
 
             if(!ValidateSchema(xmlContent, xsdPath))
             {
-                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid xml schema is received");
+                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
             }
 
             // Write the modified XML content to the zip entry
