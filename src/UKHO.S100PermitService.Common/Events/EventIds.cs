@@ -228,7 +228,7 @@
         /// <summary>
         /// 840045 - Holdings total cell count
         /// </summary>
-        HoldingsTotalCellCount = 840045,
+        HoldingsCellCount = 840045,
 
         /// <summary>
         /// 840046 - Holdings filtered cell count

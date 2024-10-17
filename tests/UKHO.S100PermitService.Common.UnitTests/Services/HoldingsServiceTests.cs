@@ -214,7 +214,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.HoldingsTotalCellCount.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsCellCount.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Holdings total cell count : {Count}"
             ).MustHaveHappened();
