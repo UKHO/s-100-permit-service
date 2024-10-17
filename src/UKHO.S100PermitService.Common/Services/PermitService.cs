@@ -13,6 +13,7 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -34,8 +35,6 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
-        private Dictionary<string, Permit> _permitDictionary = new();
-
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
                              IHoldingsService holdingsService,
@@ -55,7 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
-        public async Task<HttpStatusCode> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, MemoryStream memoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
@@ -64,7 +63,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
 
-                return HttpStatusCode.NoContent;
+                return (HttpStatusCode.NoContent, new MemoryStream());
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
@@ -73,7 +72,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
 
-                return HttpStatusCode.NoContent;
+                return (HttpStatusCode.NoContent, new MemoryStream());
             }
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
@@ -86,58 +85,44 @@ namespace UKHO.S100PermitService.Common.Services
 
             var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            foreach(var upnInfo in listOfUpnInfo)
-            {
-                var productsList = GetProductsList(holdingsServiceResponse, decryptedProductKeys, upnInfo.DecryptedHardwareId, upnInfo.Title);
-                CreatePermitXml(upnInfo.Upn, upnInfo.Title, productsList);
-            }
+            var permitDetails = CreatePermits(holdingsServiceResponse, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
-            return HttpStatusCode.OK;
+            return (HttpStatusCode.OK, permitDetails);
         }
 
-        private void CreatePermitXml(string userPermit, string title, IEnumerable<Products> products)
+        private MemoryStream CreatePermits(List<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
-            var xsdPath = Path.Combine(_schemaDirectory, SchemaFile);
-            var productsList = new List<Products>();
-            productsList.AddRange(products);
-            var permit = new Permit
+            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
+
+            var permitDictionary = new Dictionary<string, Permit>();
+
+            foreach(var upnInfo in upnInfos)
             {
-                Header = new Header
+                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId, upnInfo.Title);
+
+                var permit = new Permit
                 {
-                    IssueDate = _issueDate,
-                    DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
-                    DataServerName = _permitFileConfiguration.Value.DataServerName,
-                    Userpermit = userPermit,
-                    Version = ReadXsdVersion()
-                },
-                Products = [.. productsList]
-            };
+                    Header = new Header
+                    {
+                        IssueDate = _issueDate,
+                        DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
+                        DataServerName = _permitFileConfiguration.Value.DataServerName,
+                        Userpermit = upnInfo.Upn,
+                        Version = ReadXsdVersion()
+                    },
+                    Products = [.. productsList]
+                };
 
-            _permitDictionary.Add(title, permit);
-
-            _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
-
-            var permitXml = _permitReaderWriter.ReadPermit(permit);
-            if(!string.IsNullOrEmpty(permitXml))
-            {
-                _logger.LogInformation(EventIds.XmlSerializationEnd.ToEventId(), "Permit Xml serialization completed");
-
-                if(ValidateSchema(permitXml, xsdPath))
-                {
-                    _permitReaderWriter.WritePermit(permitXml);
-                    _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file created");
-                }
-                else
-                {
-                    _logger.LogError(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid xml schema is received");
-                }
+                permitDictionary.Add(upnInfo.Title, permit);
             }
-            else
-            {
-                _logger.LogError(EventIds.EmptyPermitXml.ToEventId(), "Empty permit xml is received");
-            }
+
+            var permitDetails = _permitReaderWriter.CreatePermits(permitDictionary);
+
+            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
+
+            return permitDetails;
         }
 
         [ExcludeFromCodeCoverage]
@@ -176,32 +161,6 @@ namespace UKHO.S100PermitService.Common.Services
             }
             _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", upnTitle);
             return productsList;
-        }
-
-        public bool ValidateSchema(string permitXml, string xsdPath)
-        {
-            var xml = new XmlDocument();
-            xml.LoadXml(permitXml);
-
-            var xmlSchemaSet = new XmlSchemaSet();
-            xmlSchemaSet.Add(null, xsdPath);
-
-            xml.Schemas = xmlSchemaSet;
-
-            var validXml = true;
-            try
-            {
-                xml.Validate((sender, e) =>
-                {
-                    validXml = false;
-                });
-            }
-            catch(XmlSchemaValidationException)
-            {
-                validXml = false;
-                return validXml;
-            }
-            return validXml;
         }
 
         private string ReadXsdVersion()
