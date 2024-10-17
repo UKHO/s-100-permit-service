@@ -70,31 +70,30 @@ namespace UKHO.S100PermitService.Common.Services
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
-        public List<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(List<HoldingsServiceResponse> holdingsServiceResponse)
+        public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
-            var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c })).ToList();
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
 
-            _logger.LogInformation(EventIds.HoldingsTotalCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count);
+            _logger.LogInformation(EventIds.HoldingsTotalCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count());
 
             var latestCells = allCells
                 .GroupBy(c => c.Cell.CellCode)
-                .Select(g => g.OrderByDescending(c => c.ExpiryDate).First())
-                .ToList();
+                .Select(g => g.OrderByDescending(c => c.ExpiryDate).First());
 
-            var filteredProducts = latestCells
-                .GroupBy(c => new { c.ProductCode, c.ProductTitle, c.ExpiryDate })
+            var filteredHoldings = latestCells
+                .GroupBy(c => new { c.ProductCode, c.ProductTitle })
                 .Select(g => new HoldingsServiceResponse
                 {
                     ProductCode = g.Key.ProductCode,
                     ProductTitle = g.Key.ProductTitle,
-                    ExpiryDate = g.Key.ExpiryDate,
+                    ExpiryDate = g.Max(c => c.ExpiryDate),
                     Cells = g.Select(c => c.Cell).ToList()
                 })
                 .ToList();
 
-            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredProducts.Count);
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredHoldings.Count);
 
-            return filteredProducts;
+            return filteredHoldings;
         }
     }
 }

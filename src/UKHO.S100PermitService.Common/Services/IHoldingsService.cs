@@ -6,6 +6,6 @@ namespace UKHO.S100PermitService.Common.Services
     {
         Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
 
-        List<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(List<HoldingsServiceResponse> holdingsServiceResponse);
+        public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse);
     }
 }
