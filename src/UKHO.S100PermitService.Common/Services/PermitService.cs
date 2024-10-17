@@ -54,7 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
-        public async Task<(HttpStatusCode, MemoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, MemoryStream memoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 

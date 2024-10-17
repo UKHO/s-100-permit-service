@@ -31,11 +31,11 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
-            var responseStatusCode = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var (httpStatusCode, memoryStream) = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 
-            return responseStatusCode.Item1 == HttpStatusCode.OK ? File(responseStatusCode.Item2, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)responseStatusCode.Item1);
+            return httpStatusCode == HttpStatusCode.OK ? File(memoryStream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
         }
     }
 }
