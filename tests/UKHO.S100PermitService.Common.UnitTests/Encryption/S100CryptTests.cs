@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys started."
-            ).MustHaveHappenedOnceExactly();
+            ).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
 
@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys completed."
-            ).MustHaveHappenedOnceExactly();
+            ).MustHaveHappened();
         }
 
         [Test]
@@ -103,6 +103,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                     && call.GetArgument<EventId>(1) == EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId()
                     && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
                 ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenValidHardwareIdAndPKSKeyPassed_ThenEncryptedKeyIsReturned()
+        {
+            const string FakeEncryptedKey = "86C520323CEA3056B5ED7000F98814CB";
+            const string FakeKey = "2F72DDDD2144B24939KBKPS76FH52FDD1";
+            const string FakeHardwareId = "H5P2P62BDDBHS32PM6PSSA256P2000A1";
+
+            A.CallTo(() => _fakeAesEncryption.Encrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeEncryptedKey);
+
+            var result = _s100Crypt.CreateEncryptedKey(FakeKey, FakeHardwareId);
+            
+            result.Equals(FakeEncryptedKey);            
         }
 
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()

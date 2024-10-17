@@ -39,7 +39,29 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         {
             FluentActions.Invoking(() => _aesEncryption.Decrypt(FakeText, "123456")).Should().
                                             ThrowExactly<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
+        }
 
+        [Test]
+        public void WhenValidDataProvided_ThenSuccessfullyReturnsEncryptedData()
+        {
+            var result = _aesEncryption.Encrypt(FakeText, FakeKey);
+
+            result.Should().NotBeNullOrEmpty();
+            result.Should().NotBe(FakeText);
+        }
+
+        [Test]
+        public void WhenInvalidHexStringIsPassedToEncryption_ThenThrowException()
+        {
+            FluentActions.Invoking(() => _aesEncryption.Encrypt("123456", FakeKey)).Should().
+                                            ThrowExactly<AesEncryptionException>().WithMessage("Expected hex string length {HexSize}, but found {HexString Length}.");
+        }
+
+        [Test]
+        public void WhenInvalidHexKeyIsPassedToEncryption_ThenThrowException()
+        {
+            FluentActions.Invoking(() => _aesEncryption.Encrypt(FakeText, "123456")).Should().
+                                            ThrowExactly<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
         }
     }
 }
