@@ -1,7 +1,9 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
+using System.Reflection;
 using System.Text;
 using System.Xml;
+using System.Xml.Schema;
 using System.Xml.Serialization;
 using UKHO.S100PermitService.Common.Models.Permits;
 
@@ -9,12 +11,15 @@ namespace UKHO.S100PermitService.Common.IO
 {
     public class PermitReaderWriter : IPermitReaderWriter
     {
-        private const string FirstNamespace = "http://www.iho.int/s100/se/5.1";
         private const string FirstNamespacePrefix = "S100SE";
         private const string SecondNamespace = "http://standards.iso.org/iso/19115/-3/gco/1.0";
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
+        private const string Namespace = "http://www.iho.int/s100/se/5.0";
+        private const string SchemaFolder = "XmlSchema";
+        private const string PermitSchema = "Permit_Schema.xsd";
 
+        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly IFileSystem _fileSystem;
 
         public PermitReaderWriter(IFileSystem fileSystem)
@@ -26,9 +31,9 @@ namespace UKHO.S100PermitService.Common.IO
         {
             var serializer = new XmlSerializer(typeof(Permit));
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add(FirstNamespacePrefix, FirstNamespace);
+            namespaces.Add(FirstNamespacePrefix, GetTargetNamespace());
             namespaces.Add(SecondNamespacePrefix, SecondNamespace);
-
+                
             var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
@@ -40,6 +45,7 @@ namespace UKHO.S100PermitService.Common.IO
             using var writer = XmlWriter.Create(stringWriter, settings);
             serializer.Serialize(writer, permit, namespaces);
             var xml = stringWriter.ToString().Replace("_x003A_", ":");
+            xml = xml.Replace(Namespace, GetTargetNamespace());
             return (XmlDeclaration + xml);
         }
 
@@ -65,6 +71,19 @@ namespace UKHO.S100PermitService.Common.IO
             {
                 throw;
             }
+        }
+
+        private string GetTargetNamespace()
+        {
+            var xsdPath = Path.Combine(_schemaDirectory, SchemaFolder, PermitSchema);
+
+            XmlSchema? schema;
+            using(var reader = XmlReader.Create(xsdPath))
+            {
+                schema = XmlSchema.Read(reader, null);
+            }
+
+            return schema?.TargetNamespace ?? null;
         }
     }
 }
