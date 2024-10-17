@@ -95,7 +95,7 @@ namespace UKHO.S100PermitService.Common.Services
             return HttpStatusCode.OK;
         }
 
-        private void CreatePermitXml(string userPermit, string title, List<Products> products)
+        private void CreatePermitXml(string userPermit, string title, IEnumerable<Products> products)
         {
             var xsdPath = Path.Combine(_schemaDirectory, SchemaFile);
             var productsList = new List<Products>();
@@ -114,7 +114,9 @@ namespace UKHO.S100PermitService.Common.Services
             };
 
             _permitDictionary.Add(title, permit);
+
             _logger.LogInformation(EventIds.XmlSerializationStart.ToEventId(), "Permit Xml serialization started");
+
             var permitXml = _permitReaderWriter.ReadPermit(permit);
             if(!string.IsNullOrEmpty(permitXml))
             {
@@ -137,7 +139,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         [ExcludeFromCodeCoverage]
-        private List<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
+        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
         {
             var productsList = new List<Products>();
             var products = new Products();
