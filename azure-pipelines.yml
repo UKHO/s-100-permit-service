@@ -209,13 +209,15 @@ stages:
               targetType: 'inline'
               script: |
                 echo $(Build.ArtifactStagingDirectory)
-                find $(Build.ArtifactStagingDirectory) -name '*cobertura.xml'
+                find $(Build.ArtifactStagingDirectory) -name '*coverage.cobertura.xml'
+                echo $(Build.SourcesDirectory)
+                find $(Build.SourcesDirectory) -name '*coverage.cobertura.xml'
 
           - task: PublishCodeCoverageResults@2
             displayName: "Publish Code Coverage Report Result"
             inputs:
 #              codeCoverageTool: 'cobertura'
-              summaryFileLocation: '$(Build.ArtifactStagingDirectory)/*/*Cobertura.xml'
+              summaryFileLocation: '$(Build.SourcesDirectory)/*/*coverage.cobertura.xml'
               failIfCoverageEmpty: true
 
           # - task: PublishBuildArtifacts@1
