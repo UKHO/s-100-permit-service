@@ -208,8 +208,8 @@ stages:
             inputs:
               targetType: 'inline'
               script: |
-                $path = "$(Build.ArtifactStagingDirectory)"
-                Get-ChildItem -Path $path
+                echo $(Build.ArtifactStagingDirectory)
+                find $(Build.ArtifactStagingDirectory) -name '*cobertura.xml'
 
           - task: PublishCodeCoverageResults@2
             displayName: "Publish Code Coverage Report Result"
