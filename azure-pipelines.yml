@@ -204,50 +204,16 @@ stages:
               arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
           - task: publishcodecoverageresults@2
-#            displayname: "publish code coverage report result"
+            displayName: "publish code coverage report result"
             inputs:
-#              codecoveragetool: 'cobertura'
-              summaryfilelocation: '$(build.artifactstagingdirectory)/codecoveragereport/cobertura.xml'              
+              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
               failIfCoverageEmpty: true
-
-          # - task: PowerShell@2
-          #   displayName: 'List Files'
-          #   inputs:
-          #     targetType: 'inline'
-          #     script: |
-          #       echo $(Build.ArtifactStagingDirectory)
-          #       Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse -File -Filter "*.xml"
-          #       echo $(Build.SourcesDirectory)
-          #       Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -File -Filter "*.xml"
 
           - task: PublishBuildArtifacts@1
             displayName: "Publish Code coverage"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
-
-          # - task: PowerShell@2
-          #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
-          #   inputs:
-          #     targetType: 'inline'
-          #     script: |                
-          #       Write-Host "Starting delay..."  
-          #       Start-Sleep -Seconds 60  
-          #       Write-Host "Delay of 60 seconds complete."
-
-      - job: BuildQualityChecks
-        workspace:
-          clean: all
-        displayName: "Build Quality Checks"
-        dependsOn: UnitTestsAndCodeCoverage
-        steps:
-
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packagetype: sdk
-              useglobaljson: true
-              workingdirectory: '$(build.sourcesdirectory)\src'
 
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
