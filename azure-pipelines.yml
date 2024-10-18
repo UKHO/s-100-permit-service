@@ -203,11 +203,11 @@ stages:
               filepath: '$(build.sourcesdirectory)\codecoveragereport.ps1'
               arguments: '-source "$(build.sourcesdirectory)" -reportfolder "$(build.artifactstagingdirectory)"'
 
-          # - task: publishcodecoverageresults@2
-          #   displayName: "publish code coverage report result"
-          #   inputs:
-          #     summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
-          #     failIfCoverageEmpty: true
+          - task: publishcodecoverageresults@2
+            displayName: "publish code coverage report result"
+            inputs:
+              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
+              failIfCoverageEmpty: true
 
           - task: publishbuildartifacts@1
             displayName: "publish code coverage"
@@ -216,8 +216,7 @@ stages:
               artifactname: codecoveragereport
 
           - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold not meet"
-            retryCountOnTaskFailure: 1            
+            displayName: "Code coverage fails if threshold not meet"                   
             inputs:
               checkCoverage: true
               coverageFailOption: 'fixed'
