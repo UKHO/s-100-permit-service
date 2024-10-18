@@ -49,6 +49,8 @@ variables:
     value: "Mare Nectaris"
   - name: CoverageThresholdLimit
     value: "90"
+  - name: system.debug
+    value: "true"
 
 stages:
 
@@ -203,51 +205,11 @@ stages:
               filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
               arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
-          - task: publishcodecoverageresults@2
-#            displayname: "publish code coverage report result"
-            inputs:
-#              codecoveragetool: 'cobertura'
-              summaryfilelocation: '$(build.artifactstagingdirectory)/codecoveragereport/cobertura.xml'              
-              failIfCoverageEmpty: true
-
-          # - task: PowerShell@2
-          #   displayName: 'List Files'
-          #   inputs:
-          #     targetType: 'inline'
-          #     script: |
-          #       echo $(Build.ArtifactStagingDirectory)
-          #       Get-ChildItem -Path "$(Build.ArtifactStagingDirectory)" -Recurse -File -Filter "*.xml"
-          #       echo $(Build.SourcesDirectory)
-          #       Get-ChildItem -Path "$(Build.SourcesDirectory)" -Recurse -File -Filter "*.xml"
-
           - task: PublishBuildArtifacts@1
             displayName: "Publish Code coverage"
             inputs:
               PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
               ArtifactName: codecoveragereport
-
-          # - task: PowerShell@2
-          #   displayName: "Delay of 60 seconds to start BuildQualityChecks" 
-          #   inputs:
-          #     targetType: 'inline'
-          #     script: |                
-          #       Write-Host "Starting delay..."  
-          #       Start-Sleep -Seconds 60  
-          #       Write-Host "Delay of 60 seconds complete."
-
-      - job: BuildQualityChecks
-        workspace:
-          clean: all
-        displayName: "Build Quality Checks"
-        dependsOn: UnitTestsAndCodeCoverage
-        steps:
-
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packagetype: sdk
-              useglobaljson: true
-              workingdirectory: '$(build.sourcesdirectory)\src'
 
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
@@ -256,6 +218,7 @@ stages:
               coverageFailOption: 'fixed'
               coverageType: 'lines'
               coverageThreshold: '$(CoverageThresholdLimit)'
+              retryCountOnTaskFailure: 2  # Retries the task up to 2 times if it fails
 
       - job: BuildAndPublishAPI
         workspace:
@@ -429,32 +392,6 @@ stages:
               PathtoPublish: '$(Build.SourcesDirectory)\Deployment'
               ArtifactName: terraformartifact
 
-  # - stage: BuildQualityChecks
-  #   displayName: "Build Quality Checks"
-  #   dependsOn: PERFORM_DEPENDENCYCHECK_DOTNETBUILD_DOTNETTEST_AND_PUBLISH
-  #   jobs:
-  #     - job: BuildQualityChecks
-  #       pool: NautilusBuild  
-  #       workspace:
-  #         clean: all
-  #       displayName: "Build Quality Checks"
-  #       steps:
-
-  #         - task: UseDotNet@2
-  #           displayName: 'Use .NET 8.0.x sdk'
-  #           inputs:
-  #             packagetype: sdk
-  #             useglobaljson: true
-  #             workingdirectory: '$(build.sourcesdirectory)\src'
-
-          # - task: BuildQualityChecks@9
-          #   displayName: "Code coverage fails if threshold not meet"            
-          #   inputs:
-          #     checkCoverage: true
-          #     coverageFailOption: 'fixed'
-          #     coverageType: 'lines'
-          #     coverageThreshold: '$(CoverageThresholdLimit)'
-
   - stage: Devdeploy
     displayName: "Devdeploy (inc terraform, webapp deploy)"
     variables:
@@ -535,168 +472,3 @@ stages:
           - template: Deployment/templates/continuous-testing.yml
             parameters:
               AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
-
-  - stage: vNextIATDeploy
-    dependsOn:  Devdeploy
-    displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
-    variables:
-      - group: "S-100-PG-vNextIAT"
-      - group: "S-100-PG-vNextIAT-TF"
-      - group: "S-100-PG-vNextIAT-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-      - name: "UserPermitServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)  
-      - name: "ProductKeyServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-    jobs:
-      - deployment: vNextIATDeployTerraform
-        displayName: "vNextIAT - Deploy Terraform"
-        environment: "S100PG-VNEXTIAT"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
-
-      - deployment: vNextIATDeployApp
-        dependsOn: vNextIATDeployTerraform
-        displayName: "vNextIAT - Deploy Dotnet App"
-        environment: "S100PG-VNEXTIAT"
-        pool: $(DeploymentPool)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
-  
-  - stage: vNextE2EDeploy
-    dependsOn: vNextIATDeploy
-    displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
-    variables:
-      - group: "S-100-PG-vNextE2E"
-      - group: "S-100-PG-vNextE2E-TF"
-      - group: "S-100-PG-vNextE2E-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-      - name: "UserPermitServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)  
-      - name: "ProductKeyServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-    jobs:
-      - deployment: vNextE2EDeployTerraform
-        displayName: "vNextE2E - Deploy Terraform"
-        environment: "S100PG-VNEXTE2E"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
-
-      - deployment: vNextE2EDeployApp
-        dependsOn: vNextE2EDeployTerraform
-        displayName: "vNextE2E - Deploy Dotnet App"
-        environment: "S100PG-VNEXTE2E"
-        pool: $(DeploymentPool)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
-  
-  - stage: IATDeploy
-    dependsOn:  Devdeploy
-    displayName: "IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
-    variables:
-      - group: "S-100-PG-IAT"
-      - group: "S-100-PG-IAT-TF"
-      - group: "S-100-PG-IAT-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-      - name: "UserPermitServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-      - name: "ProductKeyServiceApiConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)
-    jobs:
-      - deployment: IATDeployTerraform
-        displayName: "IAT - Deploy Terraform"
-        environment: "S100PG-IAT"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
-
-      - deployment: IATDeployApp
-        dependsOn: IATDeployTerraform
-        displayName: "IAT - Deploy Dotnet App"
-        environment: "S100PG-IAT"
-        pool: $(DeploymentPool)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
