@@ -196,27 +196,28 @@ stages:
               publishTestResults: true
               testRunTitle: "UnitTests"
 
-          # - task: PowerShell@2
-          #   displayName: "Generate code coverage report"
-          #   inputs:
-          #     targetType: filePath
-          #     filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
-          #     arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
-
-          - task: publishcodecoverageresults@2
-            displayName: "publish code coverage report result"
+          - task: powershell@2
+            displayname: "generate code coverage report"
             inputs:
-              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
-              failIfCoverageEmpty: true
+              targettype: filepath
+              filepath: '$(build.sourcesdirectory)\codecoveragereport.ps1'
+              arguments: '-source "$(build.sourcesdirectory)" -reportfolder "$(build.artifactstagingdirectory)"'
 
-          # - task: PublishBuildArtifacts@1
-          #   displayName: "Publish Code coverage"
+          # - task: publishcodecoverageresults@2
+          #   displayName: "publish code coverage report result"
           #   inputs:
-          #     PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
-          #     ArtifactName: codecoveragereport
+          #     summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
+          #     failIfCoverageEmpty: true
+
+          - task: publishbuildartifacts@1
+            displayname: "publish code coverage"
+            inputs:
+              pathtopublish: "$(build.artifactstagingdirectory)/codecoveragereport"
+              artifactname: codecoveragereport
 
           - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold not meet"            
+            displayName: "Code coverage fails if threshold not meet"
+            retryCountOnTaskFailure: 1            
             inputs:
               checkCoverage: true
               coverageFailOption: 'fixed'
