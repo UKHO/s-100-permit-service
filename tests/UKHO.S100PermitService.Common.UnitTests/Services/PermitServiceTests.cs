@@ -166,7 +166,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.Item1.Should().Be(HttpStatusCode.NoContent);
+            result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -205,7 +205,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.Item1.Should().Be(HttpStatusCode.NoContent);
+            result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();

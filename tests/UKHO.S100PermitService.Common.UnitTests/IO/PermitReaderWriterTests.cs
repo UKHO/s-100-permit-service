@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
                              Expiry = DateTime.Parse("2024-09-02"),
-                             Filename = "fakefilename",
+                             Filename = "fakefilename"
                          }
                      ]
                 },
@@ -91,7 +91,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
                              Expiry = DateTime.Parse("2024-09-02"),
-                             Filename = "fakefilename",
+                             Filename = "fakefilename"
                          }
                      ]
                 }
@@ -144,7 +144,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
                              Expiry = DateTime.Parse("2024-09-02"),
-                             Filename = "fakefilename",
+                             Filename = "fakefilename"
                          }
                      ]
                 }
@@ -153,7 +153,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             {
                 Header = new Header()
                 {
-
                 },
                 Products = [.. fakeProducts]
             };
@@ -166,10 +165,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         private string ConvertMemoryStreamToXmlString(MemoryStream memoryStream)
         {
             using var archive = new ZipArchive(memoryStream);
-            var entry = archive.Entries[0];
-            if(entry.FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
+
+            if(archive.Entries.Count > 0 && archive.Entries[0].FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             {
-                using var entryStream = entry.Open();
+                using var entryStream = archive.Entries[0].Open();
                 using var reader = new StreamReader(entryStream, Encoding.UTF8);
                 return reader.ReadToEnd();
             }

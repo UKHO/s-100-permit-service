@@ -86,7 +86,7 @@ namespace UKHO.S100PermitService.Common.Services
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private MemoryStream CreatePermits(List<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        private MemoryStream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
 
