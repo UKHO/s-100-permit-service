@@ -2,9 +2,6 @@
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Reflection;
-using System.Xml;
-using System.Xml.Schema;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -21,9 +18,7 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
-        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
-        private const string SchemaFolder = "XmlSchema";
-        private const string PermitSchema = "Permit_Schema.xsd";
+        private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -33,9 +28,6 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
-
-        private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
-        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFolder, PermitSchema);
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -99,6 +91,7 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
 
             var permitDictionary = new Dictionary<string, Permit>();
+            var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
             foreach(var upnInfo in upnInfos)
             {
@@ -112,7 +105,7 @@ namespace UKHO.S100PermitService.Common.Services
                         DataServerIdentifier = _permitFileConfiguration.Value.DataServerIdentifier,
                         DataServerName = _permitFileConfiguration.Value.DataServerName,
                         Userpermit = upnInfo.Upn,
-                        Version = ReadXsdVersion()
+                        Version = xsdVersion
                     },
                     Products = [.. productsList]
                 };
@@ -163,17 +156,6 @@ namespace UKHO.S100PermitService.Common.Services
             }
             _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", upnTitle);
             return productsList;
-        }
-
-        private string ReadXsdVersion()
-        {
-            XmlSchema? schema;
-            using(var reader = XmlReader.Create(_xsdPath))
-            {
-                schema = XmlSchema.Read(reader, null);
-            }
-
-            return schema?.Version[..5] ?? null;
         }
 
         private List<ProductKeyServiceRequest> ProductKeyServiceRequest(

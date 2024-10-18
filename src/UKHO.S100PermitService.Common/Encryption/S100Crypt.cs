@@ -1,5 +1,4 @@
 ﻿using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
@@ -7,11 +6,9 @@ using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.Encryption
 {
-    public partial class S100Crypt : IS100Crypt
-    {        
-        private const string Patterns = @"[\\/:*?""<>|]";
-        private const int MIdLength = 6;
-        private const int EncryptedHardwareIdLength = 32;
+    public class S100Crypt : IS100Crypt
+    {
+        private const int MIdLength = 6, EncryptedHardwareIdLength = 32;
 
         private readonly IAesEncryption _aesEncryption;
         private readonly IManufacturerKeyService _manufacturerKeyService;
@@ -55,7 +52,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 var upnInfo = new UpnInfo
                 {
                     Upn = userPermit.Upn,
-                    Title = RemoveInvalidCharacters().Replace(userPermit.Title, string.Empty)
+                    Title = userPermit.Title
                 };
 
                 var mKey = _manufacturerKeyService.GetManufacturerKeys(userPermit.Upn[^MIdLength..]);
@@ -73,12 +70,5 @@ namespace UKHO.S100PermitService.Common.Encryption
         {
             return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
         }
-
-        /// <summary>
-        /// Replace invalid characters with an empty string
-        /// </summary>
-        /// <returns></returns>
-        [GeneratedRegex(Patterns)]
-        private static partial Regex RemoveInvalidCharacters();
     }
 }

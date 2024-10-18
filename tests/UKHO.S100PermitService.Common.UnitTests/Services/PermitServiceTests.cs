@@ -97,6 +97,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
 
+            A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
+
             A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);

@@ -5,5 +5,7 @@ namespace UKHO.S100PermitService.Common.IO
     public interface IPermitReaderWriter
     {
         MemoryStream CreatePermits(Dictionary<string, Permit> permits);
+
+        string ReadXsdVersion();
     }
 }

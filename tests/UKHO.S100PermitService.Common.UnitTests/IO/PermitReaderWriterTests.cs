@@ -31,6 +31,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         }
 
         [Test]
+        public void WhenPermitSchemaFileLocatedSuccessfully_ThenReturnsXsdVersion()
+        {
+            var result = _permitReaderWriter.ReadXsdVersion();
+
+            result.Should().NotBeNullOrEmpty();
+        }
+
+        [Test]
         public void WhenProductModelIsPassed_ThenReturnXmlString()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);

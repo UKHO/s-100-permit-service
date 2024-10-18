@@ -17,16 +17,30 @@ namespace UKHO.S100PermitService.Common.IO
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
         private const string Namespace = "http://www.iho.int/s100/se/5.0";
-        private const string SchemaFolder = "XmlSchema";
-        private const string PermitSchema = "Permit_Schema.xsd";
         private const string PermitXmlFileName = "PERMIT.XML";
         private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
-        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFile);
+
         private readonly ISchemaValidator _schemaValidator;
 
         public PermitReaderWriter(ISchemaValidator schemaValidator)
         {
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
+        }
+
+        /// <summary>
+        /// Read Xsd version from schema file
+        /// </summary>
+        /// <returns></returns>
+        public string ReadXsdVersion()
+        {
+            XmlSchema? schema;
+            using(var reader = XmlReader.Create(_xsdPath))
+            {
+                schema = XmlSchema.Read(reader, null);
+            }
+
+            return schema?.Version[..5] ?? null;
         }
 
         /// <summary>
@@ -36,14 +50,12 @@ namespace UKHO.S100PermitService.Common.IO
         /// <returns>ZipStream</returns>
         public MemoryStream CreatePermits(Dictionary<string, Permit> permits)
         {
-            var xsdPath = Path.Combine(_schemaDirectory, SchemaFile);
-
             var memoryStream = new MemoryStream();
             using(var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
             {
                 foreach(var permit in permits)
                 {
-                    CreatePermitXml(archive, $"{permit.Key}/{PermitXmlFileName}", permit.Value, xsdPath);
+                    CreatePermitXml(archive, $"{permit.Key}/{PermitXmlFileName}", permit.Value);
                 }
             }
 
@@ -57,8 +69,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive"></param>
         /// <param name="fileName"></param>
         /// <param name="permit"></param>
-        /// <param name="xsdPath"></param>
-        private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit, string xsdPath)
+        private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit)
         {
             // Create an entry for the XML file
             var zipEntry = zipArchive.CreateEntry(fileName);
@@ -93,7 +104,7 @@ namespace UKHO.S100PermitService.Common.IO
             // Replace "_x003A_" with ":"
             xmlContent = XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(Namespace, GetTargetNamespace());
 
-            if(!_schemaValidator.ValidateSchema(xmlContent, xsdPath))
+            if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
             {
                 throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
             }
@@ -105,10 +116,8 @@ namespace UKHO.S100PermitService.Common.IO
 
         private string GetTargetNamespace()
         {
-            var xsdPath = Path.Combine(_schemaDirectory, SchemaFolder, PermitSchema);
-
             XmlSchema? schema;
-            using(var reader = XmlReader.Create(xsdPath))
+            using(var reader = XmlReader.Create(_xsdPath))
             {
                 schema = XmlSchema.Read(reader, null);
             }
