@@ -104,6 +104,7 @@ namespace UKHO.S100PermitService.Common.IO
             // Replace "_x003A_" with ":"
             xmlContent = XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(Namespace, GetTargetNamespace());
 
+            // Validate schema
             if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
             {
                 throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
