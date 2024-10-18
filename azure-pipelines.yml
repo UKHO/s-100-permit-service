@@ -196,12 +196,12 @@ stages:
               publishTestResults: true
               testRunTitle: "UnitTests"
 
-          - task: PowerShell@2
-            displayName: "Generate code coverage report"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
-              arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
+          # - task: PowerShell@2
+          #   displayName: "Generate code coverage report"
+          #   inputs:
+          #     targetType: filePath
+          #     filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
+          #     arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
 
           - task: publishcodecoverageresults@2
             displayName: "publish code coverage report result"
@@ -209,11 +209,11 @@ stages:
               summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
               failIfCoverageEmpty: true
 
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Code coverage"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
-              ArtifactName: codecoveragereport
+          # - task: PublishBuildArtifacts@1
+          #   displayName: "Publish Code coverage"
+          #   inputs:
+          #     PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
+          #     ArtifactName: codecoveragereport
 
           - task: BuildQualityChecks@9
             displayName: "Code coverage fails if threshold not meet"            
