@@ -197,7 +197,7 @@ stages:
               testRunTitle: "UnitTests"
 
           - task: powershell@2
-            displayname: "generate code coverage report"
+            displayName: "generate code coverage report"
             inputs:
               targettype: filepath
               filepath: '$(build.sourcesdirectory)\codecoveragereport.ps1'
@@ -210,7 +210,7 @@ stages:
           #     failIfCoverageEmpty: true
 
           - task: publishbuildartifacts@1
-            displayname: "publish code coverage"
+            displayName: "publish code coverage"
             inputs:
               pathtopublish: "$(build.artifactstagingdirectory)/codecoveragereport"
               artifactname: codecoveragereport
