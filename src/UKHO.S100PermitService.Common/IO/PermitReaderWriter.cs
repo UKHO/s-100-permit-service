@@ -22,6 +22,12 @@ namespace UKHO.S100PermitService.Common.IO
         private const string PermitXmlFileName = "PERMIT.XML";
         private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
         private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+        private readonly ISchemaValidator _schemaValidator;
+
+        public PermitReaderWriter(ISchemaValidator schemaValidator)
+        {
+            _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
+        }
 
         /// <summary>
         /// Create permit zip
@@ -51,6 +57,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive"></param>
         /// <param name="fileName"></param>
         /// <param name="permit"></param>
+        /// <param name="xsdPath"></param>
         private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit, string xsdPath)
         {
             // Create an entry for the XML file
@@ -86,7 +93,7 @@ namespace UKHO.S100PermitService.Common.IO
             // Replace "_x003A_" with ":"
             xmlContent = XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(Namespace, GetTargetNamespace());
 
-            if(!ValidateSchema(xmlContent, xsdPath))
+            if(!_schemaValidator.ValidateSchema(xmlContent, xsdPath))
             {
                 throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
             }
@@ -94,32 +101,6 @@ namespace UKHO.S100PermitService.Common.IO
             // Write the modified XML content to the zip entry
             using var streamWriter = new StreamWriter(entryStream);
             streamWriter.Write(xmlContent);
-        }
-
-        public bool ValidateSchema(string permitXml, string xsdPath)
-        {
-            var xml = new XmlDocument();
-            xml.LoadXml(permitXml);
-
-            var xmlSchemaSet = new XmlSchemaSet();
-            xmlSchemaSet.Add(null, xsdPath);
-
-            xml.Schemas = xmlSchemaSet;
-
-            var validXml = true;
-            try
-            {
-                xml.Validate((sender, e) =>
-                {
-                    validXml = false;
-                });
-            }
-            catch(XmlSchemaValidationException)
-            {
-                validXml = false;
-                return validXml;
-            }
-            return validXml;
         }
 
         private string GetTargetNamespace()

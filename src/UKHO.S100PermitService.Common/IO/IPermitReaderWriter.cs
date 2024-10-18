@@ -5,6 +5,5 @@ namespace UKHO.S100PermitService.Common.IO
     public interface IPermitReaderWriter
     {
         MemoryStream CreatePermits(Dictionary<string, Permit> permits);
-        bool ValidateSchema(string permitXml, string xsdPath);
     }
 }

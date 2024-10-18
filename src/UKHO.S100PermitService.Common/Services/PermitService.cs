@@ -22,6 +22,8 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
         private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
+        private const string SchemaFolder = "XmlSchema";
+        private const string PermitSchema = "Permit_Schema.xsd";
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -32,8 +34,8 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
-        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
         private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
+        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFolder, PermitSchema);
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -165,10 +167,8 @@ namespace UKHO.S100PermitService.Common.Services
 
         private string ReadXsdVersion()
         {
-            var xsdPath = Path.Combine(_schemaDirectory, "XmlSchema", "Permit_Schema.xsd");
-
             XmlSchema? schema;
-            using(var reader = XmlReader.Create(xsdPath))
+            using(var reader = XmlReader.Create(_xsdPath))
             {
                 schema = XmlSchema.Read(reader, null);
             }

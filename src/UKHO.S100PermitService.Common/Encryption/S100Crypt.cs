@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
@@ -6,20 +7,20 @@ using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.Encryption
 {
-    public class S100Crypt : IS100Crypt
-    {
+    public partial class S100Crypt : IS100Crypt
+    {        
+        private const string Patterns = @"[\\/:*?""<>|]";
+        private const int MIdLength = 6;
+        private const int EncryptedHardwareIdLength = 32;
+
         private readonly IAesEncryption _aesEncryption;
         private readonly IManufacturerKeyService _manufacturerKeyService;
         private readonly ILogger<S100Crypt> _logger;
 
-        private const int MIdLength = 6;
-        private const int EncryptedHardwareIdLength = 32;
-
         public S100Crypt(IAesEncryption aesEncryption, IManufacturerKeyService manufacturerKeyService, ILogger<S100Crypt> logger)
         {
             _aesEncryption = aesEncryption ?? throw new ArgumentNullException(nameof(aesEncryption));
-            _manufacturerKeyService =
-                manufacturerKeyService ?? throw new ArgumentNullException(nameof(manufacturerKeyService));
+            _manufacturerKeyService = manufacturerKeyService ?? throw new ArgumentNullException(nameof(manufacturerKeyService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -54,7 +55,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 var upnInfo = new UpnInfo
                 {
                     Upn = userPermit.Upn,
-                    Title = userPermit.Title
+                    Title = RemoveInvalidCharacters().Replace(userPermit.Title, string.Empty)
                 };
 
                 var mKey = _manufacturerKeyService.GetManufacturerKeys(userPermit.Upn[^MIdLength..]);
@@ -66,11 +67,18 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permits completed");
 
             return listOfUpnInfo;
-        }       
+        }
 
         public string CreateEncryptedKey(string productKeyServiceKey, string hardwareId)
-        {           
-           return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
+        {
+            return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
         }
+
+        /// <summary>
+        /// Replace invalid characters with an empty string
+        /// </summary>
+        /// <returns></returns>
+        [GeneratedRegex(Patterns)]
+        private static partial Regex RemoveInvalidCharacters();
     }
- }
+}

@@ -101,8 +101,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.Item1.Should().Be(HttpStatusCode.OK);
-            result.Item2.Length.Should().Be(expectedStream.Length);
+            result.httpStatusCode.Should().Be(HttpStatusCode.OK);
+            result.memoryStream.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
