@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
 using System.Net;
+using System.Text;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Services;
@@ -16,8 +17,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
     {
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
-        private IPermitService _fakePermitService;        
-        private PermitController _permitController;        
+        private IPermitService _fakePermitService;
+        private PermitController _permitController;
 
         [SetUp]
         public void Setup()
@@ -38,18 +39,19 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
         }
 
-       
-       [Test]      
-        public async Task WhenGetPermitIsCalled_ThenReturnsOKResponse()
+        [Test]
+        public async Task WhenPermitGeneratedSuccessfully_ThenReturnsZipStreamResponse()
         {
+            var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
+
             A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(HttpStatusCode.OK);
+                            .Returns((HttpStatusCode.OK, expectedStream));
 
-            var result = (OkResult)await _permitController.GeneratePermits(007);
+            var result = await _permitController.GeneratePermits(007);
 
-            result.StatusCode.Should().Be(StatusCodes.Status200OK);
-
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            result.Should().BeOfType<FileStreamResult>();
+            ((FileStreamResult)result).FileDownloadName.Should().Be("Permits.zip");
+            ((FileStreamResult)result).FileStream.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -67,16 +69,14 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
-        public async Task WhenGetPermitIsCalled_ThenReturnsNoContentResponse()
+        public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
         {
             A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(HttpStatusCode.NoContent);
+                .Returns((HttpStatusCode.NoContent, new MemoryStream()));
 
             var result = (StatusCodeResult)await _permitController.GeneratePermits(1);
 
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
-
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -91,6 +91,16 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
             ).MustHaveHappenedOnceExactly();
+        }
+
+        private string GetExpectedXmlString()
+        {
+            var expectedResult = "<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.2\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.2\"><S100SE:header>";
+            expectedResult += "<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>";
+            expectedResult += "<S100SE:userpermit>fakeUserPermit</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>";
+            expectedResult += "<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>";
+
+            return expectedResult;
         }
     }
 }

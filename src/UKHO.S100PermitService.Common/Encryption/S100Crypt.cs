@@ -8,18 +8,16 @@ namespace UKHO.S100PermitService.Common.Encryption
 {
     public class S100Crypt : IS100Crypt
     {
+        private const int MIdLength = 6, EncryptedHardwareIdLength = 32;
+
         private readonly IAesEncryption _aesEncryption;
         private readonly IManufacturerKeyService _manufacturerKeyService;
         private readonly ILogger<S100Crypt> _logger;
 
-        private const int MIdLength = 6;
-        private const int EncryptedHardwareIdLength = 32;
-
         public S100Crypt(IAesEncryption aesEncryption, IManufacturerKeyService manufacturerKeyService, ILogger<S100Crypt> logger)
         {
             _aesEncryption = aesEncryption ?? throw new ArgumentNullException(nameof(aesEncryption));
-            _manufacturerKeyService =
-                manufacturerKeyService ?? throw new ArgumentNullException(nameof(manufacturerKeyService));
+            _manufacturerKeyService = manufacturerKeyService ?? throw new ArgumentNullException(nameof(manufacturerKeyService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -66,11 +64,11 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Get decrypted hardware id from user permits completed");
 
             return listOfUpnInfo;
-        }       
+        }
 
         public string CreateEncryptedKey(string productKeyServiceKey, string hardwareId)
-        {           
-           return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
+        {
+            return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
         }
     }
- }
+}

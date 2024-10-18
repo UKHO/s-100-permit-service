@@ -10,5 +10,7 @@ namespace UKHO.S100PermitService.Common
         public const string PermitServicePolicy = "PermitServiceUser";
 
         public const string ContentType = "application/json";
+
+        public const string ZipContentType = "application/zip";
     }
 }

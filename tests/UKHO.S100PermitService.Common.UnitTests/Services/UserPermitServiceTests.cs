@@ -188,9 +188,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            FluentActions.Invoking(() =>
+            await FluentActions.Invoking(async () => await
                 _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId))
-                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. Status Code: {1}");
+                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -220,6 +220,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} {errorMessage}");
         }
 
+        [Test]
+        public void WhenTitleValidationFails_ThenThrowPermitServiceException()
+        {
+            A.CallTo(() => _fakeUserPermitValidator.Validate(A<UserPermitServiceResponse>.Ignored))
+                .Returns(new ValidationResult(new[]
+                {
+                    new ValidationFailure("ErrorMessage", "Invalid title found : SeaRadar X*"),
+                    new ValidationFailure("ErrorMessage", "Invalid title found : Navi/ Radar?"),
+                }));
+
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeInValidUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} {errorMessage}");
+        }
+
         private static UserPermitServiceResponse GeUserPermitServiceResponse()
         {
             return new UserPermitServiceResponse()
@@ -228,6 +241,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
                     new UserPermit{  Title= "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
                     new UserPermit{ Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
+                ]
+            };
+        }
+
+        private static UserPermitServiceResponse GeInValidUserPermitServiceResponse()
+        {
+            return new UserPermitServiceResponse()
+            {
+                LicenceId = 1,
+                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
+                    new UserPermit { Title = "SeaRadar X*", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
+                    new UserPermit { Title = "Navi/ Radar?", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
                 ]
             };
         }
