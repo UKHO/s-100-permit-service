@@ -188,9 +188,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            FluentActions.Invoking(() =>
+            await FluentActions.Invoking(async () => await
                 _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId))
-                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {0} failed. Status Code: {1}");
+                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET {RequestUri} failed. Status Code: {StatusCode}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
