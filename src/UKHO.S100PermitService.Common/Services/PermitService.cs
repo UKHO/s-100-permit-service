@@ -79,7 +79,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            var permitDetails = CreatePermits(holdingsServiceResponse, decryptedProductKeys, listOfUpnInfo);
+            var permitDetails = CreatePermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
 
