@@ -192,7 +192,7 @@ stages:
               projects: |
                 **/*.UnitTests.csproj
                 !**/*StubService.UnitTests.csproj
-              arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura --verbosity normal'
+              arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura --verbosity diagnostic'
               publishTestResults: true
               testRunTitle: "UnitTests"
 
