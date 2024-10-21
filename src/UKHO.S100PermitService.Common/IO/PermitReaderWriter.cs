@@ -1,10 +1,11 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
+﻿using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.Permits;
 
 namespace UKHO.S100PermitService.Common.IO
@@ -16,24 +17,69 @@ namespace UKHO.S100PermitService.Common.IO
         private const string SecondNamespacePrefix = "ns2";
         private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
         private const string Namespace = "http://www.iho.int/s100/se/5.0";
-        private const string SchemaFolder = "XmlSchema";
-        private const string PermitSchema = "Permit_Schema.xsd";
+        private const string PermitXmlFileName = "PERMIT.XML";
+        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
+        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFile);
 
-        private readonly string _schemaDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
-        private readonly IFileSystem _fileSystem;
+        private readonly ISchemaValidator _schemaValidator;
 
-        public PermitReaderWriter(IFileSystem fileSystem)
+        public PermitReaderWriter(ISchemaValidator schemaValidator)
         {
-            _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
         }
 
-        public string ReadPermit(Permit permit)
+        /// <summary>
+        /// Read Xsd version from schema file
+        /// </summary>
+        /// <returns></returns>
+        public string ReadXsdVersion()
         {
+            XmlSchema? schema;
+            using(var reader = XmlReader.Create(_xsdPath))
+            {
+                schema = XmlSchema.Read(reader, null);
+            }
+
+            return schema?.Version[..5] ?? null;
+        }
+
+        /// <summary>
+        /// Create permit zip
+        /// </summary>
+        /// <param name="permits"></param>
+        /// <returns>ZipStream</returns>
+        public Stream CreatePermits(IReadOnlyDictionary<string, Permit> permits)
+        {
+            var memoryStream = new MemoryStream();
+            using(var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
+            {
+                foreach(var permit in permits)
+                {
+                    CreatePermitXml(archive, $"{permit.Key}/{PermitXmlFileName}", permit.Value);
+                }
+            }
+
+            memoryStream.Seek(0, SeekOrigin.Begin);
+            return memoryStream;
+        }
+
+        /// <summary>
+        /// Create permit xml files and add into permit zip 
+        /// </summary>
+        /// <param name="zipArchive"></param>
+        /// <param name="fileName"></param>
+        /// <param name="permit"></param>
+        private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit)
+        {
+            // Create an entry for the XML file
+            var zipEntry = zipArchive.CreateEntry(fileName);
+
+            // Serialize the class to XML
             var serializer = new XmlSerializer(typeof(Permit));
             var namespaces = new XmlSerializerNamespaces();
             namespaces.Add(FirstNamespacePrefix, GetTargetNamespace());
             namespaces.Add(SecondNamespacePrefix, SecondNamespace);
-                
+
             var settings = new XmlWriterSettings
             {
                 OmitXmlDeclaration = true,
@@ -41,44 +87,38 @@ namespace UKHO.S100PermitService.Common.IO
                 Encoding = new UTF8Encoding(false)
             };
 
-            using var stringWriter = new StringWriter();
-            using var writer = XmlWriter.Create(stringWriter, settings);
-            serializer.Serialize(writer, permit, namespaces);
-            var xml = stringWriter.ToString().Replace("_x003A_", ":");
-            xml = xml.Replace(Namespace, GetTargetNamespace());
-            return (XmlDeclaration + xml);
-        }
+            using var entryStream = zipEntry.Open();
+            using var memoryStream = new MemoryStream();
+            using(var writer = XmlWriter.Create(memoryStream, settings))
+            {
+                serializer.Serialize(writer, permit, namespaces);
+            }
 
-        [ExcludeFromCodeCoverage]
-        public void WritePermit(string fileContent)
-        {
-            try
+            // Reset the position of the MemoryStream to the beginning
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            // Read the XML content from the MemoryStream
+            using var reader = new StreamReader(memoryStream);
+            var xmlContent = reader.ReadToEnd();
+
+            // Replace "_x003A_" with ":"
+            xmlContent = XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(Namespace, GetTargetNamespace());
+
+            // Validate schema
+            if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
             {
-                var tempPath = Path.Combine(Path.GetTempPath(), "Master", $"PERMIT.xml");
-                var directoryPath = Path.GetDirectoryName(tempPath);
-                if(!_fileSystem.Directory.Exists(directoryPath))
-                {
-                    _fileSystem.Directory.CreateDirectory(directoryPath);
-                }
-                var fileStream = new FileStream(tempPath, FileMode.OpenOrCreate);
-                if(_fileSystem.File.Exists(tempPath))
-                {
-                    fileStream.Close();
-                    _fileSystem.File.WriteAllText(tempPath, fileContent);
-                }
+                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
             }
-            catch(Exception)
-            {
-                throw;
-            }
+
+            // Write the modified XML content to the zip entry
+            using var streamWriter = new StreamWriter(entryStream);
+            streamWriter.Write(xmlContent);
         }
 
         private string GetTargetNamespace()
         {
-            var xsdPath = Path.Combine(_schemaDirectory, SchemaFolder, PermitSchema);
-
             XmlSchema? schema;
-            using(var reader = XmlReader.Create(xsdPath))
+            using(var reader = XmlReader.Create(_xsdPath))
             {
                 schema = XmlSchema.Read(reader, null);
             }

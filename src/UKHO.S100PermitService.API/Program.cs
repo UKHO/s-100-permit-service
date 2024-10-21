@@ -9,7 +9,6 @@ using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
 using System.Diagnostics.CodeAnalysis;
-using System.IO.Abstractions;
 using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Middleware;
@@ -177,7 +176,6 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
-            builder.Services.AddScoped<IFileSystem, FileSystem>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
@@ -186,6 +184,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();
             builder.Services.AddScoped<IAesEncryption, AesEncryption>();
             builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
+            builder.Services.AddScoped<ISchemaValidator , SchemaValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

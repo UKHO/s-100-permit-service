@@ -196,6 +196,12 @@ stages:
               publishTestResults: true
               testRunTitle: "UnitTests"
 
+          - task: publishcodecoverageresults@2
+            displayName: "publish code coverage report for build quality checks"
+            inputs:
+              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
+              failIfCoverageEmpty: true
+
           - task: PowerShell@2
             displayName: "Generate code coverage report"
             inputs:

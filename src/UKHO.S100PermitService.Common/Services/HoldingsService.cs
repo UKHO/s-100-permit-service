@@ -90,7 +90,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Cells = g.Select(c => c.Cell).ToList()
                 }).ToList();
 
-            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", filteredHoldings.Count);
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", latestCells.Count());
 
             return filteredHoldings;
         }

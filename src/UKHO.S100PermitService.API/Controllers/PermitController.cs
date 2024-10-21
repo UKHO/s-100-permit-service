@@ -12,10 +12,12 @@ namespace UKHO.S100PermitService.API.Controllers
     [Authorize]
     public class PermitController : BaseController<PermitController>
     {
+        private const string PermitZipFileName = "Permits.zip";
+
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
 
-        public PermitController(IHttpContextAccessor httpContextAccessor, ILogger<PermitController> logger, IPermitService permitService) 
+        public PermitController(IHttpContextAccessor httpContextAccessor, ILogger<PermitController> logger, IPermitService permitService)
             : base(httpContextAccessor)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -29,11 +31,11 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
 
-            var responseStatusCode = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 
-            return responseStatusCode == HttpStatusCode.OK ? Ok() : StatusCode((int)responseStatusCode);
+            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
         }
     }
 }

@@ -1,0 +1,112 @@
+[
+  {
+    "productCode": "P1231",
+    "productTitle": "P1231",
+    "expiryDate": "2026-01-30T23:59:59Z",
+    "cells": [
+      {
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  },
+  {
+    "productCode": "P1232",
+    "productTitle": "P1232",
+    "expiryDate": "2026-01-31T00:00:01Z",
+    "cells": [
+      {
+        "cellCode": "101GB40079ABCDEFG.000",
+        "cellTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": "2",
+        "latestUpdateNumber": "1"
+      }
+    ]
+  },
+  {
+    "productCode": "P1233",
+    "productTitle": "P1233",
+    "expiryDate": "2026-01-31T23:58:00Z",
+    "cells": [
+      {
+        "cellCode": "101GB40080ABCDEFG.000",
+        "cellTitle": "101GB40080ABCDEFG",
+        "latestEditionNumber": "2",
+        "latestUpdateNumber": "3"
+      },
+      {
+        "cellCode": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
+        "cellTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
+        "latestEditionNumber": "10",
+        "latestUpdateNumber": "15"
+      }
+    ]
+  },
+  {
+    "productCode": "P1234",
+    "productTitle": "P1234",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
+        "cellTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
+        "latestEditionNumber": "10",
+        "latestUpdateNumber": "15"
+      }
+    ]
+  },
+  {
+    "productCode": "P1235",
+    "productTitle": "P1235",
+    "expiryDate": "2029-08-10T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "102US40079ABCDEFG.h5",
+        "cellTitle": "102US40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  },
+  {
+    "productCode": "P1236",
+    "productTitle": "P1236",
+    "expiryDate": "2029-08-10T23:59:01Z",
+    "cells": [
+      {
+        "cellCode": "102US40079ABCDEFG.h5",
+        "cellTitle": "102US40079ABCDEFG",
+        "latestEditionNumber": "1",
+        "latestUpdateNumber": "11"
+      }
+    ]
+  },
+  {
+    "productCode": "P5500",
+    "productTitle": "P5500",
+    "expiryDate": "2029-08-10T22:59:00Z",
+    "cells": [
+      {
+        "cellCode": "111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z.h5",
+        "cellTitle": "111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z",
+        "latestEditionNumber": "7",
+        "latestUpdateNumber": "9"
+      }
+    ]
+  },
+  {
+    "productCode": "P5501",
+    "productTitle": "P5501",
+    "expiryDate": "2029-08-10T23:59:00Z",
+    "cells": [
+      {
+        "cellCode": "111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z.h5",
+        "cellTitle": "111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z",
+        "latestEditionNumber": "7",
+        "latestUpdateNumber": "9"
+      }
+    ]
+  }
+]

@@ -226,7 +226,7 @@
         UpnLengthOrChecksumValidationFailed = 840044,
 
         /// <summary>
-        /// 840045 - Invalid Permit Xml Schema is recieved
+        /// 840045 - Invalid Permit Xml Schema is received
         /// </summary>
         InvalidPermitXmlSchema = 840045,
 
