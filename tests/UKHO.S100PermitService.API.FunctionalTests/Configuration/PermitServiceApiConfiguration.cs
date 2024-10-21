@@ -13,7 +13,7 @@
         public int? InvalidExpiryDateLicenceId { get; set; }
         public List<string>? InvalidChars { get; set; }
         public List<string>? PermitHeaders { get; set; }
-        public Dictionary <string, string>? UserPermitNumbers { get; set; }
+        public IReadOnlyDictionary<string, string>? UserPermitNumbers { get; set; }
         public string? TempFolderName { get; set; }
     }
 }

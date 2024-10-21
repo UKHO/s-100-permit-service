@@ -14,9 +14,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="zipPath"></param>
         /// <param name="invalidChars"></param>
         /// <param name="permitHeadersValues"></param>
-        /// <param name="upns"></param>
+        /// <param name="userPermitNumbers"></param>
         /// <param name="permitFolderName"></param>
-        public static void VerifyPermitsZipStructureAndPermitXmlContents(string zipPath, List<string>? invalidChars, List<string> permitHeadersValues, Dictionary<string, string> userPermitNumbers, string permitFolderName = "Permits")
+        public static void VerifyPermitsZipStructureAndPermitXmlContents(string zipPath, List<string>? invalidChars, List<string> permitHeadersValues, IReadOnlyDictionary<string, string> userPermitNumbers, string permitFolderName = "Permits")
         {
             var allFolders = Directory.GetDirectories(zipPath);
             foreach(var folder in allFolders)
@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 {
                     allElements.ToArray().ElementAt(i + 2).Value.Should().Be(permitHeadersValues[i]);
                 }
-                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);             //For issueDate value verifying only the date and igoring Time Zone as this may change
+                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);  
             }
         }
 

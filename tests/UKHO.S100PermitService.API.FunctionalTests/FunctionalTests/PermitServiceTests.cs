@@ -123,16 +123,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)500);
         }
 
-        ////// PBI 172917: Build ZipStream as Response
-        ////// PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
-        ////[Test]
-        ////public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAndPERMITXmlIsGeneratedSuccessfullyWithHighestExpiryDate()
-        ////{
-        ////    var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.DuplicateHoldingsLicenceId.ToString()!);
-        ////    var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
-        ////    PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, "DuplicatePermits");
-        ////}
-
         [TearDown]
         public void TearDown()
         {
