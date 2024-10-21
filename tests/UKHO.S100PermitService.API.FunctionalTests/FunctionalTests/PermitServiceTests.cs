@@ -108,7 +108,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {  
             var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
-            Console.WriteLine(downloadPath);
             PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!);
         }
 
@@ -124,7 +123,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.DuplicateHoldingsLicenceId.ToString()!);
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
-            Console.WriteLine(downloadPath);
             PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!, "DuplicatePermits");
         }
 
