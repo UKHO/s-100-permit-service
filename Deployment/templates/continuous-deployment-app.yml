@@ -3,7 +3,7 @@ parameters:
     type: string
 
 steps:
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: "File Transform: Stub Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/*.zip'
@@ -18,7 +18,7 @@ steps:
       appName: "$(STUB_WEB_APP_NAME)"
       package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
            
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: "File Transform: API Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
