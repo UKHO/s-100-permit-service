@@ -11,14 +11,16 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             var allFolders = Directory.GetDirectories(zipPath);
             foreach(var folder in allFolders)
             {
+                var permitFile = File.Exists(Path.Combine(folder, "PERMIT.XML"));
+                permitFile.Should().Be(true);
                 var folderName = folder.Split("\\")[folder.Split("\\").Length - 1];
                 foreach(var invalidCharacter in invalidChars!)
                 {
+                    Console.WriteLine(folderName);
                     (folderName.Contains(invalidCharacter)).Should().BeFalse();
                 }
                 permitHeadersValues[4] = UPNs[folderName];
-                var permitFile = File.Exists(Path.Combine(folder, "PERMIT.XML"));
-                permitFile.Should().Be(true);
+               
                 VerifyPermitHeaderValues(Path.Combine(folder, "PERMIT.XML"), permitHeadersValues);
                 VerifyPermitProductValues(Path.Combine(folder, "PERMIT.XML"), Path.Combine($"./TestData/{permitFolderName}/", folderName, "PERMIT.XML")).Should().BeTrue();
                 CheckDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, "PERMIT.XML")).Should().BeFalse();
