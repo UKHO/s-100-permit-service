@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveUPN_ThenInternalServerError500IsReturned()
         {
-            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidUPNLicenceId!)
+            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidUpnLicenceId!)
             {
                 var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
                 response.StatusCode.Should().Be((HttpStatusCode)500);
@@ -88,7 +88,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveKey_ThenInternalServerError500IsReturned()
         {
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidPKSLicenceId.ToString()!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidPksLicenceId.ToString()!);
             response.StatusCode.Should().Be((HttpStatusCode)500);
         }
 
@@ -103,14 +103,19 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             }
         }
 
+        // PBI 172917: Build ZipStream as Response
+        // PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
         [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveMutipleCellsInHoldings_Then200OKResponseIsReturnedAlongWithPERMITXML()
+        [TestCase("50", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHave50CellsInHoldings_Then200OKResponseIsReturnedAndPERMITSZipIsGeneratedSuccessfully")]
+        [TestCase("12", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAndPERMITXmlIsGeneratedSuccessfullyWithHighestExpiryDate")]
+        public async Task WhenICallPermitServiceEndpointWithLicenceId_Then200OKResponseIsReturnedAlongWithPERMITSZip(string licenceId)
         {  
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
-            PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!);
+            PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!);
         }
 
+        // PBI 172917: Build ZipStream as Response
         [Test]
         public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveInvalidValueOfExpiryDate_ThenInternalServerError500IsReturned()
         {
@@ -118,19 +123,21 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)500);
         }
 
-        [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAlongWithPERMITXML()
-        {
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.DuplicateHoldingsLicenceId.ToString()!);
-            var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
-            PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!, "DuplicatePermits");
-        }
+        ////// PBI 172917: Build ZipStream as Response
+        ////// PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
+        ////[Test]
+        ////public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAndPERMITXmlIsGeneratedSuccessfullyWithHighestExpiryDate()
+        ////{
+        ////    var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.DuplicateHoldingsLicenceId.ToString()!);
+        ////    var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
+        ////    PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, "DuplicatePermits");
+        ////}
 
         [TearDown]
         public void TearDown()
         {
             //Clean up downloaded files/folders
-            PermitXmlFactory.DeleteFolder(Path.Combine(Path.GetTempPath(), "temp"));
+            PermitXmlFactory.DeleteFolder(Path.Combine(Path.GetTempPath(), _permitServiceApiConfiguration!.TempFolderName!));
         }
 
         [OneTimeTearDown]

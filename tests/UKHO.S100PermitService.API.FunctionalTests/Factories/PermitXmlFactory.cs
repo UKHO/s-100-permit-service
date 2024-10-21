@@ -4,9 +4,19 @@ using System.Xml.Linq;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
-    public class PermitXmlFactory : TestBase
+    public class PermitXmlFactory
     {
-        public static void VerifyPermitsZipStructureAndContents(string zipPath, List<string>? invalidChars, List<string> permitHeadersValues, Dictionary<string, string> UPNs, string permitFolderName = "Permits")
+        private static readonly string _permitXml = "PERMIT.XML";
+
+        /// <summary>
+        /// This method is used to verify the zip file structure and the PERMIT.XML file contents
+        /// </summary>
+        /// <param name="zipPath"></param>
+        /// <param name="invalidChars"></param>
+        /// <param name="permitHeadersValues"></param>
+        /// <param name="upns"></param>
+        /// <param name="permitFolderName"></param>
+        public static void VerifyPermitsZipStructureAndPermitXmlContents(string zipPath, List<string>? invalidChars, List<string> permitHeadersValues, Dictionary<string, string> userPermitNumbers, string permitFolderName = "Permits")
         {
             var allFolders = Directory.GetDirectories(zipPath);
             foreach(var folder in allFolders)
@@ -16,16 +26,21 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 {
                     (folderName.Contains(invalidCharacter)).Should().BeFalse();
                 }
-                var permitFile = File.Exists(Path.Combine(folder, "PERMIT.XML"));
+                var permitFile = File.Exists(Path.Combine(folder, _permitXml));
                 permitFile.Should().Be(true);
-                permitHeadersValues[4] = UPNs[folderName];
+                permitHeadersValues[4] = userPermitNumbers[folderName];
                
-                VerifyPermitHeaderValues(Path.Combine(folder, "PERMIT.XML"), permitHeadersValues);
-                VerifyPermitProductValues(Path.Combine(folder, "PERMIT.XML"), Path.Combine($"./TestData/{permitFolderName}/", folderName, "PERMIT.XML")).Should().BeTrue();
-                CheckDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, "PERMIT.XML")).Should().BeFalse();
+                VerifyPermitHeaderValues(Path.Combine(folder, _permitXml), permitHeadersValues);
+                VerifyPermitProductValues(Path.Combine(folder, _permitXml), Path.Combine($"./TestData/{permitFolderName}/", folderName, _permitXml)).Should().BeTrue();
+                VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, _permitXml)).Should().BeFalse();
             }
         }
 
+        /// <summary>
+        /// This method is used to verify the values of header tag in PERMIT.XML
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="permitHeadersValues"></param>
         public static void VerifyPermitHeaderValues(string path, List<string> permitHeadersValues)
         {
             permitHeadersValues[0] = DateTime.UtcNow.Date.ToString("yyyy-MM-dd");
@@ -35,12 +50,18 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             {
                 if(i != 0)
                 {
-                    allElements.ToArray()!.ElementAt(i + 2).Value.Should().Be(permitHeadersValues[i]);
+                    allElements.ToArray().ElementAt(i + 2).Value.Should().Be(permitHeadersValues[i]);
                 }
-                allElements.ToArray()!.ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);             //For issueDate value verifying only the date and igoring Time Zone as this may change
+                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);             //For issueDate value verifying only the date and igoring Time Zone as this may change
             }
         }
 
+        /// <summary>
+        /// This method is used to verify the values of product tags in PERMIT.XML
+        /// </summary>
+        /// <param name="generatedXmlFilePath"></param>
+        /// <param name="xmlFilePath"></param>
+        /// <returns></returns>
         public static bool VerifyPermitProductValues(string generatedXmlFilePath, string xmlFilePath)
         {
             var generatedXml = XElement.Load(generatedXmlFilePath);
@@ -63,7 +84,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                     // Compare each testData
                     for(var j = 0 ; j < generatedXmlDatasetPermit.Count ; j++)
                     {
-                        if(!CompareTestData(generatedXmlDatasetPermit[j], testDataXmlDatasetPermit[j]))
+                        if(!ComparePermitXmlData(generatedXmlDatasetPermit[j], testDataXmlDatasetPermit[j]))
                         {
                             return false;
                         }
@@ -77,7 +98,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             return true;
         }
 
-        private static bool CompareTestData(XElement generatedXmlDatasetPermit, XElement testDataXmlDatasetPermit)
+        /// <summary>
+        /// This method is used to compare PERMIT.XML data
+        /// </summary>
+        /// <param name="generatedXmlDatasetPermit"></param>
+        /// <param name="testDataXmlDatasetPermit"></param>
+        /// <returns></returns>
+        private static bool ComparePermitXmlData(XElement generatedXmlDatasetPermit, XElement testDataXmlDatasetPermit)
         {
             // Compare relevant elements in testData
             var elementsToCompare = new[] { "filename", "editionNumber", "expiry", "encryptedKey" };
@@ -90,16 +117,20 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 {
                     return false;
                 }
-
             }
             return true;
         }
 
-        public static bool CheckDuplicateFileNameNotPresentInPermitXml(string permitFilePath)
+        /// <summary>
+        /// This method is used to verify duplicate file name is not present in PERMIT.XML
+        /// </summary>
+        /// <param name="permitFilePath"></param>
+        /// <returns></returns>
+        public static bool VerifyDuplicateFileNameNotPresentInPermitXml(string permitFilePath)
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(permitFilePath);
-            var fileNames = new List<string>();                                                     //For verification of values of fileData
+            var fileNames = new List<string>();                                                 
             var checkDuplicate = new HashSet<string>();
             var hasDuplicates = false;
             var nodes = xmlDoc.GetElementsByTagName("S100SE:datasetPermit");
@@ -117,10 +148,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                     hasDuplicates = true;
                 }
             }
-
             return hasDuplicates;
         }
 
+        /// <summary>
+        /// This method is used to delete the folder.
+        /// </summary>
+        /// <param name="folderPath"></param>
         public static void DeleteFolder(string folderPath)
         {
             if(Directory.Exists(folderPath))
@@ -131,4 +165,3 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         }
     }
 }
-
