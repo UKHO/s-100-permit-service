@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
-        public async Task<(HttpStatusCode httpStatusCode, MemoryStream memoryStream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, Stream stream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
 
@@ -86,7 +86,7 @@ namespace UKHO.S100PermitService.Common.Services
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private MemoryStream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        private Stream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
 

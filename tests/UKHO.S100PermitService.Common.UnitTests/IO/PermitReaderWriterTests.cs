@@ -162,9 +162,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             return fakePermitDictionary;
         }
 
-        private string ConvertMemoryStreamToXmlString(MemoryStream memoryStream)
+        private string ConvertMemoryStreamToXmlString(Stream stream)
         {
-            using var archive = new ZipArchive(memoryStream);
+            using var archive = new ZipArchive(stream);
 
             if(archive.Entries.Count > 0 && archive.Entries[0].FullName.EndsWith(".xml", StringComparison.OrdinalIgnoreCase))
             {

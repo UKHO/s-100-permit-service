@@ -106,10 +106,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.OK);
-            result.memoryStream.Length.Should().Be(expectedStream.Length);
+            httpStatusCode.Should().Be(HttpStatusCode.OK);
+            stream.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
@@ -167,9 +167,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
+            httpStatusCode.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 

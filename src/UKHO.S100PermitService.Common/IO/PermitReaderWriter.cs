@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// </summary>
         /// <param name="permits"></param>
         /// <returns>ZipStream</returns>
-        public MemoryStream CreatePermits(Dictionary<string, Permit> permits)
+        public Stream CreatePermits(IReadOnlyDictionary<string, Permit> permits)
         {
             var memoryStream = new MemoryStream();
             using(var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
