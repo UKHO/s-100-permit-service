@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [TestCase("50", "Permits", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHave50CellsInHoldings_Then200OKResponseIsReturnedAndPERMITSZipIsGeneratedSuccessfully")]
         [TestCase("12", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAndPERMITXmlIsGeneratedSuccessfullyWithHighestExpiryDate")]
         public async Task WhenICallPermitServiceEndpointWithLicenceId_Then200OKResponseIsReturnedAlongWithPERMITSZip(string licenceId, string comparePermitFolderName)
-        {  
+        {
             var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);

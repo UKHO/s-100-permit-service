@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 var permitFile = File.Exists(Path.Combine(folder, _permitXml));
                 permitFile.Should().Be(true);
                 permitHeadersValues[4] = userPermitNumbers[folderName];
-               
+
                 VerifyPermitHeaderValues(Path.Combine(folder, _permitXml), permitHeadersValues);
                 VerifyPermitProductValues(Path.Combine(folder, _permitXml), Path.Combine($"./TestData/{permitFolderName}/", folderName, _permitXml)).Should().BeTrue();
                 VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, _permitXml)).Should().BeFalse();
@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 {
                     allElements.ToArray().ElementAt(i + 2).Value.Should().Be(permitHeadersValues[i]);
                 }
-                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);  
+                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);
             }
         }
 
@@ -130,7 +130,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         {
             var xmlDoc = new XmlDocument();
             xmlDoc.Load(permitFilePath);
-            var fileNames = new List<string>();                                                 
+            var fileNames = new List<string>();
             var checkDuplicate = new HashSet<string>();
             var hasDuplicates = false;
             var nodes = xmlDoc.GetElementsByTagName("S100SE:datasetPermit");
@@ -142,7 +142,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 
             foreach(var fileName in fileNames.ToArray())
             {
-
                 if(!checkDuplicate.Add(fileName))
                 {
                     hasDuplicates = true;
