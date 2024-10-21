@@ -10,5 +10,10 @@
         public List<int>? InvalidUPNLicenceId { get; set; }
         public int? InvalidPKSLicenceId { get; set; }
         public List<int>? NoDataLicenceId { get; set; }
+        public int? InvalidExpiryDateLicenceId { get; set; }
+        public int? DuplicateHoldingsLicenceId { get; set; }
+        public List<string>? InvalidChars { get; set; }
+        public List<string>? PermitHeaders { get; set; }
+        public Dictionary <string, string> UPNs { get; set; }
     }
 }
