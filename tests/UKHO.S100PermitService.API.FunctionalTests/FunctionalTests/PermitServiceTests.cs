@@ -103,6 +103,36 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             }
         }
 
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveMutipleCellsInHoldings_Then200OKResponseIsReturnedAlongWithPERMITXML()
+        {  
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
+            var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
+            PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!);
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveInvalidValueOfExpiryDate_ThenInternalServerError500IsReturned()
+        {
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidExpiryDateLicenceId.ToString()!);
+            response.StatusCode.Should().Be((HttpStatusCode)500);
+        }
+
+        [Test]
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAlongWithPERMITXML()
+        {
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.DuplicateHoldingsLicenceId.ToString()!);
+            var downloadPath = await PermitServiceEndPointFactory.DownloadZipFile(response);
+            PermitXmlFactory.VerifyPermitsZipStructureAndContents(downloadPath.ToString()!, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UPNs!, "DuplicatePermits");
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            //Clean up downloaded files/folders
+            PermitXmlFactory.DeleteFolder(Path.Combine(Path.GetTempPath(), "temp"));
+        }
+
         [OneTimeTearDown]
         public void OneTimeTearDown()
         {
