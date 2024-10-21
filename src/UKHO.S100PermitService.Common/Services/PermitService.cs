@@ -18,7 +18,7 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitService : IPermitService
     {
         private const string DateFormat = "yyyy-MM-ddzzz";
-        private readonly string _issueDate = DateTimeOffset.Now.ToString(DateFormat);
+        private readonly string _issueDate = DateTimeOffset.UtcNow.ToString(DateFormat);
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, holding),
+                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, cell.CellCode),
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate
                     };
@@ -166,12 +166,9 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
-        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, HoldingsServiceResponse holdingsServiceResponse)
+        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
-            var decryptedProductKey = holdingsServiceResponse.Cells.Join(decryptedProductKeys,
-                cell => cell.CellCode,
-                key => key.ProductName,
-                (cell, key) => key.DecryptedKey).FirstOrDefault();
+            var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
             return _s100Crypt.CreateEncryptedKey(decryptedProductKey, hardwareId);
         }
