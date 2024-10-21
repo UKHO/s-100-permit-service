@@ -8,11 +8,12 @@ resource "azurerm_service_plan" "app_service_plan" {
 }
 
 resource "azurerm_windows_web_app" "webapp_service" {
-  name                = var.name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  service_plan_id     = azurerm_service_plan.app_service_plan.id
-  tags                = var.tags
+  name                          = var.name
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  service_plan_id               = azurerm_service_plan.app_service_plan.id
+  public_network_access_enabled = false
+  tags                          = var.tags
 
   site_config {
     application_stack {    
@@ -37,11 +38,12 @@ resource "azurerm_windows_web_app" "webapp_service" {
 }
 
 resource "azurerm_windows_web_app" "stub_webapp_service" {  
-  name                = var.stub_webapp_name
-  location            = var.location
-  resource_group_name = var.resource_group_name
-  service_plan_id     = azurerm_service_plan.app_service_plan.id
-  tags                = var.tags
+  name                          = var.stub_webapp_name
+  location                      = var.location
+  resource_group_name           = var.resource_group_name
+  service_plan_id               = azurerm_service_plan.app_service_plan.id
+  public_network_access_enabled = false
+  tags                          = var.tags
 
   site_config {
     application_stack {    
