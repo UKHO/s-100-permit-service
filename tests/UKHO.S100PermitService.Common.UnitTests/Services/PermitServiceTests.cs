@@ -94,7 +94,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                             .Returns([new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<String>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
