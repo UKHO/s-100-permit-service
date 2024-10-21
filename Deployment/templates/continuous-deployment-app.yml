@@ -7,8 +7,8 @@ steps:
     displayName: "File Transform: Stub Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/*.zip'
-      fileType: 'json'
-      targetFiles: '**/appsettings.json'
+      xmlTransformationRules:
+      jsonTargetFiles: '**/appsettings.json'
 
   - task: AzureWebApp@1
     displayName: "Azure App Deploy: S100-Permit-StubService"
@@ -22,8 +22,8 @@ steps:
     displayName: "File Transform: API Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
-      fileType: 'json'
-      targetFiles: '**/appsettings.json'
+      xmlTransformationRules:
+      jsonTargetFiles: '**/appsettings.json'
 
   - task: AzureWebApp@1
     displayName: "Azure App Deploy: S100-Permit-ApiService"
