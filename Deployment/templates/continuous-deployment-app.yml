@@ -3,13 +3,6 @@ parameters:
     type: string
 
 steps:
-  - task: FileTransform@1
-    displayName: "File Transform: Stub Service Application Settings"
-    inputs:
-      folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/*.zip'
-      fileType: 'json'
-      targetFiles: '**/appsettings.json'
-
   - task: AzureWebApp@1
     displayName: "Azure App Deploy: S100-Permit-StubService"
     inputs:
@@ -18,12 +11,12 @@ steps:
       appName: "$(STUB_WEB_APP_NAME)"
       package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
            
-  - task: FileTransform@1
+  - task: FileTransform@2
     displayName: "File Transform: API Service Application Settings"
     inputs:
       folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
-      fileType: 'json'
-      targetFiles: '**/appsettings.json'
+      xmlTransformationRules:
+      jsonTargetFiles: '**/appsettings.json'
 
   - task: AzureWebApp@1
     displayName: "Azure App Deploy: S100-Permit-ApiService"
