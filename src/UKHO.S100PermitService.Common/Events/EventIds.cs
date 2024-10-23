@@ -248,6 +248,16 @@
         /// <summary>
         /// 840049 - Holdings filtered cell count
         /// </summary>
-        HoldingsFilteredCellCount = 840049
+        HoldingsFilteredCellCount = 840049,
+
+        /// <summary>
+        /// 840050 - Request to UserPermitService reponseded licence not found
+        /// </summary>
+        UserPermitServiceGetUserPermitsLicenceNotFound = 840050,
+
+        /// <summary>
+        /// 840051 - Request to HoldingsService reponseded licence not found
+        /// </summary>
+        HoldingServiceGetHoldingsLicenceNotFound = 840051
     }
 }

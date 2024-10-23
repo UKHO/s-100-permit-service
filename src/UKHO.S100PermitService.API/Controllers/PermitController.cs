@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
 
-            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
+            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode,string.Empty);
         }
     }
-}
+} 
