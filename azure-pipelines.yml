@@ -196,6 +196,12 @@ stages:
               publishTestResults: true
               testRunTitle: "UnitTests"
 
+          - task: publishcodecoverageresults@2
+            displayName: "publish code coverage report for build quality checks"
+            inputs:
+              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
+              failIfCoverageEmpty: true
+
           - task: PowerShell@2
             displayName: "Generate code coverage report"
             inputs:
@@ -339,6 +345,19 @@ stages:
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
               ArtifactName: UKHOS100PermitServiceStubService
+
+          - task: PowerShell@2
+            displayName: "Generate event id runbook"
+            inputs:
+              targetType: filePath
+              filePath: '$(Build.SourcesDirectory)\Utility\XmlToRtfTransformation.ps1'
+              arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitGenerator.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
+          
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish event id runbook"
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)\Utility\Runbook-EventId.rtf'
+              ArtifactName: Runbook
               
       - job: PublishFunctionalTestsAndTerraform
         workspace:
