@@ -295,7 +295,7 @@ stages:
             inputs:
               targetType: filePath
               filePath: '$(Build.SourcesDirectory)\Utility\XmlToRtfTransformation.ps1'
-              arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitGenerator.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
+              arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
           
           - task: PublishBuildArtifacts@1
             displayName: "Publish event id runbook"
