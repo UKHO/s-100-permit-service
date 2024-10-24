@@ -290,6 +290,19 @@ stages:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip'
               ArtifactName: UKHOS100PermitServiceAPI
 
+          - task: PowerShell@2
+            displayName: "Generate event id runbook"
+            inputs:
+              targetType: filePath
+              filePath: '$(Build.SourcesDirectory)\Utility\XmlToRtfTransformation.ps1'
+              arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitGenerator.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
+          
+          - task: PublishBuildArtifacts@1
+            displayName: "Publish event id runbook"
+            inputs:
+              PathtoPublish: '$(Build.SourcesDirectory)\Utility\Runbook-EventId.rtf'
+              ArtifactName: Runbook
+
       - job: BuildAndPublishS100PermitServiceStubService
         workspace:
           clean: all
@@ -344,7 +357,7 @@ stages:
             displayName: "Publish S-100 Permit Service StubService Artifact"
             inputs:
               PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
-              ArtifactName: UKHOS100PermitServiceStubService
+              ArtifactName: UKHOS100PermitServiceStubService         
               
       - job: PublishFunctionalTestsAndTerraform
         workspace:
