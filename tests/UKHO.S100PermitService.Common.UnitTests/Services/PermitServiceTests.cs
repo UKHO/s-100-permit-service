@@ -237,10 +237,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.NotFound);
-            result.stream.Length.Should().Be(0);
+            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
 
@@ -270,10 +270,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.NotFound);
-            result.stream.Length.Should().Be(0);
+            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
@@ -358,17 +358,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     ]);
 
                 case NoContent:
-                    return (HttpStatusCode.NoContent,
-                    [
-                    ]);
+                    return (HttpStatusCode.NoContent, []);
+
+                case "":
+                    return (HttpStatusCode.NoContent, null);
 
                 case NotFound:
                     return (HttpStatusCode.NotFound, null);
 
                 default:
-                    return (HttpStatusCode.NoContent,
-                    [
-                    ]);
+                    return (HttpStatusCode.NoContent, null);
             }
         }
 
@@ -386,12 +385,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 case NoContent:
                     return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
 
+                case "":
+                    return (HttpStatusCode.NoContent, null);
+
                 case NotFound:
                     return (HttpStatusCode.NotFound, null);
 
                 default:
-                    //return null;
-                    return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
+                    return (HttpStatusCode.NoContent, null);
             }
         }
 
