@@ -5,7 +5,7 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public interface IUserPermitService
     {
-        Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
+        Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
         void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse);
     }
 }

@@ -39,7 +39,7 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
         }
 
-        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(new Uri(_userPermitServiceApiConfiguration.Value.BaseUrl), string.Format(UserPermitUrl, licenceId));
 

@@ -30,6 +30,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string NoContent = "noContent";
         const string OkResponse = "okResponse";
+        const string NotFound = "notFound";
 
         private IPermitService _permitService;
 
@@ -229,12 +230,75 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        private static List<HoldingsServiceResponse> GetHoldingDetails(string responseType)
+        [Test]
+        [TestCase(NotFound)]
+        public async Task WhenUserPermitServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
+        {
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(responseType));
+
+            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+
+            result.httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            result.stream.Length.Should().Be(0);
+
+            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.CreatePermitEnd.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit completed"
+            ).MustNotHaveHappened();
+        }
+
+        [Test]
+        [TestCase(NotFound)]
+        public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
+        {
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(OkResponse));
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetHoldingDetails(responseType));
+
+            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+
+            result.httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            result.stream.Length.Should().Be(0);
+
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+               call.Method.Name == "Log"
+               && call.GetArgument<LogLevel>(0) == LogLevel.Information
+               && call.GetArgument<EventId>(1) == EventIds.CreatePermitEnd.ToEventId()
+               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+               .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit completed"
+           ).MustNotHaveHappened();
+        }
+
+        private static (HttpStatusCode, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
         {
             switch(responseType)
             {
                 case OkResponse:
-                    return
+                    return (HttpStatusCode.OK,
                     [
                         new HoldingsServiceResponse
                         {
@@ -291,34 +355,43 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                 }
                             ]
                         }
-                    ];
+                    ]);
 
                 case NoContent:
-                    return
+                    return (HttpStatusCode.NoContent,
                     [
-                    ];
+                    ]);
+
+                case NotFound:
+                    return (HttpStatusCode.NotFound, null);
 
                 default:
-                    return null;
+                    return (HttpStatusCode.NoContent,
+                    [
+                    ]);
             }
         }
 
-        private static UserPermitServiceResponse GetUserPermits(string responseType)
+        private static (HttpStatusCode, UserPermitServiceResponse?) GetUserPermits(string responseType)
         {
             switch(responseType)
             {
                 case OkResponse:
-                    return new UserPermitServiceResponse
+                    return (HttpStatusCode.OK, new UserPermitServiceResponse
                     {
                         LicenceId = 1,
                         UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
-                    };
+                    });
 
                 case NoContent:
-                    return new UserPermitServiceResponse();
+                    return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
+
+                case NotFound:
+                    return (HttpStatusCode.NotFound, null);
 
                 default:
-                    return null;
+                    //return null;
+                    return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
             }
         }
 

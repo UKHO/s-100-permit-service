@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private const string FakeUri = "http://test.com";
         private const string AccessToken = "access-token";
 
-        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"User permits not found for given LicenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
         private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"LicenceId is incorrect\"\r\n    }\r\n  ]\r\n}";
 
         [SetUp]
@@ -112,9 +112,44 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
+        public async Task WhenLicenceIdNotFound_ThenUserPermitServiceReturnsNotFoundResponse()
+        {
+            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                Content = new StringContent(ErrorNotFoundContent, Encoding.UTF8, "application/json")
+            };
+
+            A.CallTo(() => _fakeUserPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                    .Returns(AccessToken);
+
+            A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    .Returns(httpResponseMessage);
+
+            var response = await _userPermitService.GetUserPermitAsync(14, CancellationToken.None, _fakeCorrelationId);
+
+            response.httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.userPermitServiceResponse.Equals(null);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET {RequestUri} started"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+
+                call.Method.Name == "Log"
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                    && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}"
+                ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public async Task WhenLicenceIdNotFoundOr0_ThenUserPermitServiceReturnsException404Or400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
+        public async Task WhenLicenceIdIs0_ThenUserPermitServiceReturnsException400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {

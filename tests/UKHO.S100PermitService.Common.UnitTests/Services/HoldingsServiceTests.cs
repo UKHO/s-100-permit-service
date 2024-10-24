@@ -85,8 +85,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
-            response.Count.Should().BeGreaterThanOrEqualTo(1);
-            response.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
+            response.holdingsServiceResponse.Count.Should().BeGreaterThanOrEqualTo(1);
+            response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -106,9 +106,44 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(7, HttpStatusCode.NotFound, ErrorNotFoundContent)]
+        public async Task WhenLicenceIdNotFound_ThenHoldingsServiceReturns404NotFoundResponse()
+        {
+            var httpResponseMessage = new HttpResponseMessage(HttpStatusCode.NotFound)
+            {
+                Content = new StringContent(ErrorNotFoundContent, Encoding.UTF8, "application/json")
+            };
+
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                    .Returns(AccessToken);
+
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    .Returns(httpResponseMessage);
+
+            var (httpStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+
+            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            holdingsServiceResponse?.Equals(null);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+
+                call.Method.Name == "Log"
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                    && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}"
+                ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public async Task WhenHoldigsNotFoundOrInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
+        public async Task WhenHoldigsInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -136,7 +171,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
-        public async Task WhenHoldingsServiceResponseOtherThanOkAndBadRequest_ThenReturnsException(HttpStatusCode statusCode, string content)
+        public async Task WhenHoldingsServiceResponseOtherThanOkBadRequestAndNotFound_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
