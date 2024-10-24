@@ -157,7 +157,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(NoContent)]
         [TestCase("")]
         public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
@@ -199,7 +198,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(NoContent)]
         [TestCase("")]
         public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
@@ -230,7 +228,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(NotFound)]
         public async Task WhenUserPermitServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
         {
@@ -260,7 +257,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustNotHaveHappened();
         }
 
-        [Test]
         [TestCase(NotFound)]
         public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
         {

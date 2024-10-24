@@ -147,7 +147,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
         public async Task WhenLicenceIdIs0_ThenUserPermitServiceReturnsException400WithErrorDetails(int licenceId, HttpStatusCode statusCode, string content)
         {
@@ -173,7 +172,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
@@ -204,7 +202,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
         public async Task WhenUserPermitServiceResponseTooManyRequests_ThenResponseShouldNotBeOkAsync(HttpStatusCode statusCode, string content)
         {

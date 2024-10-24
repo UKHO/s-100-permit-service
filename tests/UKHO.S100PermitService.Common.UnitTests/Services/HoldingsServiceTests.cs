@@ -141,7 +141,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
         public async Task WhenHoldigsInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
         {
@@ -167,7 +166,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
@@ -198,7 +196,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
         [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
         public void WhenHoldingsServiceResponseTooManyRequests_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
@@ -235,7 +232,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               ).MustHaveHappened();
         }
 
-        [Test]
         [TestCase("MultipleUpdateNumber")]
         [TestCase("DifferentExpiry")]
         [TestCase("DuplicateDataset")]

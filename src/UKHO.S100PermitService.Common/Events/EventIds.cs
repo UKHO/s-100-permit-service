@@ -251,12 +251,12 @@
         HoldingsFilteredCellCount = 840049,
 
         /// <summary>
-        /// 840050 - Request to UserPermitService reponseded licence not found
+        /// 840050 - Request to UserPermitService GetUserPermits responded licence not found
         /// </summary>
         UserPermitServiceGetUserPermitsLicenceNotFound = 840050,
 
         /// <summary>
-        /// 840051 - Request to HoldingsService reponseded licence not found
+        /// 840051 - Request to HoldingsService GetHoldings responded licence not found
         /// </summary>
         HoldingServiceGetHoldingsLicenceNotFound = 840051
     }
