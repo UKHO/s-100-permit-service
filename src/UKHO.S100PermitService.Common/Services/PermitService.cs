@@ -48,14 +48,14 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
-        public async Task<(HttpStatusCode httpStatusCode, Stream stream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
-            _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
+            _logger.LogInformation(EventIds.ProcessPermitRequestStart.ToEventId(), "Process permit request started.");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
-                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response");
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.Services
             var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
-                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response");
+                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
@@ -81,15 +81,13 @@ namespace UKHO.S100PermitService.Common.Services
 
             var permitDetails = CreatePermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
-            _logger.LogInformation(EventIds.CreatePermitEnd.ToEventId(), "CreatePermit completed");
+            _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
             return (HttpStatusCode.OK, permitDetails);
         }
 
         private Stream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
-            _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
-
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
@@ -115,8 +113,6 @@ namespace UKHO.S100PermitService.Common.Services
 
             var permitDetails = _permitReaderWriter.CreatePermits(permitDictionary);
 
-            _logger.LogInformation(EventIds.FileCreationEnd.ToEventId(), "Permit Xml file creation completed");
-
             return permitDetails;
         }
 
@@ -125,8 +121,6 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var productsList = new List<Products>();
             var products = new Products();
-
-            _logger.LogInformation(EventIds.GetProductListStarted.ToEventId(), "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}", upnTitle);
 
             foreach(var holding in holdingsServiceResponse)
             {
@@ -154,7 +148,6 @@ namespace UKHO.S100PermitService.Common.Services
                     products = new();
                 }
             }
-            _logger.LogInformation(EventIds.GetProductListCompleted.ToEventId(), "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}", upnTitle);
             return productsList;
         }
 

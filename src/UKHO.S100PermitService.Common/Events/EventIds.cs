@@ -11,24 +11,24 @@
         UnhandledException = 840001,
 
         /// <summary>
-        /// 840002 - Generate Permit API call started.
+        /// 840002 - GeneratePermit API call started.
         /// </summary>
         GeneratePermitStarted = 840002,
 
         /// <summary>
-        /// 840003 - Generate Permit API call end.
+        /// 840003 - GeneratePermit API call completed.
         /// </summary>
         GeneratePermitEnd = 840003,
 
         /// <summary>
-        /// 840004 - Create permit call started.
+        /// 840004 - Process permit request call started.
         /// </summary>
-        CreatePermitStart = 840004,
+        ProcessPermitRequestStart = 840004,
 
         /// <summary>
         /// 840005 - Create permit call end.
         /// </summary>
-        CreatePermitEnd = 840005,
+        ProcessPermitRequestCompleted = 840005,
 
         /// <summary>
         /// 840006 - Xml serialization call started.
@@ -43,12 +43,12 @@
         /// <summary>
         /// 840008 - File creation call started.
         /// </summary>
-        FileCreationStart = 840008,
+        PermitXmlFileCreationStart = 840008,
 
         /// <summary>
         /// 840009 - File creation call end.
         /// </summary>
-        FileCreationEnd = 840009,
+        PermitXmlFileCreationCompleted = 840009,
 
         /// <summary>
         /// 840010 - Empty permit xml is received.
@@ -96,47 +96,47 @@
         CachingExternalEndPointTokenCompleted = 840018,
 
         /// <summary>
-        /// 840019 - Request to Holdings service GetHoldings started
+        /// 840019 - Request to Holdings service GetHoldings started.
         /// </summary>
         HoldingsServiceGetHoldingsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Request to Holdings service GetHoldings completed
+        /// 840020 - Request to Holdings service GetHoldings completed.
         /// </summary>
         HoldingsServiceGetHoldingsRequestCompleted = 840020,
 
         /// <summary>
-        /// 840021 - Request to Holdings service GetHoldings failed
+        /// 840021 - Request to Holdings service GetHoldings failed.
         /// </summary>
         HoldingsServiceGetHoldingsRequestFailed = 840021,
 
         /// <summary>
-        /// 840022 - Request to UserPermitService GetUserPermit endpoint started
+        /// 840022 - Request to UserPermitService GetUserPermit endpoint started.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestStarted = 840022,
 
         /// <summary>
-        /// 840023 - Request to UserPermitService GetUserPermit endpoint completed
+        /// 840023 - Request to UserPermitService GetUserPermit endpoint completed.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestCompleted = 840023,
 
         /// <summary>
-        /// 840024 - Request to UserPermitService GetUserPermit endpoint failed
+        /// 840024 - Request to UserPermitService GetUserPermit endpoint failed.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get product key from Product Key Service started
+        /// 840025 - Get product key from Product Key Service started.
         /// </summary>
         GetProductKeysRequestStarted = 840025,
 
         /// <summary>
-        /// 840026 - Get product key from Product Key Service completed
+        /// 840026 - Get product key from Product Key Service completed.
         /// </summary>
         GetProductKeysRequestCompleted = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get product key from Product Key Service
+        /// 840027 - Exception occurred while get product key from Product Key Service.
         /// </summary>
         GetProductKeysRequestFailed = 840027,
 
@@ -146,9 +146,9 @@
         ManufacturerIdNotFoundInKeyVault = 840028,
 
         /// <summary>
-        /// 840029 -  Manufacturer Key found in Cache.
+        /// 840029 - Filtered holdings total count before filtering and after filtering for highest expiry dates and removing duplicates.
         /// </summary>
-        ManufacturerKeyFoundInCache = 840029,
+        HoldingsFilteredCellCount = 840029,
 
         /// <summary>
         /// 840030 - New Manufacturer Key is added in Cache.
@@ -156,98 +156,93 @@
         AddingNewManufacturerKeyInCache = 840030,
 
         /// <summary>
-        /// 840031 - Access token is empty or null
+        /// 840031 - Access token is empty or null.
         /// </summary>
         MissingAccessToken = 840031,
 
         /// <summary>
-        /// 840032 - Request for retrying holdings api endpoint
+        /// 840032 - Request for retrying holdings api endpoint.
         /// </summary>
         RetryHttpClientHoldingsRequest = 840032,
 
         /// <summary>
-        /// 840033 - Request for retrying user permit api endpoint
+        /// 840033 - Request for retrying user permit api endpoint.
         /// </summary>
         RetryHttpClientUserPermitRequest = 840033,
 
         /// <summary>
-        /// 840034 - Request for retrying product key service api endpoint
+        /// 840034 - Request for retrying product key service api endpoint.
         /// </summary>
         RetryHttpClientProductKeyServiceRequest = 840034,
 
         /// <summary>
-        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content
+        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
 
         /// <summary>
-        /// 840036 - Request to Holdings service GetHoldings completed with no content
+        /// 840036 - Request to Holdings service GetHoldings completed with no content.
         /// </summary>
         HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840036,
 
         /// <summary>
-        /// 840037 - Expected hex string length not found
+        /// 840037 - Expected hex string length not found.
         /// </summary>
         HexStringLengthError = 840037,
 
         /// <summary>
-        /// 840038 - Expected hex key length not found
+        /// 840038 - Expected hex key length not found.
         /// </summary>
         HexKeyLengthError = 840038,
 
         /// <summary>
-        /// 840039 - Get decrypted keys from product keys started
+        /// 840039 - Get decrypted keys from product keys started.
         /// </summary>
         GetDecryptedKeysFromProductKeysStarted = 840039,
 
         /// <summary>
-        /// 840040 - Get decrypted keys from product keys completed
+        /// 840040 - Get decrypted keys from product keys completed.
         /// </summary>
         GetDecryptedKeysFromProductKeysCompleted = 840040,
 
         /// <summary>
-        /// 840041 - Aes encryption exception
+        /// 840041 - Aes encryption exception.
         /// </summary>
         AesEncryptionException = 840041,
 
         /// <summary>
-        /// 840042 - Get decrypted hardware id from user permit started
+        /// 840042 - Extraction of decrypted HW_ID from user permits started.
         /// </summary>
         GetDecryptedHardwareIdFromUserPermitStarted = 840042,
 
         /// <summary>
-        /// 840043 - Get decrypted hardware id from user permit completed
+        /// 840043 - Extraction of decrypted HW_ID from user permits completed.
         /// </summary>
         GetDecryptedHardwareIdFromUserPermitCompleted = 840043,
 
         /// <summary>
-        /// 840044 - Upn length or checksum validation failed
+        /// 840044 - Upn length or checksum validation failed.
         /// </summary>
         UpnLengthOrChecksumValidationFailed = 840044,
 
         /// <summary>
-        /// 840045 - Invalid Permit Xml Schema is received
+        /// 840045 - Invalid Permit Xml Schema is received.
         /// </summary>
         InvalidPermitXmlSchema = 840045,
 
         /// <summary>
-        /// 840046 - Get Product list started 
+        /// 840046 - Get Product list started.
         /// </summary>
         GetProductListStarted = 840046,
 
         /// <summary>
-        /// 840047 - Get Product list completed
+        /// 840047 - Get Product list completed.
         /// </summary>
         GetProductListCompleted = 840047,
 
         /// <summary>
-        /// 840048 - Holdings total cell count
+        /// 840048 - Permit zip file creation completed.
         /// </summary>
-        HoldingsCellCount = 840048,
-
-        /// <summary>
-        /// 840049 - Holdings filtered cell count
-        /// </summary>
-        HoldingsFilteredCellCount = 840049
+        PermitZipFileCreationCompleted = 840048
     }
 }

@@ -106,7 +106,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermits(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpStatusCode.Should().Be(HttpStatusCode.OK);
             stream.Length.Should().Be(expectedStream.Length);
@@ -116,43 +116,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+           && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStart.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
            ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.FileCreationStart.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml file creation started"
-           ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.GetProductListStarted.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List details from HoldingServiceResponse and ProductKeyService started for Title: {title}"
-           ).MustHaveHappenedTwiceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.GetProductListCompleted.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get Product List from HoldingServiceResponse and ProductKeyService completed for title : {title}"
-           ).MustHaveHappenedTwiceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.FileCreationEnd.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit Xml file creation completed"
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.CreatePermitEnd.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit completed"
+           && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
            ).MustHaveHappenedOnceExactly();
         }
 
@@ -167,7 +139,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
-            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpStatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -179,22 +151,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStart.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStart.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService responded with empty response"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService responded with empty response."
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -206,7 +178,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
-            var result = await _permitService.CreatePermitAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var result = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
 
@@ -216,8 +188,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.CreatePermitStart.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "CreatePermit started"
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStart.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -225,7 +197,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService responded with empty response"
+                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService responded with empty response."
             ).MustHaveHappenedOnceExactly();
         }
 

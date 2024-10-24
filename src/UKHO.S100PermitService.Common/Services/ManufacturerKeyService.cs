@@ -31,10 +31,7 @@ namespace UKHO.S100PermitService.Common.Services
                 {
                     secretValue = GetSetManufacturerValue(secretName).Value;
                 }
-                else
-                {
-                    _logger.LogInformation(EventIds.ManufacturerKeyFoundInCache.ToEventId(), "Manufacturer Key found in Cache | {DateTime}", DateTime.Now.ToUniversalTime());
-                }
+
                 return secretValue;
             }
             catch(Exception ex)

@@ -61,20 +61,18 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
+                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
+                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
             var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
-
-            _logger.LogInformation(EventIds.HoldingsCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count());
 
             var latestCells = allCells
                 .GroupBy(c => c.Cell.CellCode)
@@ -90,7 +88,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Cells = g.Select(c => c.Cell).ToList()
                 }).ToList();
 
-            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", latestCells.Count());
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Filtered holdings: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", allCells.Count(), latestCells.Count());
 
             return filteredHoldings;
         }

@@ -1,4 +1,5 @@
-﻿using System.IO.Compression;
+﻿using Microsoft.Extensions.Logging;
+using System.IO.Compression;
 using System.Reflection;
 using System.Text;
 using System.Xml;
@@ -21,10 +22,14 @@ namespace UKHO.S100PermitService.Common.IO
         private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
         private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFile);
 
+        private readonly ILogger<PermitReaderWriter> _logger;
         private readonly ISchemaValidator _schemaValidator;
+       
 
-        public PermitReaderWriter(ISchemaValidator schemaValidator)
+        public PermitReaderWriter(ILogger<PermitReaderWriter> logger, 
+                                  ISchemaValidator schemaValidator)
         {
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
         }
 
@@ -55,9 +60,11 @@ namespace UKHO.S100PermitService.Common.IO
             {
                 foreach(var permit in permits)
                 {
-                    CreatePermitXml(archive, $"{permit.Key}/{PermitXmlFileName}", permit.Value);
+                    CreatePermitXml(archive, permit.Key, permit.Value);
                 }
             }
+
+            _logger.LogInformation(EventIds.PermitZipFileCreationCompleted.ToEventId(), "Permit zip file creation completed.");
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
@@ -67,10 +74,13 @@ namespace UKHO.S100PermitService.Common.IO
         /// Create permit xml files and add into permit zip 
         /// </summary>
         /// <param name="zipArchive"></param>
-        /// <param name="fileName"></param>
+        /// <param name="upnTitle"></param>
         /// <param name="permit"></param>
-        private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit)
+        private void CreatePermitXml(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
+            _logger.LogInformation(EventIds.PermitXmlFileCreationStart.ToEventId(), "Creation of Permit XML file for UPN: {UpnTitle} started.", upnTitle);
+            
+            var fileName= $"{upnTitle}/{PermitXmlFileName}";
             // Create an entry for the XML file
             var zipEntry = zipArchive.CreateEntry(fileName);
 
@@ -107,12 +117,14 @@ namespace UKHO.S100PermitService.Common.IO
             // Validate schema
             if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
             {
-                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema");
+                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema.");
             }
 
             // Write the modified XML content to the zip entry
             using var streamWriter = new StreamWriter(entryStream);
             streamWriter.Write(xmlContent);
+
+            _logger.LogInformation(EventIds.PermitXmlFileCreationCompleted.ToEventId(), "Creation of Permit XML file for UPN {UpnTitle} completed.", upnTitle);
         }
 
         private string GetTargetNamespace()
