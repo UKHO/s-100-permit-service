@@ -71,7 +71,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
 
-            var productKeyServiceRequest = ProductKeyServiceRequest(holdingsWithLatestExpiry);
+            var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
 
             var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
@@ -79,21 +79,21 @@ namespace UKHO.S100PermitService.Common.Services
 
             var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            var permitDetails = CreatePermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
+            var permitDetails = BuildPermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private Stream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        private Stream BuildPermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
             foreach(var upnInfo in upnInfos)
             {
-                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId, upnInfo.Title);
+                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId);
 
                 var permit = new Permit
                 {
@@ -111,13 +111,13 @@ namespace UKHO.S100PermitService.Common.Services
                 permitDictionary.Add(upnInfo.Title, permit);
             }
 
-            var permitDetails = _permitReaderWriter.CreatePermits(permitDictionary);
+            var permitDetails = _permitReaderWriter.CreatePermitZip(permitDictionary);
 
             return permitDetails;
         }
 
         [ExcludeFromCodeCoverage]
-        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
+        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
         {
             var productsList = new List<Products>();
             var products = new Products();
@@ -151,7 +151,7 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
-        private List<ProductKeyServiceRequest> ProductKeyServiceRequest(
+        private List<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
             {

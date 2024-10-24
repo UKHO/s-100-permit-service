@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
 
-            var result = _permitReaderWriter.CreatePermits(GetPermitDetails());
+            var result = _permitReaderWriter.CreatePermitZip(GetPermitDetails());
 
             result.Should().NotBeNull();
 
@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                 && call.GetArgument<EventId>(1) == EventIds.PermitZipFileCreationCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Permit zip file creation completed."
-            ).MustHaveHappened();
+            ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            FluentActions.Invoking(() => _permitReaderWriter.CreatePermits(GetInValidPermitDetails())).Should().
+            FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZip(GetInValidPermitDetails())).Should().
                                             ThrowExactly<PermitServiceException>().WithMessage("Invalid permit xml schema.");
         }
 
