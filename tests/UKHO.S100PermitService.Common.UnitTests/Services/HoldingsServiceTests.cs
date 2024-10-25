@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
-            response.holdingsServiceResponse.Count.Should().BeGreaterThanOrEqualTo(1);
+            response.holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
             response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>

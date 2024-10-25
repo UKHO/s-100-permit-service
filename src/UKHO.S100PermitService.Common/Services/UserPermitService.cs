@@ -71,9 +71,9 @@ namespace UKHO.S100PermitService.Common.Services
                 "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
-            else if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
+            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogError(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
                     "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Errors Details: {Errors}",
