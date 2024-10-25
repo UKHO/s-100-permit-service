@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Services
             var uri = new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
 
             _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
-                "Request to HoldingsService GET {RequestUri} started.", uri.AbsolutePath);
+                "Request to HoldingsService GET Uri : {RequestUri} started.", uri.AbsolutePath);
 
             var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
@@ -46,10 +46,10 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
+                    "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
                     httpResponseMessage.StatusCode.ToString());
 
                 var holdingsServiceResponse = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson);
@@ -58,10 +58,10 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
+                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
             else if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
@@ -69,22 +69,20 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
 
                 _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
+                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Errors Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage.StatusCode, null);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
+                "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
             var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
-
-            _logger.LogInformation(EventIds.HoldingsCellCount.ToEventId(), "Holdings total cell count : {Count}", allCells.Count());
 
             var latestCells = allCells
                 .GroupBy(c => c.Cell.CellCode)
@@ -100,7 +98,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Cells = g.Select(c => c.Cell).ToList()
                 }).ToList();
 
-            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", latestCells.Count());
+            _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Filtered holdings: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", allCells.Count(), latestCells.Count());
 
             return filteredHoldings;
         }

@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                             .Returns((HttpStatusCode.OK, expectedStream));
 
             var result = await _permitController.GeneratePermits(007);
@@ -57,21 +57,21 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started."
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
            call.Method.Name == "Log"
            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
+           && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
+           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
            ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
         public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
         {
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns((HttpStatusCode.NoContent, new MemoryStream()));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
@@ -82,21 +82,21 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
             ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
         public async Task WhenPermitGenerationFailed_ThenReturnsNotFoundResponse()
         {
-            A.CallTo(() => _fakePermitService.CreatePermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns((HttpStatusCode.NotFound, null));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
@@ -108,14 +108,14 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call started."
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitEnd.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Generate Permit API call end."
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
             ).MustHaveHappenedOnceExactly();
         }
 
