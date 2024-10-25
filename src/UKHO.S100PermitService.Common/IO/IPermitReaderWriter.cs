@@ -4,7 +4,7 @@ namespace UKHO.S100PermitService.Common.IO
 {
     public interface IPermitReaderWriter
     {
-        Stream CreatePermits(IReadOnlyDictionary<string, Permit> permits);
+        Stream CreatePermitZip(IReadOnlyDictionary<string, Permit> permits);
 
         string ReadXsdVersion();
     }
