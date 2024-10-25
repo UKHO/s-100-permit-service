@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.Common.Services
                 }
                 else
                 {
-                    _logger.LogInformation(EventIds.ManufacturerKeyFoundInCache.ToEventId(), "Manufacturer Key found in Cache | {DateTime}", DateTime.Now.ToUniversalTime());
+                    _logger.LogInformation(EventIds.ManufacturerKeyFoundInCache.ToEventId(), "Manufacturer Key found in Cache.");
                 }
 
                 return secretValue;
@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _cacheProvider.SetCacheKey(secretName, secretValue.Value);
 
-            _logger.LogInformation(EventIds.AddingNewManufacturerKeyInCache.ToEventId(), "New Manufacturer Key added in Cache | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.AddingNewManufacturerKeyInCache.ToEventId(), "New Manufacturer Key added in Cache.");
 
             return secretValue;
         }

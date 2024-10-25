@@ -67,7 +67,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.ManufacturerKeyFoundInCache.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Manufacturer Key found in Cache | {DateTime}"
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Manufacturer Key found in Cache."
             ).MustHaveHappenedOnceExactly();
 
             result.Should().NotBeNull();
@@ -93,7 +93,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
              call.Method.Name == "Log"
              && call.GetArgument<LogLevel>(0) == LogLevel.Information
              && call.GetArgument<EventId>(1) == EventIds.AddingNewManufacturerKeyInCache.ToEventId()
-             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "New Manufacturer Key added in Cache | {DateTime}"
+             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "New Manufacturer Key added in Cache."
              ).MustHaveHappenedOnceExactly();
 
             result.Should().Be(secretValue);
