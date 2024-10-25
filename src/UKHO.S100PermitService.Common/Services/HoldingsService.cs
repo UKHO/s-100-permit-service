@@ -71,7 +71,7 @@ namespace UKHO.S100PermitService.Common.Services
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
-                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Errors Details: {Errors}",
+                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage.StatusCode, null);
