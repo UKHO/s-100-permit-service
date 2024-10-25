@@ -86,7 +86,7 @@
         GetAccessTokenCompleted = 840016,
 
         /// <summary>
-        /// 840017 - Caching access token to call external api started .
+        /// 840017 - Caching access token to call external api started.
         /// </summary>
         CachingExternalEndPointTokenStarted = 840017,
 
@@ -196,14 +196,14 @@
         HexKeyLengthError = 840038,
 
         /// <summary>
-        /// 840039 - Get decrypted keys from product keys started.
+        /// 840039 - Decryption of product keys started.
         /// </summary>
-        GetDecryptedKeysFromProductKeysStarted = 840039,
+        DecryptProductKeysStarted = 840039,
 
         /// <summary>
-        /// 840040 - Get decrypted keys from product keys completed.
+        /// 840040 - Decryption of product keys  completed.
         /// </summary>
-        GetDecryptedKeysFromProductKeysCompleted = 840040,
+        DecryptProductKeysCompleted = 840040,
 
         /// <summary>
         /// 840041 - Aes encryption exception.
@@ -213,12 +213,12 @@
         /// <summary>
         /// 840042 - Extraction of decrypted HW_ID from user permits started.
         /// </summary>
-        GetDecryptedHardwareIdFromUserPermitStarted = 840042,
+        ExtractDecryptedHardwareIdFromUserPermitStarted = 840042,
 
         /// <summary>
         /// 840043 - Extraction of decrypted HW_ID from user permits completed.
         /// </summary>
-        GetDecryptedHardwareIdFromUserPermitCompleted = 840043,
+        ExtractDecryptedHardwareIdFromUserPermitCompleted = 840043,
 
         /// <summary>
         /// 840044 - Upn length or checksum validation failed.
@@ -231,18 +231,13 @@
         InvalidPermitXmlSchema = 840045,
 
         /// <summary>
-        /// 840046 - Get Product list started.
+        /// 840046 - Permit zip file creation completed.
         /// </summary>
-        GetProductListStarted = 840046,
+        PermitZipFileCreationCompleted = 840046,
 
         /// <summary>
-        /// 840047 - Get Product list completed.
+        /// 840047 - Manufacturer Key found in Cache.
         /// </summary>
-        GetProductListCompleted = 840047,
-
-        /// <summary>
-        /// 840048 - Permit zip file creation completed.
-        /// </summary>
-        PermitZipFileCreationCompleted = 840048
+        ManufacturerKeyFoundInCache = 840047
     }
 }

@@ -52,6 +52,30 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
+        public void WhenValidSecretKeyIsPassed_ThenFetchValueFromMemoryCache()
+        {
+            var secret = SetCacheKeyValue();
+            var secretKey = secret.FirstOrDefault(s => s.Key == "abc").Value;
+
+            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(secretKey);
+
+            var result = _manufacturerKeyService.GetManufacturerKeys("abc");
+
+            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.ManufacturerKeyFoundInCache.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Manufacturer Key found in Cache | {DateTime}"
+            ).MustHaveHappenedOnceExactly();
+
+            result.Should().NotBeNull();
+            result.Equals(secretKey);
+        }
+
+
+        [Test]
         public void WhenSecretKeyPassedWhichIsNotInMemoryCache_ThenFetchSecretsFromKeyVault()
         {
             var secretKey = "mpn";

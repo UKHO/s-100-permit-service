@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
         public IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
-            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysStarted.ToEventId(), "Decryption of product keys started.");
+            _logger.LogInformation(EventIds.DecryptProductKeysStarted.ToEventId(), "Decryption of product keys started.");
 
             var productKeys = new List<ProductKey>();
             foreach(var productKeyServiceResponse in productKeyServiceResponses)
@@ -37,14 +37,14 @@ namespace UKHO.S100PermitService.Common.Encryption
                 });
             }
 
-            _logger.LogInformation(EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId(), "Decryption of product keys completed.");
+            _logger.LogInformation(EventIds.DecryptProductKeysCompleted.ToEventId(), "Decryption of product keys completed.");
 
             return productKeys;
         }
 
         public IEnumerable<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse)
         {
-            _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitStarted.ToEventId(), "Extraction of decrypted HW_ID from user permits started.");
+            _logger.LogInformation(EventIds.ExtractDecryptedHardwareIdFromUserPermitStarted.ToEventId(), "Extraction of decrypted HW_ID from user permits started.");
 
             var listOfUpnInfo = new List<UpnInfo>();
             foreach(var userPermit in userPermitServiceResponse.UserPermits)
@@ -61,7 +61,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 listOfUpnInfo.Add(upnInfo);
             }
 
-            _logger.LogInformation(EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Extraction of decrypted HW_ID from user permits completed.");
+            _logger.LogInformation(EventIds.ExtractDecryptedHardwareIdFromUserPermitCompleted.ToEventId(), "Extraction of decrypted HW_ID from user permits completed.");
 
             return listOfUpnInfo;
         }
