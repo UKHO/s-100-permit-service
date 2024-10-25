@@ -7,15 +7,15 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<GenerateDocumentationFile>false</GenerateDocumentationFile>
+	<GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <NoWarn>1701;1702;8618;8602;8603;8604;8625;</NoWarn>
+    <NoWarn>1701;1702;8618;8602;8603;8604;8625;1591;</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <NoWarn>1701;1702;8618;8602;8603;8604;8625;</NoWarn>
+    <NoWarn>1701;1702;8618;8602;8603;8604;8625;1591;</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
