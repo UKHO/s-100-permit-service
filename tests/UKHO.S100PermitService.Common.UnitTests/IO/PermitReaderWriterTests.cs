@@ -1,8 +1,10 @@
 ﻿using FakeItEasy;
 using FluentAssertions;
+using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
@@ -12,21 +14,23 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
     [TestFixture]
     public partial class PermitReaderWriterTests
     {
+        private ILogger<PermitReaderWriter> _fakeLogger;
         private ISchemaValidator _fakeSchemaValidator;
         private IPermitReaderWriter _permitReaderWriter;
 
         [SetUp]
         public void Setup()
         {
+            _fakeLogger = A.Fake<ILogger<PermitReaderWriter>>();
             _fakeSchemaValidator = A.Fake<ISchemaValidator>();
 
-            _permitReaderWriter = new PermitReaderWriter(_fakeSchemaValidator);
+            _permitReaderWriter = new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullSchemaValidator = () => new PermitReaderWriter(null);
+            Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null);
             nullSchemaValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("schemaValidator");
         }
 
@@ -43,13 +47,37 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
 
-            var result = _permitReaderWriter.CreatePermits(GetPermitDetails());
+            var result = _permitReaderWriter.CreatePermitZip(GetPermitDetails());
 
             result.Should().NotBeNull();
 
             var stringResult = ConvertMemoryStreamToXmlString(result);
             var trimmedResult = TrimXml().Replace(stringResult, string.Empty);
             trimmedResult.Should().Be(GetExpectedXmlString());
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML file for UPN: {UpnTitle} started."
+            ).MustHaveHappenedTwiceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML file for UPN {UpnTitle} completed."
+            ).MustHaveHappenedTwiceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.PermitZipFileCreationCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                    ["{OriginalFormat}"].ToString() == "Permit zip file creation completed."
+            ).MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -57,8 +85,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            FluentActions.Invoking(() => _permitReaderWriter.CreatePermits(GetInValidPermitDetails())).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Invalid permit xml schema");
+            FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZip(GetInValidPermitDetails())).Should().
+                                            ThrowExactly<PermitServiceException>().WithMessage("Invalid permit xml schema.");
         }
 
         private Dictionary<string, Permit> GetPermitDetails()

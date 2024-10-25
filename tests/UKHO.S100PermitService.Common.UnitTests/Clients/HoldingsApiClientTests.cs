@@ -81,7 +81,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null."
             ).MustHaveHappenedOnceExactly();
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Access token is empty or null"
+                    ["{OriginalFormat}"].ToString() == "Access token is empty or null."
             ).MustHaveHappenedOnceExactly();
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);

@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Clients
             }
             else
             {
-                _logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null");
+                _logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null.");
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);

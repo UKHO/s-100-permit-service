@@ -33,19 +33,19 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <returns>Authorization Token.</returns>
         public async Task<string> GetManagedIdentityAuthAsync(string resource)
         {
-            _logger.LogInformation(EventIds.GetAccessTokenStarted.ToEventId(), "Getting access token to call external endpoint started | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.GetAccessTokenStarted.ToEventId(), "Getting access token to call external endpoint started.");
 
             var authTokenFromCache = GetAuthTokenFromCache(resource);
             if(authTokenFromCache is { AccessToken: not null } && authTokenFromCache.ExpiresIn > DateTime.UtcNow)
             {
-                _logger.LogInformation(EventIds.CachedAccessTokenFound.ToEventId(), "Valid access token found in cache to call external endpoint | {DateTime}", DateTime.Now.ToUniversalTime());
+                _logger.LogInformation(EventIds.CachedAccessTokenFound.ToEventId(), "Valid access token found in cache to call external endpoint.");
                 return authTokenFromCache.AccessToken;
             }
 
             var newAuthToken = await GetAuthToken(resource);
             AddAuthTokenToCache(resource, newAuthToken);
 
-            _logger.LogInformation(EventIds.GetAccessTokenCompleted.ToEventId(), "Getting access token to call external endpoint completed | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.GetAccessTokenCompleted.ToEventId(), "Getting access token to call external endpoint completed.");
 
             return newAuthToken.AccessToken!;
         }
@@ -57,12 +57,12 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <returns>Authorization Token details.</returns>
         private async Task<AuthToken> GetAuthToken(string resource)
         {
-            _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started.");
 
             var tokenCredential = new DefaultAzureCredential();
             var accessToken = await tokenCredential.GetTokenAsync(new TokenRequestContext(scopes: new string[] { resource + "/.default" }) { });
 
-            _logger.LogInformation(EventIds.GetNewAccessTokenCompleted.ToEventId(), "New access token to call external endpoint generated successfully | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.GetNewAccessTokenCompleted.ToEventId(), "New access token to call external endpoint generated successfully.");
 
             return new AuthToken
             {
@@ -78,7 +78,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <param name="authTokenDetails">Authorization Token Details.</param>
         private void AddAuthTokenToCache(string key, AuthToken authTokenDetails)
         {
-            _logger.LogInformation(EventIds.CachingExternalEndPointTokenStarted.ToEventId(), "Adding new access token in cache to call external endpoint | {DateTime}", DateTime.Now.ToUniversalTime());
+            _logger.LogInformation(EventIds.CachingExternalEndPointTokenStarted.ToEventId(), "Adding new access token in cache to call external endpoint.");
 
             var tokenExpiryMinutes = authTokenDetails.ExpiresIn.Subtract(DateTime.UtcNow).TotalMinutes;
             var deductTokenExpiryMinutes = _permitServiceManagedIdentityConfiguration.Value.DeductTokenExpiryMinutes < tokenExpiryMinutes ? _permitServiceManagedIdentityConfiguration.Value.DeductTokenExpiryMinutes : 1;
