@@ -78,7 +78,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="permit"></param>
         private void CreatePermitXml(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
-            _logger.LogInformation(EventIds.PermitXmlFileCreationStart.ToEventId(), "Creation of Permit XML file for UPN: {UpnTitle} started.", upnTitle);
+            _logger.LogInformation(EventIds.PermitXmlFileCreationStarted.ToEventId(), "Creation of Permit XML file for UPN: {UpnTitle} started.", upnTitle);
             
             var fileName= $"{upnTitle}/{PermitXmlFileName}";
             // Create an entry for the XML file

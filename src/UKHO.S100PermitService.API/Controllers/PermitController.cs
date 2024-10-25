@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
-            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "GeneratePermit API call completed.");
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
             return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
         }

@@ -128,7 +128,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Errors Details: {Errors}");
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -217,7 +217,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     new ValidationFailure("ErrorMessage", "Invalid checksum found for: Aqua Radar")
                 }));
 
-            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} | Errors Details: {errorMessage}");
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} | Error Details: {errorMessage}");
         }
 
         [Test]
@@ -230,7 +230,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     new ValidationFailure("ErrorMessage", "Invalid title found : Navi/ Radar?"),
                 }));
 
-            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeInValidUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} | Errors Details: {errorMessage}");
+            FluentActions.Invoking(() => _userPermitService.ValidateUpnsAndChecksum(GeInValidUserPermitServiceResponse())).Should().Throw<PermitServiceException>().WithMessage("Validation failed for Licence Id: {licenceId} | Error Details: {errorMessage}");
         }
 
         private static UserPermitServiceResponse GeUserPermitServiceResponse()

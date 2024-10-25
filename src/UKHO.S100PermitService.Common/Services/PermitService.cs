@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<(HttpStatusCode httpStatusCode, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
-            _logger.LogInformation(EventIds.ProcessPermitRequestStart.ToEventId(), "Process permit request started.");
+            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
             var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))

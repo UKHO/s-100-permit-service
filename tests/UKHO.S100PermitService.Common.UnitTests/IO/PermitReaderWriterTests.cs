@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationStart.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Creation of Permit XML file for UPN: {UpnTitle} started."
             ).MustHaveHappenedTwiceExactly();
