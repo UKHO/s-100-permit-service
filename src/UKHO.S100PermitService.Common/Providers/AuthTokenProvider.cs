@@ -26,6 +26,11 @@ namespace UKHO.S100PermitService.Common.Providers
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
+        /// <summary>
+        /// Generate managed identity authorization token and add into cache.
+        /// </summary>
+        /// <param name="resource">Client Id.</param>
+        /// <returns>Authorization Token.</returns>
         public async Task<string> GetManagedIdentityAuthAsync(string resource)
         {
             _logger.LogInformation(EventIds.GetAccessTokenStarted.ToEventId(), "Getting access token to call external endpoint started | {DateTime}", DateTime.Now.ToUniversalTime());
@@ -45,6 +50,11 @@ namespace UKHO.S100PermitService.Common.Providers
             return newAuthToken.AccessToken!;
         }
 
+        /// <summary>
+        /// Generate new authorization token
+        /// </summary>
+        /// <param name="resource">Client Id.</param>
+        /// <returns>Authorization Token details.</returns>
         private async Task<AuthToken> GetAuthToken(string resource)
         {
             _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started | {DateTime}", DateTime.Now.ToUniversalTime());
@@ -61,6 +71,11 @@ namespace UKHO.S100PermitService.Common.Providers
             };
         }
 
+        /// <summary>
+        /// Add authorization token in cache.
+        /// </summary>
+        /// <param name="key">Client Id.</param>
+        /// <param name="authTokenDetails">Authorization Token Details.</param>
         private void AddAuthTokenToCache(string key, AuthToken authTokenDetails)
         {
             _logger.LogInformation(EventIds.CachingExternalEndPointTokenStarted.ToEventId(), "Adding new access token in cache to call external endpoint | {DateTime}", DateTime.Now.ToUniversalTime());
@@ -81,6 +96,11 @@ namespace UKHO.S100PermitService.Common.Providers
             _logger.LogInformation(EventIds.CachingExternalEndPointTokenCompleted.ToEventId(), "New token is added in cache to call external endpoint and it expires in {ExpiresIn} with sliding expiration duration {options}.", Convert.ToString(authTokenDetails.ExpiresIn, CultureInfo.InvariantCulture), JsonSerializer.Serialize(options));
         }
 
+        /// <summary>
+        /// Get authorization token from cache.
+        /// </summary>
+        /// <param name="key">Client Id.</param>
+        /// <returns>Authorization token from cache</returns>
         private AuthToken? GetAuthTokenFromCache(string key)
         {
             lock(_lock)

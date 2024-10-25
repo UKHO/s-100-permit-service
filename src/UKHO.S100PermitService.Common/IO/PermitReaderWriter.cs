@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <summary>
         /// Read Xsd version from schema file
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Xsd version</returns>
         public string ReadXsdVersion()
         {
             XmlSchema? schema;
@@ -46,7 +46,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <summary>
         /// Create permit zip
         /// </summary>
-        /// <param name="permits"></param>
+        /// <param name="permits">Permit details.</param>
         /// <returns>ZipStream</returns>
         public Stream CreatePermits(IReadOnlyDictionary<string, Permit> permits)
         {
@@ -66,9 +66,9 @@ namespace UKHO.S100PermitService.Common.IO
         /// <summary>
         /// Create permit xml files and add into permit zip 
         /// </summary>
-        /// <param name="zipArchive"></param>
-        /// <param name="fileName"></param>
-        /// <param name="permit"></param>
+        /// <param name="zipArchive">Zip object.</param>
+        /// <param name="fileName">XML file name.</param>
+        /// <param name="permit">Permit details.</param>
         private void CreatePermitXml(ZipArchive zipArchive, string fileName, Permit permit)
         {
             // Create an entry for the XML file

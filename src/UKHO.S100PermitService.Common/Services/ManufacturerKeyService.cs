@@ -22,6 +22,17 @@ namespace UKHO.S100PermitService.Common.Services
             _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
         }
 
+        /// <summary>
+        /// Get ManufacturerKeys (MKey) associated with the requested ManufacturerId (MId).
+        /// </summary>
+        /// <remarks>
+        /// ManufacturerKey is used to decrypt HardwareId(HW_ID) from EncryptedHardwareId stored in UserPermit.
+        /// If ManufacturerKey does not exists in cache then get from Key Vault and add in cache.
+        /// If ManufacturerKey does not exists in Key Vault then trigger PermitServiceException exception handler.
+        /// </remarks> 
+        /// <param name="secretName">ManufacturerId (MId).</param>
+        /// <returns>ManufacturerKey.</returns>
+        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred.</exception>
         public string GetManufacturerKeys(string secretName)
         {
             try
@@ -43,6 +54,11 @@ namespace UKHO.S100PermitService.Common.Services
             }
         }
 
+        /// <summary>
+        /// Get ManufacturerKeys (MKey) from keyVault and add into cache.
+        /// </summary>
+        /// <param name="secretName">ManufacturerId(MId).</param>
+        /// <returns>ManufacturerKeys</returns>
         private KeyVaultSecret GetSetManufacturerValue(string secretName)
         {
             var secretValue = _secretClient.GetSecret(secretName);

@@ -30,6 +30,19 @@ namespace UKHO.S100PermitService.Common.Services
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
         }
 
+        /// <summary>
+        /// Get Holding details from Shop Facade Holding Service for requested licence id.
+        /// </summary>
+        /// <remarks>
+        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
+        /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
+        /// If service responded with other than 200 Ok or 404 NotFound StatusCodes, Then PermitServiceException exception handler triggered.
+        /// </remarks>
+        /// <param name="licenceId">Requested licence id.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
+        /// <param name="correlationId">Guid based id to track request.</param>
+        /// <returns>Holding details.</returns>
+        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred.</exception>
         public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
@@ -70,6 +83,11 @@ namespace UKHO.S100PermitService.Common.Services
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
 
+        /// <summary>
+        /// Remove duplicate dataset & select the dataset with highest expiry date.
+        /// </summary>
+        /// <param name="holdingsServiceResponse">Holding details.</param>
+        /// <returns>Filtered holding details.</returns>
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
             var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));

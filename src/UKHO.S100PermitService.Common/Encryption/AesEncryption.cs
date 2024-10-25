@@ -8,6 +8,19 @@ namespace UKHO.S100PermitService.Common.Encryption
     {
         private const int KeySize = 128, BlockSize = 128, IvLength = 16, HexSize = 32;
 
+        /// <summary>
+        /// Get decrypted data.
+        /// </summary>
+        /// <remarks>
+        /// Decrypt data from encrypted data using secret key.
+        /// Advanced Encryption Standard (AES) block cipher algorithm is used.This is a symmetric-key algorithm. This means that the same key is used for encryption and decryption.
+        /// Cipher Block Chaining(CBC) mode of operation and No padding is used.
+        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception handler will be trigger.
+        /// </remarks>
+        /// <param name="hexString">Data to be decrypt.</param>
+        /// <param name="hexKey">Secret Key.</param>
+        /// <returns>Decrypted data.</returns>
+        /// <exception cref="AesEncryptionException">AesEncryptionException exception handler triggers when length validation fails.</exception>
         public string Decrypt(string hexString, string hexKey)
         {
             if(hexString.Length != HexSize)
@@ -25,6 +38,19 @@ namespace UKHO.S100PermitService.Common.Encryption
             return PerformCryptography(hexString, decrypt);
         }
 
+        /// <summary>
+        /// Get encrypted data.
+        /// </summary>
+        /// <remarks>
+        /// Encrypt data using secret key.
+        /// Advanced Encryption Standard (AES) block cipher algorithm is used.This is a symmetric-key algorithm. This means that the same key is used for encryption and decryption.
+        /// Cipher Block Chaining(CBC) mode of operation and No padding is used.
+        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception handler will be trigger.
+        /// </remarks>
+        /// <param name="hexString">Data to be encrypt.</param>
+        /// <param name="keyHexEncoded">Secret Key.</param>
+        /// <returns>Encrypted data.</returns>
+        /// <exception cref="AesEncryptionException">AesEncryptionException exception handler triggers when length validation fails.</exception>
         public string Encrypt(string hexString, string keyHexEncoded)
         {
             if(hexString.Length != HexSize)
@@ -42,6 +68,15 @@ namespace UKHO.S100PermitService.Common.Encryption
             return PerformCryptography(hexString, encrypt);
         }
 
+        /// <summary>
+        /// Create Advanced Encryption Standard (AES) object.
+        /// </summary>
+        /// <remarks>
+        /// Advanced Encryption Standard (AES) block cipher algorithm is used.This is a symmetric-key algorithm. This means that the same key is used for encryption and decryption.
+        /// Cipher Block Chaining(CBC) mode of operation and No padding is used.
+        /// </remarks>
+        /// <param name="keyHexEncoded">Secret Key.</param>
+        /// <returns>AES object</returns>
         private static Aes CreateAes(string keyHexEncoded)
         {
             var aes = Aes.Create();
@@ -54,6 +89,12 @@ namespace UKHO.S100PermitService.Common.Encryption
             return aes;
         }
 
+        /// <summary>
+        /// Perform operations of cryptographic transformations.
+        /// </summary>
+        /// <param name="hexString">Data to transform.</param>
+        /// <param name="cryptoTransform">Cryptographic object to perform transformations.</param>
+        /// <returns>Hexadecimal string</returns>
         private static string PerformCryptography(string hexString, ICryptoTransform cryptoTransform)
         {
             var cypherBytes = StringToByteArray(hexString);
@@ -65,6 +106,11 @@ namespace UKHO.S100PermitService.Common.Encryption
             return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
         }
 
+        /// <summary>
+        /// Convert hexadecimal string into a byte array.
+        /// </summary>
+        /// <param name="hexString">Hexadecimal string data.</param>
+        /// <returns>Byte array from hexadecimal string.</returns>
         private static byte[] StringToByteArray(string hexString)
         {
             return Enumerable.Range(0, hexString.Length)

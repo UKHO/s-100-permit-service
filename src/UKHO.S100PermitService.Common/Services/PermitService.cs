@@ -48,6 +48,23 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
+        /// <summary>
+        /// Get required data from dependent services and build compressed zip containing PERMIT.XML files.
+        /// </summary>
+        /// <remarks>
+        /// If dependent services responded with empty response, Then status code 204 NoContent will be returned.
+        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
+        /// If duplicate holdings data found, Then remove duplicate dataset & select the dataset with highest expiry date.
+        /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception handler triggered.
+        /// If any required validation failed, Then PermitServiceException exception handler triggered.
+        /// </remarks>
+        /// <param name="licenceId">Requested licence id.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
+        /// <param name="correlationId">Guid based id to track request.</param>
+        /// <response code="200">Compressed zip containing PERMIT.XML.</response>
+        /// <response code="204">NoContent - when dependent services responded with empty response.</response>
+        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
+        /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<(HttpStatusCode httpStatusCode, Stream stream)> CreatePermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.CreatePermitStart.ToEventId(), "CreatePermit started");
@@ -86,6 +103,17 @@ namespace UKHO.S100PermitService.Common.Services
             return (HttpStatusCode.OK, permitDetails);
         }
 
+        /// <summary>
+        /// Build compressed zip containing PERMIT.XML files.
+        /// </summary>
+        /// <remarks>
+        /// Generate PERMIT.XML file for the respective User Permit Number (UPN) and provides the compressed zip containing all these PERMIT.XML files.
+        /// If any exception occurred, Then PermitServiceException exception handler triggered.
+        /// </remarks>
+        /// <param name="holdingsServiceResponses">Holding details.</param>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
+        /// <returns>Compressed zip containing PERMIT.XML.</returns>
         private Stream CreatePermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             _logger.LogInformation(EventIds.FileCreationStart.ToEventId(), "Permit Xml file creation started");
@@ -120,6 +148,14 @@ namespace UKHO.S100PermitService.Common.Services
             return permitDetails;
         }
 
+        /// <summary>
+        /// Get product details from HoldingServiceResponse and ProductKeyService
+        /// </summary>
+        /// <param name="holdingsServiceResponse">Holding details.</param>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
+        /// <param name="upnTitle">Upn Title.</param>
+        /// <returns>Products</returns>
         [ExcludeFromCodeCoverage]
         private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string upnTitle)
         {
@@ -158,6 +194,11 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
+        /// <summary>
+        /// Get ProductKeyServiceRequest from HoldingsServiceResponse
+        /// </summary>
+        /// <param name="holdingsServiceResponse">Holding details.</param>
+        /// <returns>ProductKeyServiceRequests</returns>
         private List<ProductKeyServiceRequest> ProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
@@ -166,6 +207,13 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
+        /// <summary>
+        /// Get EncryptedKey from decrypted productkey and HW_ID
+        /// </summary>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
+        /// <param name="cellCode">ProductName</param>
+        /// <returns>EncryptedKey</returns>
         private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;

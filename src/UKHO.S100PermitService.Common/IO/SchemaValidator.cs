@@ -5,6 +5,12 @@ namespace UKHO.S100PermitService.Common.IO
 {
     public class SchemaValidator : ISchemaValidator
     {
+        /// <summary>
+        /// Validate xml details with available xmlSchemaSet.
+        /// </summary>
+        /// <param name="permitXml">Permit Xml data.</param>
+        /// <param name="xsdPath">Xsd Path.</param>
+        /// <returns>False if error or validation fails otherwise true.</returns>
         public bool ValidateSchema(string permitXml, string xsdPath)
         {
             var xml = new XmlDocument();

@@ -17,6 +17,12 @@ namespace UKHO.S100PermitService.Common.Handlers
             _waitAndRetryConfiguration = waitAndRetryConfiguration ?? throw new ArgumentNullException(nameof(waitAndRetryConfiguration));
         }
 
+        /// <summary>
+        /// Retry if service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes.
+        /// </summary>
+        /// <param name="logger">Logger</param>
+        /// <param name="eventId">EventId</param>
+        /// <returns>Service response message</returns>
         public RetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger, EventIds eventId)
         {
             var retryCount = int.Parse(_waitAndRetryConfiguration.Value.RetryCount);
