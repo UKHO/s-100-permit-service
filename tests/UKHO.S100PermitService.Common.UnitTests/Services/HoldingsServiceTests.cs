@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 call.Method.Name == "Log"
                     && call.GetArgument<LogLevel>(0) == LogLevel.Error
                     && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Error Details: {Errors}"
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}"
                 ).MustHaveHappenedOnceExactly();
         }
 
