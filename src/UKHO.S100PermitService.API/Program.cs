@@ -170,7 +170,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IHoldingsServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<IUserPermitServiceAuthTokenProvider, AuthTokenProvider>();
-            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();            
+            builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
             builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
             builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
@@ -180,15 +180,15 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IHoldingsService, HoldingsService>();
             builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
-            builder.Services.AddScoped<IWaitAndRetryPolicy,WaitAndRetryPolicy>();
+            builder.Services.AddScoped<IWaitAndRetryPolicy, WaitAndRetryPolicy>();
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();
             builder.Services.AddScoped<IAesEncryption, AesEncryption>();
             builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
-            builder.Services.AddScoped<ISchemaValidator , SchemaValidator>();
+            builder.Services.AddScoped<ISchemaValidator, SchemaValidator>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
-            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();            
+            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)
@@ -241,8 +241,30 @@ namespace UKHO.S100PermitService.API
                     Description = swaggerConfiguration.Description,
                     Contact = new OpenApiContact
                     {
-                        Email = swaggerConfiguration.Email,
-                    },
+                        Email = swaggerConfiguration.Email
+                    }
+                });
+
+                c.EnableAnnotations();
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Please Enter Token",
+                    Name = "Authorization"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearer" }
+                        },
+                        Array.Empty<string>()
+                    }
                 });
             });
         }
