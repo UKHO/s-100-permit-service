@@ -130,6 +130,9 @@
     <None Update="StubData\UserPermits\response-200-licenceid-12.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\UserPermits\response-200-licenceid-999.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\UserPermits\response-200-licenceid-9.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
