@@ -21,12 +21,12 @@
         GeneratePermitEnd = 840003,
 
         /// <summary>
-        /// 840004 - Process permit request call started.
+        /// 840004 - Process permit request started.
         /// </summary>
         ProcessPermitRequestStart = 840004,
 
         /// <summary>
-        /// 840005 - Create permit call end.
+        /// 840005 - Process permit request completed.
         /// </summary>
         ProcessPermitRequestCompleted = 840005,
 
