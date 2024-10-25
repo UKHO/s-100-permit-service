@@ -54,7 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET {RequestUri} completed. StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
@@ -65,18 +65,18 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
-                "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
+                "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Error Details: {Errors}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
             }
             else if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogError(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
-                    "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
+                    "Request to UserPermitService GET {RequestUri} failed. StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage.StatusCode, null);

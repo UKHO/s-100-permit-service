@@ -46,7 +46,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
                     "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
                     "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
@@ -66,10 +66,10 @@ namespace UKHO.S100PermitService.Common.Services
             }
             else if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
+                    "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage.StatusCode, null);
