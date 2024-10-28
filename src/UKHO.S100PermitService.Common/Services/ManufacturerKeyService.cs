@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             try
             {
-                var secretValue = _cacheProvider.GetCacheKey(secretName);
+                var secretValue = _cacheProvider.GetCacheValue(secretName);
                 if(string.IsNullOrEmpty(secretValue))
                 {
                     secretValue = GetSetManufacturerValue(secretName).Value;
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var secretValue = _secretClient.GetSecret(secretName);
 
-            _cacheProvider.SetCacheKey(secretName, secretValue.Value);
+            _cacheProvider.SetCache(secretName, secretValue.Value);
 
             _logger.LogInformation(EventIds.AddingNewManufacturerKeyInCache.ToEventId(), "New Manufacturer Key added in Cache.");
 

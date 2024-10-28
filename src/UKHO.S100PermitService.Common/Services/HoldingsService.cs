@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get Holding details from Shop Facade Holding Service for requested licence id.
+        /// Get Holding details from Shop Facade - Holding Service for requested licence id.
         /// </summary>
         /// <remarks>
         /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
@@ -84,7 +84,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Remove duplicate dataset & select the dataset with highest expiry date.
+        /// Remove duplicate dataset and select the dataset with highest expiry date.
         /// </summary>
         /// <param name="holdingsServiceResponse">Holding details.</param>
         /// <returns>Filtered holding details.</returns>

@@ -40,7 +40,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get User Permit Number (UPN) details from Shop Facade User Permit Service for requested licence id.
+        /// Get User Permit Number (UPN) details from Shop Facade - User Permit Service for requested licence id.
         /// </summary>
         /// <remarks>
         /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.

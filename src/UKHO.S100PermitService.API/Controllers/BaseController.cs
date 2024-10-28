@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         /// <summary>
-        /// Get Correlation Id
+        /// Get Correlation Id.
         /// </summary>
         /// <remarks>
         /// Correlation Id is Guid based id to track request.
@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         /// <summary>
-        /// Get Request Cancellation Token
+        /// Get Request Cancellation Token.
         /// </summary>
         /// <remarks>
         /// Cancellation Token can be found in request.

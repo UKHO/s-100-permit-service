@@ -18,7 +18,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="key">Cache Key.</param>
         /// <returns>Cache value</returns>
-        public string GetCacheKey(string key)
+        public string GetCacheValue(string key)
         {
             _memoryCache.TryGetValue(key, out string? Value);
             return Value;
@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="key">Cache Key.</param>
         /// <param name="value">Cache Value.</param>
-        public void SetCacheKey(string key, string value)
+        public void SetCache(string key, string value)
         {            
             _memoryCache.Set(key, value);
         }

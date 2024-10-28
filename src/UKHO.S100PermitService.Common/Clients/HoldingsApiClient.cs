@@ -16,14 +16,14 @@ namespace UKHO.S100PermitService.Common.Clients
         }
 
         /// <summary>
-        /// Get Holding details from Shop Facade Holding Service for requested licence id.
+        /// Get Holding details from Shop Facade - Holding Service for requested licence id.
         /// </summary>
         /// <param name="uri">Request URI.</param>
         /// <param name="licenceId">Requested licence id.</param>
         /// <param name="accessToken">Authorization token.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
-        /// <returns>Shop Facade Holding Service response.</returns>
+        /// <returns>Shop Facade - Holding Service response.</returns>
         public async Task<HttpResponseMessage> GetHoldingsAsync(string uri, int licenceId, string accessToken, CancellationToken cancellationToken, string correlationId)
         {
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, uri);
