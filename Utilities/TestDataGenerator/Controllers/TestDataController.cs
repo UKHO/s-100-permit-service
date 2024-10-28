@@ -32,7 +32,7 @@ namespace TestDataGenerator1.Controllers
             return new JsonResult(upn);
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("/testdata/GenerateProductKey")]
         public virtual async Task<IActionResult> GenerateProductKey()
         {
