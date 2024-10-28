@@ -14,11 +14,27 @@ namespace UKHO.S100PermitService.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
+        /// <summary>
+        /// Get Correlation Id
+        /// </summary>
+        /// <remarks>
+        /// Correlation Id is Guid based id to track request.
+        /// If request header consists Correlation Id, Then return header value otherwise if not present then generate and return as Guid.
+        /// </remarks>
+        /// <returns>Correlation Id</returns>
         protected string GetCorrelationId()
         {
             return _httpContextAccessor.HttpContext!.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
         }
 
+        /// <summary>
+        /// Get Request Cancellation Token
+        /// </summary>
+        /// <remarks>
+        /// CancellationToken is found in request.
+        /// If true then notifies the underlying connection is aborted thus request operations should be cancelled.
+        /// </remarks>
+        /// <returns>Cancellation Token</returns>
         protected CancellationToken GetRequestCancellationToken()
         {
             return _httpContextAccessor.HttpContext.RequestAborted;
