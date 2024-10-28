@@ -21,6 +21,7 @@ using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 using UKHO.S100PermitService.Common.Validations;
+using UKHO.S100PermitService.API.Filters;
 
 namespace UKHO.S100PermitService.API
 {
@@ -246,6 +247,8 @@ namespace UKHO.S100PermitService.API
                 });
 
                 c.EnableAnnotations();
+                c.OperationFilter<AddHeaderOperationFilter>();
+
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Type = SecuritySchemeType.Http,
