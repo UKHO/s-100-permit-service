@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// </summary>
         /// <remarks>
         /// Correlation Id is Guid based id to track request.
-        /// If request header consists Correlation Id, Then return header value otherwise if not present then generate and return as Guid.
+        /// Correlation Id can be found in request headers.
         /// </remarks>
         /// <returns>Correlation Id</returns>
         protected string GetCorrelationId()
@@ -31,8 +31,8 @@ namespace UKHO.S100PermitService.API.Controllers
         /// Get Request Cancellation Token
         /// </summary>
         /// <remarks>
-        /// CancellationToken is found in request.
-        /// If true then notifies the underlying connection is aborted thus request operations should be cancelled.
+        /// Cancellation Token can be found in request.
+        /// If Cancellation Token is true, Then notifies the underlying connection is aborted thus request operations should be cancelled.
         /// </remarks>
         /// <returns>Cancellation Token</returns>
         protected CancellationToken GetRequestCancellationToken()
