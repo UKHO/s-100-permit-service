@@ -37,6 +37,7 @@ namespace UKHO.S100PermitService.API
         private const string PermitFileConfiguration = "PermitFileConfiguration";
         private const string AzureAdScheme = "AzureAd";
         private const string AzureAdConfiguration = "AzureAdConfiguration";
+        private const string Ukho = "UKHO";
 
         private static void Main(string[] args)
         {
@@ -242,6 +243,7 @@ namespace UKHO.S100PermitService.API
                     Description = swaggerConfiguration.Description,
                     Contact = new OpenApiContact
                     {
+                        Name = Ukho,
                         Email = swaggerConfiguration.Email
                     }
                 });
