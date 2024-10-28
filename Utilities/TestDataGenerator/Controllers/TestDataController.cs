@@ -77,7 +77,7 @@ namespace TestDataGenerator1.Controllers
         [Route("/testdata/CreateEncryptedKey")]
         public virtual async Task<IActionResult> CreateEncryptedKey(string decryptedProductKey, string hwId)
         {
-            var encryptedKey = _aesEncryption.Decrypt(decryptedProductKey, hwId);
+            var encryptedKey = _aesEncryption.Encrypt(decryptedProductKey, hwId);
 
             await Task.CompletedTask;
 
