@@ -30,7 +30,8 @@ namespace UKHO.S100PermitService.Common.Services
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
         }
 
-        public async Task<List<HoldingsServiceResponse>> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, IEnumerable<HoldingsServiceResponse>? holdingsServiceResponse)>
+            GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
 
@@ -53,16 +54,27 @@ namespace UKHO.S100PermitService.Common.Services
                     httpResponseMessage.StatusCode.ToString());
 
                 var holdingsServiceResponse = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson);
-                return holdingsServiceResponse;
+                return (httpResponseMessage.StatusCode, holdingsServiceResponse);
             }
 
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
                     "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+            }
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+
+                _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
+                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+
+                return (httpResponseMessage.StatusCode, null);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),

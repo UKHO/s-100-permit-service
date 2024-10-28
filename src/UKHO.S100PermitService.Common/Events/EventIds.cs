@@ -228,6 +228,16 @@
         /// <summary>
         /// 840045 - Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyFoundInCache = 840045
+        ManufacturerKeyFoundInCache = 840045,
+
+        /// <summary>
+        /// 840046 - Request to UserPermitService GetUserPermits responded licence not found
+        /// </summary>
+        UserPermitServiceGetUserPermitsLicenceNotFound = 840046,
+
+        /// <summary>
+        /// 840047 - Request to HoldingsService GetHoldings responded licence not found
+        /// </summary>
+        HoldingServiceGetHoldingsLicenceNotFound = 840047
     }
 }

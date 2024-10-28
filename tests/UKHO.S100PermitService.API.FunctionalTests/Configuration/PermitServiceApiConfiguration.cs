@@ -6,8 +6,8 @@
         public string? InvalidToken { get; set; }
         public int? ValidLicenceId { get; set; }
         public List<string>? NonIntegerLicenceIds { get; set; }
-        public List<int>? InvalidHoldingsLicenceId { get; set; }
-        public List<int>? InvalidUpnLicenceId { get; set; }
+        public List<int>? MissingDataLicenceId { get; set; }
+        public int? InvalidLicenceId { get; set; }
         public int? InvalidPksLicenceId { get; set; }
         public List<int>? NoDataLicenceId { get; set; }
         public int? InvalidExpiryDateLicenceId { get; set; }
