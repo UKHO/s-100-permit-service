@@ -49,6 +49,8 @@ variables:
     value: "Mare Nectaris"
   - name: CoverageThresholdLimit
     value: "90"
+  - name: DeploymentPoolPE
+    value: "Private Link Deployments (ENG)"
 
 stages:
 
@@ -443,7 +445,7 @@ stages:
         dependsOn: DevDeployTerraform
         displayName: "Dev - Deploy Dotnet App"
         environment: "S100PG-DEV"
-        pool: $(DeploymentPool)
+        pool: $(DeploymentPoolPE)
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]

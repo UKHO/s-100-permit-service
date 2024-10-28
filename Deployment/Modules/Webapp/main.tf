@@ -42,7 +42,6 @@ resource "azurerm_windows_web_app" "stub_webapp_service" {
   location                      = var.location
   resource_group_name           = var.resource_group_name
   service_plan_id               = azurerm_service_plan.app_service_plan.id
-  public_network_access_enabled = false
   tags                          = var.tags
 
   site_config {
