@@ -41,11 +41,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error.</p>")]
         public virtual async Task<IActionResult> GeneratePermits([SwaggerParameter(Description = "Licence Id. It must be an integer value and greater than zero.", Required = true)] int licenceId)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "Generate Permit API call started.");
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started.");
 
-            var (httpStatusCode, stream) = await _permitService.CreatePermitAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
-            _logger.LogInformation(EventIds.GeneratePermitEnd.ToEventId(), "Generate Permit API call end.");
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
             return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
         }

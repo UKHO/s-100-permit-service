@@ -47,12 +47,12 @@ namespace UKHO.S100PermitService.Common.Services
 
             var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).Execute(() =>
             {
-               return _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId).Result;
+                return _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId).Result;
             });
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsoluteUri, httpResponseMessage.StatusCode.ToString());
 
@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(),
                     "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}",
