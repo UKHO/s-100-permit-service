@@ -62,16 +62,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys started."
+                && call.GetArgument<EventId>(1) == EventIds.DecryptProductKeysStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Decryption of product keys started."
             ).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
 
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedKeysFromProductKeysCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted keys from product keys completed."
+                && call.GetArgument<EventId>(1) == EventIds.DecryptProductKeysCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Decryption of product keys completed."
             ).MustHaveHappened();
         }
 
@@ -92,16 +92,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetDecryptedHardwareIdFromUserPermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits started"
+                && call.GetArgument<EventId>(1) == EventIds.ExtractDecryptedHardwareIdFromUserPermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Extraction of decrypted HW_ID from user permits started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
 
                 call.Method.Name == "Log"
                     && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                    && call.GetArgument<EventId>(1) == EventIds.GetDecryptedHardwareIdFromUserPermitCompleted.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Get decrypted hardware id from user permits completed"
+                    && call.GetArgument<EventId>(1) == EventIds.ExtractDecryptedHardwareIdFromUserPermitCompleted.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Extraction of decrypted HW_ID from user permits completed."
                 ).MustHaveHappenedOnceExactly();
         }
 
