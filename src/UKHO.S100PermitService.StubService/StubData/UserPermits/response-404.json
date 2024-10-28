@@ -2,7 +2,7 @@
   "errors": [
     {
       "source": "GetUserPermits",
-      "description": "User permits not found for given LicenceId"
+      "description": "Licence Not Found"
     }
   ]
 }

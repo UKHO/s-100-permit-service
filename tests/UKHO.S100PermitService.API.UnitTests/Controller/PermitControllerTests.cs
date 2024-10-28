@@ -74,9 +74,35 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns((HttpStatusCode.NoContent, new MemoryStream()));
 
-            var result = (StatusCodeResult)await _permitController.GeneratePermits(1);
+            var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task WhenPermitGenerationFailed_ThenReturnsNotFoundResponse()
+        {
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns((HttpStatusCode.NotFound, null));
+
+            var result = (ObjectResult)await _permitController.GeneratePermits(1);
+
+            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            result.Value.Should().Be(string.Empty);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

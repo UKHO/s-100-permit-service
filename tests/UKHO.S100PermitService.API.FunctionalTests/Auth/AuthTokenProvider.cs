@@ -28,10 +28,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
                     var debugApp = PublicClientApplicationBuilder.Create(_tokenConfiguration?.ClientId).
                                                         WithRedirectUri("http://localhost").Build();
 
-                    //Acquiring token through user interaction
                     var tokenTask = await debugApp.AcquireTokenInteractive(scopes)
-                                                                   .WithAuthority($"{_tokenConfiguration?.MicrosoftOnlineLoginUrl}{_tokenConfiguration?.TenantId}", true)
-                                                                   .ExecuteAsync();
+                                                 .WithTenantId($"{_tokenConfiguration?.TenantId}")
+                                                 .ExecuteAsync();
                     token = tokenTask.AccessToken;
                 }
                 else
