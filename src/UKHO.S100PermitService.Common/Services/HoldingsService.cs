@@ -32,52 +32,19 @@ namespace UKHO.S100PermitService.Common.Services
 
         public async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
-            var uri = new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
+            var uri = GetHoldingsUri(licenceId);
 
             _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
                 "Request to HoldingsService GET {RequestUri} started.", uri.AbsolutePath);
 
             var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).Execute(() =>
+            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).ExecuteAsync(async () =>
             {
-                return _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId).Result;
+                return await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
             });
 
-            if(httpResponseMessage.IsSuccessStatusCode)
-            {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
-                    httpResponseMessage.StatusCode.ToString());
-
-                var holdingsServiceResponse = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson);
-                return (httpResponseMessage.StatusCode, holdingsServiceResponse);
-            }
-
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
-            {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Error Details: {Errors}.",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
-            }
-            else if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
-            {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-
-                _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
-                    "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
-
-                return (httpResponseMessage.StatusCode, null);
-            }
-
-            throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
-                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+            return await HandleHttpResponseAsync(httpResponseMessage, uri);
         }
 
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
@@ -103,6 +70,52 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Holdings filtered cell count : {Count}", latestCells.Count());
 
             return filteredHoldings;
+        }
+
+        private Uri GetHoldingsUri(int licenceId)
+        {
+            return new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
+        }
+
+        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleHttpResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+        {
+            if(httpResponseMessage.IsSuccessStatusCode)
+            {
+                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+
+                _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
+                    "Request to HoldingsService GET {RequestUri} completed. Status Code: {StatusCode}", uri.AbsolutePath,
+                    httpResponseMessage.StatusCode.ToString());
+
+                return (httpResponseMessage.StatusCode, JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson));
+            }
+
+            return await HandleErrorResponseAsync(httpResponseMessage, uri);
+        }
+
+        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+        {
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
+            {
+                throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
+                    "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode} | Errors Details: {Errors}.",
+                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+            }
+
+            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
+            {
+                _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
+                    "Request to HoldingsService GET {RequestUri} failed. StatusCode: {StatusCode} | Errors Details: {Errors}",
+                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+
+                return (httpResponseMessage.StatusCode, null);
+            }
+
+            throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
+                "Request to HoldingsService GET {RequestUri} failed. Status Code: {StatusCode}.",
+                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
         }
     }
 }
