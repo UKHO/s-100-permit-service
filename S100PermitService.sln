@@ -13,17 +13,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API.UnitTests", "tests\UKHO.S100PermitService.API.UnitTests\UKHO.S100PermitService.API.UnitTests.csproj", "{CF2AD721-E5F5-4603-B0DE-A5FB73618FBA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.API", "src\UKHO.S100PermitService.API\UKHO.S100PermitService.API.csproj", "{1AE1DEB4-746E-4231-A1DE-DB9484A6D151}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.API", "src\UKHO.S100PermitService.API\UKHO.S100PermitService.API.csproj", "{1AE1DEB4-746E-4231-A1DE-DB9484A6D151}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.Common", "src\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj", "{4AFB78A6-1B1A-4AD1-964F-1469EC16B910}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.Common", "src\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj", "{4AFB78A6-1B1A-4AD1-964F-1469EC16B910}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.Common.UnitTests", "tests\UKHO.S100PermitService.Common.UnitTests\UKHO.S100PermitService.Common.UnitTests.csproj", "{E14E5FDE-8BBA-487A-A83F-B9BD44AAF8E1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.Common.UnitTests", "tests\UKHO.S100PermitService.Common.UnitTests\UKHO.S100PermitService.Common.UnitTests.csproj", "{E14E5FDE-8BBA-487A-A83F-B9BD44AAF8E1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitService.StubService.UnitTests", "tests\UKHO.S100PermitService.StubService.UnitTests\UKHO.S100PermitService.StubService.UnitTests.csproj", "{EFFBCF39-2B23-42C4-84A6-D2C91723645E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.StubService.UnitTests", "tests\UKHO.S100PermitService.StubService.UnitTests\UKHO.S100PermitService.StubService.UnitTests.csproj", "{EFFBCF39-2B23-42C4-84A6-D2C91723645E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{35EDA1E9-7625-4955-96D2-4769CB09730F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestDataGenerator", "Utilities\TestDataGenerator\TestDataGenerator.csproj", "{1A274B3A-3CAF-4B43-A936-7C69E56852A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDataGenerator", "Utilities\TestDataGenerator\TestDataGenerator.csproj", "{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -59,10 +59,10 @@ Global
 		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EFFBCF39-2B23-42C4-84A6-D2C91723645E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A274B3A-3CAF-4B43-A936-7C69E56852A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A274B3A-3CAF-4B43-A936-7C69E56852A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A274B3A-3CAF-4B43-A936-7C69E56852A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A274B3A-3CAF-4B43-A936-7C69E56852A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,7 +75,7 @@ Global
 		{4AFB78A6-1B1A-4AD1-964F-1469EC16B910} = {B768CB28-7109-49B6-980D-FE2F110A236B}
 		{E14E5FDE-8BBA-487A-A83F-B9BD44AAF8E1} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
 		{EFFBCF39-2B23-42C4-84A6-D2C91723645E} = {1C199056-0D47-4E8A-A5E5-6D13F446D897}
-		{1A274B3A-3CAF-4B43-A936-7C69E56852A5} = {35EDA1E9-7625-4955-96D2-4769CB09730F}
+		{06447D0E-D6FD-485B-8FB5-E9746AA25A2E} = {35EDA1E9-7625-4955-96D2-4769CB09730F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A236686-85EA-4703-A715-FCBAA6461AAE}

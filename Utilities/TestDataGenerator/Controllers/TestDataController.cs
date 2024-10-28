@@ -1,45 +1,42 @@
-using ICSharpCode.SharpZipLib.Checksum;
+﻿using ICSharpCode.SharpZipLib.Checksum;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using TestData.Models;
 using UKHO.S100PermitService.Common.Encryption;
 
-namespace TestData.Controllers
+namespace TestDataGenerator1.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class TestDataController : ControllerBase
     {
-        private readonly ILogger<TestDataController> _logger;
-        private readonly IS100Crypt _s100Crypt;
         private readonly IAesEncryption _aesEncryption;
 
         private const int EncryptedHardwareIdLength = 32;
         private const string WellknownHardwareId = "7D3A583E6CB6F32FD0B0328AF006A2BD";
 
-        public TestDataController(ILogger<TestDataController> logger, IS100Crypt s100Crypt, IAesEncryption aesEncryption)
+        public TestDataController(IAesEncryption aesEncryption)
         {
-            _logger = logger;
-            _s100Crypt = s100Crypt;
             _aesEncryption = aesEncryption;
         }
 
-        [HttpPost]
+        [HttpGet]
         [Route("/testdata/GenerateUserPermit")]
         public virtual async Task<IActionResult> GenerateUserPermit()
         {
             var upn = CreateUserPermit();
 
-            return HttpStatusCode.Created;
+            await Task.CompletedTask;
+
+            return new JsonResult(upn);
         }
 
         [HttpPost]
         [Route("/testdata/GenerateProductKey")]
         public virtual async Task<IActionResult> GenerateProductKey()
         {
-            var dataKey = GenerateRandomDataKeyString(32);
+            var dataKey = CreateRandomHex32String();
             var encryptedProductKey = _aesEncryption.Encrypt(dataKey, WellknownHardwareId);
 
             var productKey = new ProductKey
@@ -49,7 +46,9 @@ namespace TestData.Controllers
                 HardwareId = WellknownHardwareId
             };
 
-            return HttpStatusCode.Created;
+            await Task.CompletedTask;
+
+            return new JsonResult(productKey);
         }
 
         [HttpGet]
@@ -58,35 +57,41 @@ namespace TestData.Controllers
         {
             var decryptedHardwareId = _aesEncryption.Decrypt(upn[..EncryptedHardwareIdLength], mKey);
 
+            await Task.CompletedTask;
 
-            return HttpStatusCode.Created;
+            return new JsonResult(decryptedHardwareId);
         }
 
         [HttpGet]
         [Route("/testdata/DecryptProductKey")]
-        public virtual async Task<IActionResult> DecryptProductKey(string productKey, string hwId)
+        public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
-            var decryptedProductKey = _aesEncryption.Encrypt(productKey, WellknownHardwareId);
+            var decryptedProductKey = _aesEncryption.Decrypt(productKey, WellknownHardwareId);
 
-            return HttpStatusCode.Created;
+            await Task.CompletedTask;
+
+            return new JsonResult(decryptedProductKey);
         }
 
         [HttpGet]
         [Route("/testdata/CreateEncryptedKey")]
-        public virtual async Task<IActionResult> CreateEncryptedKey(string hwId, string decryptedProductKey)
+        public virtual async Task<IActionResult> CreateEncryptedKey(string decryptedProductKey, string hwId)
         {
             var encryptedKey = _aesEncryption.Decrypt(decryptedProductKey, hwId);
 
-            return HttpStatusCode.Created;
+            await Task.CompletedTask;
+
+            return new JsonResult(encryptedKey);
         }
 
+        [NonAction]
         public Upn CreateUserPermit()
         {
             var mId = GenerateRandomMIDString();
-            var mKey = GenerateRandomMKEYString(32);
-            var hwId = CreateRandomHwId();
+            var mKey = CreateRandomHex32String();
+            var hwId = CreateRandomHex32String();
 
-            var hwIdEncrypted = _aesEncryption.Encrypt(mKey, hwId);
+            var hwIdEncrypted = _aesEncryption.Encrypt(hwId, mKey);
             var checksum = GetEncryptedHwIdCRC(hwIdEncrypted);
 
             var upn = new Upn
@@ -102,6 +107,7 @@ namespace TestData.Controllers
             return upn;
         }
 
+        [NonAction]
         public string GetEncryptedHwIdCRC(string hwIdEncrypted)
         {
             var crc = new Crc32();
@@ -110,52 +116,27 @@ namespace TestData.Controllers
             return calculatedChecksum;
         }
 
+        /// <summary>
+        /// 6 character random digits
+        /// </summary>
+        /// <returns></returns>
+        [NonAction]
         public string GenerateRandomMIDString()
         {
-            Random random = new Random();
-            string numericData = string.Empty;
-
-            for(int i = 0 ; i < 6 ; i++)
-            {
-                numericData += random.Next(0, 10).ToString();
-            }
-
-            return new string(numericData);
+            var random = new Random();
+            return new string(Enumerable.Range(0, 6).Select(_ => random.Next(0, 10).ToString()[0]).ToArray());
         }
 
-        public string GenerateRandomMKEYString(int length)
+        /// <summary>
+        /// 32 character hexadecimal random digits.
+        /// </summary>
+        /// <returns></returns>
+        [NonAction]
+        public string CreateRandomHex32String()
         {
-            const string hexChars = "0123456789ABCD";
-            Random random = new Random();
-            char[] buffer = new char[length];
-
-            for(int i = 0 ; i < length ; i++)
-            {
-                buffer[i] = hexChars[random.Next(hexChars.Length)];
-            }
-
-            return new string(buffer);
-        }
-
-        public string GenerateRandomDataKeyString(int length)
-        {
-            const string hexChars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            Random random = new Random();
-            char[] buffer = new char[length];
-
-            for(int i = 0 ; i < length ; i++)
-            {
-                buffer[i] = hexChars[random.Next(hexChars.Length)];
-            }
-
-            return new string(buffer);
-        }
-
-        public string CreateRandomHwId()
-        {
-            byte[] bytes = new byte[16];
+            var bytes = new byte[16];
             RandomNumberGenerator.Create().GetBytes(bytes);
-            return BitConverter.ToString(bytes).Replace("-", "").ToLower();
+            return BitConverter.ToString(bytes).Replace("-", "");
         }
     }
 }

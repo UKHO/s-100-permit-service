@@ -1,0 +1,6 @@
+@TestDataGenerator1_HostAddress = http://localhost:5052
+
+GET {{TestDataGenerator1_HostAddress}}/TestDataController/
+Accept: application/json
+
+###

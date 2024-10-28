@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+	<ProjectReference Include="..\..\src\UKHO.S100PermitService.Common\UKHO.S100PermitService.Common.csproj" />
   </ItemGroup>
 
 </Project>
