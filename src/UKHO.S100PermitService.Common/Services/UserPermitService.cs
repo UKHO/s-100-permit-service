@@ -50,9 +50,10 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="licenceId">Requested licence id.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
-        /// <returns>User Permit Number (UPN) details.</returns>
-        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred.</exception>
-        public async Task<UserPermitServiceResponse> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        /// <response code="200">User Permit Number (UPN) details.</response>
+        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
+        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
+        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(new Uri(_userPermitServiceApiConfiguration.Value.BaseUrl), string.Format(UserPermitUrl, licenceId));
 
@@ -73,16 +74,26 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var userPermitServiceResponse = JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson);
 
-                return userPermitServiceResponse;
+                return (httpResponseMessage.StatusCode, userPermitServiceResponse);
             }
 
-            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
                 var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
 
                 throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                 "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+            }
+            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
+            {
+                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+
+                _logger.LogError(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
+                    "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+
+                return (httpResponseMessage.StatusCode, null);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),

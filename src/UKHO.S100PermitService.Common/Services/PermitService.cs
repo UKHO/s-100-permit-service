@@ -54,7 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <remarks>
         /// If dependent services responded with empty response, Then status code 204 NoContent will be returned.
         /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
-        /// If duplicate holdings data found, Then remove duplicate dataset & select the dataset with highest expiry date.
+        /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
         /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception handler triggered.
         /// If any required validation failed, Then PermitServiceException exception handler triggered.
         /// </remarks>
@@ -69,18 +69,28 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var (userPermitStatusCode, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
+                if(userPermitStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+            var (holdingsStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
+                if(holdingsStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
