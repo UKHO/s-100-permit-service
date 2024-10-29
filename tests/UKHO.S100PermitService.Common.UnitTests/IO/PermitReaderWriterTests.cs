@@ -43,11 +43,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         }
 
         [Test]
-        public void WhenProductModelIsPassed_ThenReturnXmlString()
+        public async Task WhenProductModelIsPassed_ThenReturnXmlString()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
 
-            var result = _permitReaderWriter.CreatePermitZip(GetPermitDetails());
+            var result = await _permitReaderWriter.CreatePermitZip(GetPermitDetails());
 
             result.Should().NotBeNull();
 
@@ -86,7 +86,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
             FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZip(GetInValidPermitDetails())).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Invalid permit xml schema.");
+                                            ThrowExactlyAsync<PermitServiceException>().WithMessage("Invalid permit xml schema.");
         }
 
         private Dictionary<string, Permit> GetPermitDetails()
