@@ -25,6 +25,7 @@ namespace UKHO.S100PermitService.API.Controllers
             _permitService = permitService ?? throw new ArgumentNullException(nameof(permitService));
         }
 
+        /// <param name="licenceId" example="12345678">Requested licence id.</param>
         [HttpGet]
         [Route("/permits/{licenceId}")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
