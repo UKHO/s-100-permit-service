@@ -60,7 +60,7 @@ namespace UKHO.S100PermitService.Common.Services
                         cancellationToken, correlationId);
                 });
 
-            return await HandleHttpResponseAsync(httpResponseMessage, uri);
+            return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
         public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
@@ -84,11 +84,11 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
-            HandleHttpResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+            HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                 _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
@@ -96,13 +96,13 @@ namespace UKHO.S100PermitService.Common.Services
                     JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson));
             }
 
-            return await HandleErrorResponseAsync(httpResponseMessage, uri);
+            return await HandleErrorResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
         private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
-            HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+            HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
-            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {

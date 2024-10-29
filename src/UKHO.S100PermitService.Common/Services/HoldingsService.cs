@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.Services
                 return await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
             });
 
-            return await HandleHttpResponseAsync(httpResponseMessage, uri);
+            return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
@@ -76,11 +76,11 @@ namespace UKHO.S100PermitService.Common.Services
             return new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleHttpResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                 _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
                     "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
@@ -89,12 +89,12 @@ namespace UKHO.S100PermitService.Common.Services
                 return (httpResponseMessage.StatusCode, JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson));
             }
 
-            return await HandleErrorResponseAsync(httpResponseMessage, uri);
+            return await HandleErrorResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri)
+        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
-            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync();
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
