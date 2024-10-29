@@ -11,14 +11,15 @@ namespace TestDataGenerator.Controllers
     [ApiController]
     public class TestDataController : ControllerBase
     {
-        private readonly IAesEncryption _aesEncryption;
-
         private const int EncryptedHardwareIdLength = 32;
-        private const string WellknownHardwareId = "7D3A583E6CB6F32FD0B0328AF006A2BD";
 
-        public TestDataController(IAesEncryption aesEncryption)
+        private readonly IAesEncryption _aesEncryption;
+        private readonly IConfiguration _configuration;
+
+        public TestDataController(IAesEncryption aesEncryption, IConfiguration configuration)
         {
             _aesEncryption = aesEncryption;
+            _configuration = configuration;
         }
 
         [HttpGet]
@@ -37,13 +38,13 @@ namespace TestDataGenerator.Controllers
         public virtual async Task<IActionResult> GenerateProductKey()
         {
             var dataKey = CreateRandomHex32String();
-            var encryptedProductKey = _aesEncryption.Encrypt(dataKey, WellknownHardwareId);
+            var encryptedProductKey = _aesEncryption.Encrypt(dataKey, _configuration["HardwareId"]);
 
             var productKey = new ProductKey
             {
                 Key = encryptedProductKey,
                 DecryptedKey = dataKey,
-                HardwareId = WellknownHardwareId
+                HardwareId = _configuration["HardwareId"]
             };
 
             await Task.CompletedTask;
@@ -66,7 +67,7 @@ namespace TestDataGenerator.Controllers
         [Route("/DecryptProductKey")]
         public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
-            var decryptedProductKey = _aesEncryption.Decrypt(productKey, WellknownHardwareId);
+            var decryptedProductKey = _aesEncryption.Decrypt(productKey, _configuration["HardwareId"]);
 
             await Task.CompletedTask;
 
