@@ -2,9 +2,9 @@
 {
     public static class ListExtensions
     {
-        public static bool IsNullOrEmpty<T>(List<T>? list)
+        public static bool IsNullOrEmpty<T>(IEnumerable<T>? list)
         {
-            return list is null || list.Count == 0;
+            return list is null || !list.Any();
         }
     }
 }

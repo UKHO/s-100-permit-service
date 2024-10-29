@@ -52,18 +52,28 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var (userPermitStatusCode, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
+                if(userPermitStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+            var (holdingsStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
+                if(holdingsStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());

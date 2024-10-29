@@ -63,25 +63,26 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         }
 
         // PBI 172721: Get Holdings from Shop Facade stub
+        // PBI 172722: Get UPNs from Shop Facade stub
+        // PBI 181294: Return 404 instead of 500 for Get Permits Endpoint when licence not found for Get UPNs and Get Holdings
         [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveHoldings_ThenInternalServerError500IsReturned()
+        public async Task WhenICallPermitServiceEndpointForLicenceIdWithMissingData_ThenNotFound404IsReturned()
         {
-            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidHoldingsLicenceId!)
+            foreach(var licenceId in _permitServiceApiConfiguration!.MissingDataLicenceId!)
             {
                 var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
-                response.StatusCode.Should().Be((HttpStatusCode)500);
+                response.StatusCode.Should().Be((HttpStatusCode)404);
             }
         }
 
         // PBI 172722: Get UPNs from Shop Facade stub
+        // PBI 172721: Get Holdings from Shop Facade stub
         [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveUPN_ThenInternalServerError500IsReturned()
+        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceId_ThenInternalServerError500IsReturned()
         {
-            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidUpnLicenceId!)
-            {
-                var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
-                response.StatusCode.Should().Be((HttpStatusCode)500);
-            }
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidLicenceId.ToString()!);
+            response.StatusCode.Should().Be((HttpStatusCode)500);
+
         }
 
         // PBI 172910: Get Permit Keys from PKS stub
