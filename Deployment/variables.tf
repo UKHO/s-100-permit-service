@@ -15,6 +15,12 @@ locals {
   stub_web_app_name  = "${local.service_name}-${local.env_name}-stub"
   key_vault_name     = "${local.service_name}-ukho-${local.env_name}-kv"
   key_vault_midkv    = "${local.service_name}-ukho-${local.env_name}-midkv"
+  pe_identity        = "${local.service_name}${local.env_name}"
+  vnet_link          = "${local.service_name}${local.env_name}"
+  private_connection = "/subscriptions/${var.subscription_id}/resourceGroups/ps-${local.env_name}-rg/providers/Microsoft.Web/sites/ps-${local.env_name}-api"
+  dns_resource_group = "engineering-rg"
+  zone_group         = "${local.service_name}${local.env_name}zone"
+  dns_zones          = "privatelink.azurewebsites.net"
   tags = {
     SERVICE                   = "S100 Permit Service"
     ENVIRONMENT               = local.env_name
@@ -48,5 +54,25 @@ variable "spoke_subnet_name" {
 }
 
 variable "hardwareid" {
+  type = string
+}
+
+variable "subscription_id" {
+  type = string
+}
+
+variable "hub_subscription_id" {
+  type = string
+}
+
+variable "pe_vnet_name" {
+  type = string
+}
+
+variable "pe_subnet_name" {
+  type = string
+}
+
+variable "pe_rg" {
   type = string
 }

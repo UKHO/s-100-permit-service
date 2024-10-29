@@ -36,7 +36,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <summary>
         /// Read Xsd version from schema file
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Xsd version</returns>
         public string ReadXsdVersion()
         {
             XmlSchema? schema;
@@ -51,8 +51,8 @@ namespace UKHO.S100PermitService.Common.IO
         /// <summary>
         /// Create permit zip
         /// </summary>
-        /// <param name="permits"></param>
-        /// <returns>ZipStream</returns>
+        /// <param name="permits">Permit details.</param>
+        /// <returns>Zip Stream</returns>
         public Stream CreatePermitZip(IReadOnlyDictionary<string, Permit> permits)
         {
             var memoryStream = new MemoryStream();
@@ -64,21 +64,21 @@ namespace UKHO.S100PermitService.Common.IO
                 }
             }
 
-            _logger.LogInformation(EventIds.PermitZipFileCreationCompleted.ToEventId(), "Permit zip file creation completed.");
+            _logger.LogInformation(EventIds.PermitZipCreationCompleted.ToEventId(), "Permit zip creation completed.");
 
             memoryStream.Seek(0, SeekOrigin.Begin);
             return memoryStream;
         }
 
         /// <summary>
-        /// Create permit xml files and add into permit zip 
+        /// Create permit xml and add into permit zip 
         /// </summary>
-        /// <param name="zipArchive"></param>
-        /// <param name="upnTitle"></param>
-        /// <param name="permit"></param>
+        /// <param name="zipArchive">Zip object.</param>
+        /// <param name="upnTitle">User permit title.</param>
+        /// <param name="permit">Permit details.</param>
         private void CreatePermitXml(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
-            _logger.LogInformation(EventIds.PermitXmlFileCreationStarted.ToEventId(), "Creation of Permit XML file for UPN: {UpnTitle} started.", upnTitle);
+            _logger.LogInformation(EventIds.PermitXmlCreationStarted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} started.", upnTitle);
             
             var fileName= $"{upnTitle}/{PermitXmlFileName}";
             // Create an entry for the XML file
@@ -124,7 +124,7 @@ namespace UKHO.S100PermitService.Common.IO
             using var streamWriter = new StreamWriter(entryStream);
             streamWriter.Write(xmlContent);
 
-            _logger.LogInformation(EventIds.PermitXmlFileCreationCompleted.ToEventId(), "Creation of Permit XML file for UPN {UpnTitle} completed.", upnTitle);
+            _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN {UpnTitle} completed.", upnTitle);
         }
 
         private string GetTargetNamespace()
