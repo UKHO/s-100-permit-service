@@ -18,11 +18,20 @@ namespace UKHO.S100PermitService.Common.Clients
             _secretClient = new SecretClient(new Uri(_manufacturerKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
         }
 
+        /// <summary>
+        /// Get secret stored in key vault.
+        /// </summary>
+        /// <param name="secretName">Secret Key.</param>
+        /// <returns>KeyVaultSecret details.</returns>
         public KeyVaultSecret GetSecret(string secretName)
         {
             return _secretClient.GetSecret(secretName);
         }
 
+        /// <summary>
+        /// Get resource containing all the properties of the secret except its value
+        /// </summary>
+        /// <returns>SecretProperties</returns>
         public IEnumerable<SecretProperties> GetPropertiesOfSecrets()
         {
             return _secretClient.GetPropertiesOfSecrets();

@@ -33,12 +33,12 @@
         /// <summary>
         /// 840006 - File creation call started.
         /// </summary>
-        PermitXmlFileCreationStarted = 840006,
+        PermitXmlCreationStarted = 840006,
 
         /// <summary>
         /// 840007 - File creation call end.
         /// </summary>
-        PermitXmlFileCreationCompleted = 840007,
+        PermitXmlCreationCompleted = 840007,
 
         /// <summary>
         /// 840008 - Empty permit xml is received.
@@ -223,7 +223,7 @@
         /// <summary>
         /// 840044 - Permit zip file creation completed.
         /// </summary>
-        PermitZipFileCreationCompleted = 840044,
+        PermitZipCreationCompleted = 840044,
 
         /// <summary>
         /// 840045 - Manufacturer Key found in Cache.
