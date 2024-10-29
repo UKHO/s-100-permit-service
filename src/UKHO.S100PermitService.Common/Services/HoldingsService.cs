@@ -30,7 +30,8 @@ namespace UKHO.S100PermitService.Common.Services
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
         }
 
-        public async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpStatusCode httpStatusCode, IEnumerable<HoldingsServiceResponse>? holdingsServiceResponse)>
+            GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = GetHoldingsUri(licenceId);
 

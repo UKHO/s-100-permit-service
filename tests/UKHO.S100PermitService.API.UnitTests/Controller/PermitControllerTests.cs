@@ -102,6 +102,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
             result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
+            result.Value.Should().Be(string.Empty);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

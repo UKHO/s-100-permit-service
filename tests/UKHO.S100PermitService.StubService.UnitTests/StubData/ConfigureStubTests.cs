@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
 
             var jsonFiles = Directory.GetFiles(responseFileDirectoryPath, "*.json");
 
-            jsonFiles.Length.Should().Be(17, "there should be exactly 17 json files in the StubData\\UserPermits folder");
+            jsonFiles.Length.Should().Be(18, "there should be exactly 18 json files in the StubData\\UserPermits folder");
         }
 
         [Test]
