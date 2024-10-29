@@ -49,19 +49,19 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get required data from dependent services and build compressed zip containing PERMIT.XML files.
+        /// Get required data from dependent services and build zip stream containing PERMIT.XML.
         /// </summary>
         /// <remarks>
         /// If dependent services responded with empty response, Then status code 204 NoContent will be returned.
         /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
         /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
-        /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception handler triggered.
-        /// If any required validation failed, Then PermitServiceException exception handler triggered.
+        /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception will be thrown.
+        /// If any required validation failed, Then PermitServiceException exception will be thrown.
         /// </remarks>
         /// <param name="licenceId">Requested licence id.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
-        /// <response code="200">Compressed zip containing PERMIT.XML.</response>
+        /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
@@ -114,16 +114,16 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Build compressed zip containing PERMIT.XML files.
+        /// Build zip stream containing PERMIT.XML.
         /// </summary>
         /// <remarks>
-        /// Generate PERMIT.XML file for the respective User Permit Number (UPN) and provides the compressed zip containing all these PERMIT.XML files.
-        /// If any exception occurred, Then PermitServiceException exception handler triggered.
+        /// Generate PERMIT.XML for the respective User Permit Number (UPN) and provides the zip stream containing all the PERMIT.XML.
+        /// If any exception occurred, Then PermitServiceException exception will be thrown.
         /// </remarks>
         /// <param name="holdingsServiceResponses">Holding details.</param>
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
         /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
-        /// <returns>Compressed zip containing PERMIT.XML.</returns>
+        /// <returns>Zip stream containing PERMIT.XML.</returns>
         private Stream BuildPermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();

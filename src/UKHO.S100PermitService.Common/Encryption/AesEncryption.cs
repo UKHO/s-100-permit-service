@@ -15,12 +15,12 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// Decrypt data from encrypted data using secret key.
         /// Advanced Encryption Standard (AES) block cipher algorithm is used.This is a symmetric-key algorithm. This means that the same key is used for encryption and decryption.
         /// Cipher Block Chaining(CBC) mode of operation and No padding is used.
-        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception handler will be trigger.
+        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception will be thrown.
         /// </remarks>
         /// <param name="hexString">Data to be decrypt.</param>
         /// <param name="hexKey">Secret Key.</param>
         /// <returns>Decrypted data.</returns>
-        /// <exception cref="AesEncryptionException">AesEncryptionException exception handler triggers when length validation fails.</exception>
+        /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
         public string Decrypt(string hexString, string hexKey)
         {
             if(hexString.Length != HexSize)
@@ -45,12 +45,12 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// Encrypt data using secret key.
         /// Advanced Encryption Standard (AES) block cipher algorithm is used.This is a symmetric-key algorithm. This means that the same key is used for encryption and decryption.
         /// Cipher Block Chaining(CBC) mode of operation and No padding is used.
-        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception handler will be trigger.
+        /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception will be thrown.
         /// </remarks>
         /// <param name="hexString">Data to be encrypt.</param>
         /// <param name="keyHexEncoded">Secret Key.</param>
         /// <returns>Encrypted data.</returns>
-        /// <exception cref="AesEncryptionException">AesEncryptionException exception handler triggers when length validation fails.</exception>
+        /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
         public string Encrypt(string hexString, string keyHexEncoded)
         {
             if(hexString.Length != HexSize)

@@ -28,10 +28,10 @@ namespace UKHO.S100PermitService.API.Controllers
         /// Provide Permits for requested licence Id.
         /// </summary>
         /// <remarks>
-        /// Generate S100 standard PERMIT.XML file for the respective User Permit Number (UPN) for a given licence and provides the compressed Zip containing PERMIT.XML files.
+        /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) for a given licence and provides the zip stream containing PERMIT.XML.
         /// </remarks>
         /// <param name="licenceId">Requested licence id.</param>
-        /// <response code="200">Compressed zip containing PERMIT.XML.</response>
+        /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="400">Bad Request.</response>
         /// <response code="401">Unauthorized - either you have not provided any credentials, or your credentials are not recognized.</response>

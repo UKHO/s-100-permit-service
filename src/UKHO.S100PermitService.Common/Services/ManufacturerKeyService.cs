@@ -28,11 +28,11 @@ namespace UKHO.S100PermitService.Common.Services
         /// <remarks>
         /// ManufacturerKey is used to decrypt HardwareId(HW_ID) from EncryptedHardwareId stored in UserPermit.
         /// If ManufacturerKey does not exists in cache then get from Key Vault and add in cache.
-        /// If ManufacturerKey does not exists in Key Vault then trigger PermitServiceException exception handler.
+        /// If ManufacturerKey does not exists in Key Vault then PermitServiceException exception will be thrown.
         /// </remarks> 
         /// <param name="secretName">ManufacturerId (MId).</param>
         /// <returns>ManufacturerKey.</returns>
-        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred.</exception>
+        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
         public string GetManufacturerKeys(string secretName)
         {
             try

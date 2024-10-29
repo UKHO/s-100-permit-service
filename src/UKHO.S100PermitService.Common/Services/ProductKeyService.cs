@@ -35,13 +35,13 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <remarks>
         /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
-        /// If service responded with other than 200 Ok StatusCode, Then PermitServiceException exception handler triggered.
+        /// If service responded with other than 200 Ok StatusCode, Then PermitServiceException exception will be thrown.
         /// </remarks>
         /// <param name="productKeyServiceRequest">Product Key Service request body.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <returns>Product key details.</returns>
-        /// <exception cref="PermitServiceException">PermitServiceException exception handler triggered when exception occurred.</exception>
+        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
         public async Task<List<ProductKeyServiceResponse>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
         {
             var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
