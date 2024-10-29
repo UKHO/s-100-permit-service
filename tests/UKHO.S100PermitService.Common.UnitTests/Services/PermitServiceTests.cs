@@ -105,7 +105,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKey(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
 
-            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZip(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
+            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
             var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 

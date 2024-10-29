@@ -53,14 +53,14 @@ namespace UKHO.S100PermitService.Common.IO
         /// </summary>
         /// <param name="permits"></param>
         /// <returns>ZipStream</returns>
-        public async Task<Stream> CreatePermitZip(IReadOnlyDictionary<string, Permit> permits)
+        public async Task<Stream> CreatePermitZipAsync(IReadOnlyDictionary<string, Permit> permits)
         {
             var memoryStream = new MemoryStream();
             using(var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
             {
                 foreach(var permit in permits)
                 {
-                  await CreatePermitXml(archive, permit.Key, permit.Value);
+                  await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
                 }
             }
 
@@ -76,7 +76,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive"></param>
         /// <param name="upnTitle"></param>
         /// <param name="permit"></param>
-        private async Task CreatePermitXml(ZipArchive zipArchive, string upnTitle, Permit permit)
+        private async Task CreatePermitXmlAsync(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
             _logger.LogInformation(EventIds.PermitXmlFileCreationStarted.ToEventId(), "Creation of Permit XML file for UPN: {UpnTitle} started.", upnTitle);
             

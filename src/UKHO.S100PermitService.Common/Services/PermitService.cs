@@ -89,14 +89,14 @@ namespace UKHO.S100PermitService.Common.Services
 
             var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
 
-            var permitDetails = await BuildPermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
+            var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private async Task<Stream> BuildPermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        private async Task<Stream> BuildPermitsAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
@@ -121,7 +121,7 @@ namespace UKHO.S100PermitService.Common.Services
                 permitDictionary.Add(upnInfo.Title, permit);
             }
 
-            var permitDetails = await _permitReaderWriter.CreatePermitZip(permitDictionary);
+            var permitDetails = await _permitReaderWriter.CreatePermitZipAsync(permitDictionary);
 
             return permitDetails;
         }
