@@ -528,7 +528,7 @@ stages:
         dependsOn: vNextIATDeployTerraform
         displayName: "vNextIAT - Deploy Dotnet App"
         environment: "S100PG-VNEXTIAT"
-        pool: $(DeploymentPool)
+        pool: $(DeploymentPoolPE)
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
@@ -583,7 +583,7 @@ stages:
         dependsOn: vNextE2EDeployTerraform
         displayName: "vNextE2E - Deploy Dotnet App"
         environment: "S100PG-VNEXTE2E"
-        pool: $(DeploymentPool)
+        pool: $(DeploymentPoolPE)
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
@@ -638,7 +638,7 @@ stages:
         dependsOn: IATDeployTerraform
         displayName: "IAT - Deploy Dotnet App"
         environment: "S100PG-IAT"
-        pool: $(DeploymentPool)
+        pool: $(DeploymentPoolPE)
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
