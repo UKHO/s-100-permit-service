@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
@@ -19,28 +20,31 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IHoldingsServiceAuthTokenProvider _holdingsServiceAuthTokenProvider;
         private readonly IHoldingsApiClient _holdingsApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
+        private readonly IUriFactory _uriFactory;
+
         private const string HoldingsUrl = "/holdings/{0}/s100";
 
-        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
+        public HoldingsService(ILogger<HoldingsService> logger, IOptions<HoldingsServiceApiConfiguration> holdingsApiConfiguration, IHoldingsServiceAuthTokenProvider holdingsServiceAuthTokenProvider, IHoldingsApiClient holdingsApiClient, IWaitAndRetryPolicy waitAndRetryPolicy, IUriFactory uriFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _holdingsServiceApiConfiguration = holdingsApiConfiguration ?? throw new ArgumentNullException(nameof(holdingsApiConfiguration));
             _holdingsServiceAuthTokenProvider = holdingsServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(holdingsServiceAuthTokenProvider));
             _holdingsApiClient = holdingsApiClient ?? throw new ArgumentNullException(nameof(holdingsApiClient));
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
+            _uriFactory = uriFactory ?? throw new ArgumentNullException(nameof(uriFactory));
         }
 
         public async Task<(HttpStatusCode httpStatusCode, IEnumerable<HoldingsServiceResponse>? holdingsServiceResponse)>
             GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
-            var uri = GetHoldingsUri(licenceId);
+            var uri = _uriFactory.CreateUri(_holdingsServiceApiConfiguration.Value.BaseUrl, HoldingsUrl, licenceId);
 
             _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId(),
                 "Request to HoldingsService GET Uri : {RequestUri} started.", uri.AbsolutePath);
 
             var accessToken = await _holdingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_holdingsServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientHoldingsRequest).ExecuteAsync(async () =>
+            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientHoldingsRequest).ExecuteAsync(async () =>
             {
                 return await _holdingsApiClient.GetHoldingsAsync(uri.AbsoluteUri, licenceId, accessToken, cancellationToken, correlationId);
             });
@@ -69,11 +73,6 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Filtered holdings: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", allCells.Count(), latestCells.Count());
 
             return filteredHoldings;
-        }
-
-        private Uri GetHoldingsUri(int licenceId)
-        {
-            return new Uri(new Uri(_holdingsServiceApiConfiguration.Value.BaseUrl), string.Format(HoldingsUrl, licenceId));
         }
 
         private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)

@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.Common.Handlers
             _waitAndRetryConfiguration = waitAndRetryConfiguration ?? throw new ArgumentNullException(nameof(waitAndRetryConfiguration));
         }
 
-        public AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger, EventIds eventId)
+        public AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicyAsync(ILogger logger, EventIds eventId)
         {
             var retryCount = int.Parse(_waitAndRetryConfiguration.Value.RetryCount);
             var sleepDuration = double.Parse(_waitAndRetryConfiguration.Value.SleepDurationInSeconds);

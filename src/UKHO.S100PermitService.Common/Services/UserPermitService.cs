@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
@@ -21,6 +22,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IUserPermitApiClient _userPermitApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private readonly IUserPermitValidator _userPermitValidator;
+        private readonly IUriFactory _uriFactory;
 
         private const string UserPermitUrl = "/userpermits/{0}/s100";
 
@@ -29,7 +31,8 @@ namespace UKHO.S100PermitService.Common.Services
             IUserPermitServiceAuthTokenProvider userPermitServiceAuthTokenProvider,
             IUserPermitApiClient userPermitApiClient,
             IWaitAndRetryPolicy waitAndRetryPolicy,
-            IUserPermitValidator userPermitValidator)
+            IUserPermitValidator userPermitValidator,
+            IUriFactory uriFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userPermitServiceApiConfiguration = userPermitServiceApiConfiguration ??
@@ -41,20 +44,20 @@ namespace UKHO.S100PermitService.Common.Services
             _userPermitApiClient = userPermitApiClient ?? throw new ArgumentNullException(nameof(userPermitApiClient));
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
             _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
+            _uriFactory = uriFactory ?? throw new ArgumentNullException(nameof(uriFactory));
         }
 
         public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
             GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
-            var uri = GetUserPermitsUri(licenceId);
+            var uri = _uriFactory.CreateUri(_userPermitServiceApiConfiguration.Value.BaseUrl, UserPermitUrl, licenceId);
 
             _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} started.", uri.AbsolutePath);
 
-            var accessToken =
-                await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _waitAndRetryPolicy
-                .GetRetryPolicy(_logger, EventIds.RetryHttpClientUserPermitRequest).ExecuteAsync(async () =>
+                .GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientUserPermitRequest).ExecuteAsync(async () =>
                 {
                     return await _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken,
                         cancellationToken, correlationId);
@@ -75,12 +78,6 @@ namespace UKHO.S100PermitService.Common.Services
                     "Validation failed for Licence Id: {licenceId} | Error Details: {errorMessage}", userPermitServiceResponse.LicenceId,
                     errorMessage);
             }
-        }
-
-        private Uri GetUserPermitsUri(int licenceId)
-        {
-            return new Uri(new Uri(_userPermitServiceApiConfiguration.Value.BaseUrl),
-                string.Format(UserPermitUrl, licenceId));
         }
 
         private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
