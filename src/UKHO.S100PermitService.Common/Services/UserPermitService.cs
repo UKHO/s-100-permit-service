@@ -47,8 +47,21 @@ namespace UKHO.S100PermitService.Common.Services
             _uriFactory = uriFactory ?? throw new ArgumentNullException(nameof(uriFactory));
         }
 
-        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
-            GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        /// <summary>
+        /// Get User Permit Number (UPN) details from Shop Facade - User Permit Service for requested licence id.
+        /// </summary>
+        /// <remarks>
+        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
+        /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
+        /// If service responded with other than 200 Ok or 404 NotFound StatusCodes, Then PermitServiceException exception will be thrown.
+        /// </remarks>
+        /// <param name="licenceId">Requested licence id.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
+        /// <param name="correlationId">Guid based id to track request.</param>
+        /// <response code="200">User Permit Number (UPN) details.</response>
+        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
+        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
+        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = _uriFactory.CreateUri(_userPermitServiceApiConfiguration.Value.BaseUrl, UserPermitUrl, licenceId);
 
@@ -64,20 +77,6 @@ namespace UKHO.S100PermitService.Common.Services
                 });
 
             return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
-        }
-
-        public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
-        {
-            var result = _userPermitValidator.Validate(userPermitServiceResponse);
-
-            if(!result.IsValid)
-            {
-                var errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
-
-                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
-                    "Validation failed for Licence Id: {licenceId} | Error Details: {errorMessage}", userPermitServiceResponse.LicenceId,
-                    errorMessage);
-            }
         }
 
         private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
@@ -120,6 +119,24 @@ namespace UKHO.S100PermitService.Common.Services
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                 "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}",
                 uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+        }
+
+        /// <summary>
+        /// Validate User Permit Number (UPN) for any validation failures.
+        /// </summary>
+        /// <param name="userPermitServiceResponse">User Permit Number (UPN) details.</param>
+        /// <exception cref="PermitServiceException">When validation failed then PermitServiceException exception will be thrown.</exception>
+        public void ValidateUpnsAndChecksum(UserPermitServiceResponse userPermitServiceResponse)
+        {
+            var result = _userPermitValidator.Validate(userPermitServiceResponse);
+
+            if(!result.IsValid)
+            {
+                var errorMessage = string.Join("; ", result.Errors.Select(e => e.ErrorMessage));
+
+                throw new PermitServiceException(EventIds.UpnLengthOrChecksumValidationFailed.ToEventId(),
+                    "Validation failed for Licence Id: {licenceId} | Error Details: {errorMessage}", userPermitServiceResponse.LicenceId, errorMessage);
+            }
         }
     }
 }

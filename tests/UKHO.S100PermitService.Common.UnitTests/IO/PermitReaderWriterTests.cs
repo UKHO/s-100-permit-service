@@ -58,25 +58,25 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.PermitXmlCreationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML file for UPN: {UpnTitle} started."
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML for UPN: {UpnTitle} started."
             ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.PermitXmlFileCreationCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.PermitXmlCreationCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML file for UPN {UpnTitle} completed."
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML for UPN {UpnTitle} completed."
             ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.PermitZipFileCreationCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.PermitZipCreationCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Permit zip file creation completed."
+                    ["{OriginalFormat}"].ToString() == "Permit zip creation completed."
             ).MustHaveHappenedOnceExactly();
         }
 

@@ -17,6 +17,15 @@ namespace UKHO.S100PermitService.Common.Clients
             _httpClient = httpClientFactory.CreateClient();
         }
 
+        /// <summary>
+        /// Get product keys from Product Key Service.
+        /// </summary>
+        /// <param name="uri">Request URI.</param>
+        /// <param name="productKeyServiceRequest">Product Key Service request body.</param>
+        /// <param name="accessToken">Authorization token.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
+        /// <param name="correlationId">Guid based id to track request.</param>
+        /// <returns>Product Key Service response.</returns>
         public async Task<HttpResponseMessage> GetProductKeysAsync(string uri, List<ProductKeyServiceRequest> productKeyServiceRequest, string accessToken, CancellationToken cancellationToken, string correlationId)
         {
             var payloadJson = JsonSerializer.Serialize(productKeyServiceRequest);
