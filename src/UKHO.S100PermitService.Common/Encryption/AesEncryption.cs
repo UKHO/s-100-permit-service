@@ -8,7 +8,7 @@ namespace UKHO.S100PermitService.Common.Encryption
     {
         private const int KeySize = 128, BlockSize = 128, IvLength = 16, HexSize = 32;
 
-        public string Decrypt(string hexString, string hexKey)
+        public async Task<string> DecryptAsync(string hexString, string hexKey)
         {
             if(hexString.Length != HexSize)
             {
@@ -22,10 +22,10 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             using var aes = CreateAes(hexKey);
             using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
-            return PerformCryptography(hexString, decrypt);
+            return await PerformCryptographyAsync(hexString, decrypt);
         }
 
-        public string Encrypt(string hexString, string keyHexEncoded)
+        public async Task<string> EncryptAsync(string hexString, string keyHexEncoded)
         {
             if(hexString.Length != HexSize)
             {
@@ -39,7 +39,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             using var aes = CreateAes(keyHexEncoded);
             using var encrypt = aes.CreateEncryptor(aes.Key, aes.IV);
-            return PerformCryptography(hexString, encrypt);
+            return await PerformCryptographyAsync(hexString, encrypt);
         }
 
         private static Aes CreateAes(string keyHexEncoded)
@@ -54,14 +54,14 @@ namespace UKHO.S100PermitService.Common.Encryption
             return aes;
         }
 
-        private static string PerformCryptography(string hexString, ICryptoTransform cryptoTransform)
+        private static async Task<string> PerformCryptographyAsync(string hexString, ICryptoTransform cryptoTransform)
         {
             var cypherBytes = StringToByteArray(hexString);
 
             using var memoryStream = new MemoryStream();
             using var cryptoStream = new CryptoStream(memoryStream, cryptoTransform, CryptoStreamMode.Write);
-            cryptoStream.Write(cypherBytes, 0, cypherBytes.Length);
-            cryptoStream.FlushFinalBlock();
+            await cryptoStream?.WriteAsync(cypherBytes, 0, cypherBytes.Length);
+            await cryptoStream.FlushFinalBlockAsync();
             return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
         }
 
