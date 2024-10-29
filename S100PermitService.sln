@@ -21,9 +21,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.Comm
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UKHO.S100PermitService.StubService.UnitTests", "tests\UKHO.S100PermitService.StubService.UnitTests\UKHO.S100PermitService.StubService.UnitTests.csproj", "{EFFBCF39-2B23-42C4-84A6-D2C91723645E}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utilities", "Utilities", "{35EDA1E9-7625-4955-96D2-4769CB09730F}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{35EDA1E9-7625-4955-96D2-4769CB09730F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDataGenerator", "Utilities\TestDataGenerator\TestDataGenerator.csproj", "{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestDataGenerator", "tools\TestDataGenerator\TestDataGenerator.csproj", "{06447D0E-D6FD-485B-8FB5-E9746AA25A2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

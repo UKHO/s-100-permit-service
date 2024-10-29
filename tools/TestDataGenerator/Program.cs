@@ -1,7 +1,7 @@
 
 using UKHO.S100PermitService.Common.Encryption;
 
-namespace TestDataGenerator1
+namespace TestDataGenerator
 {
     public class Program
     {

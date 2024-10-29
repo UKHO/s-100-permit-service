@@ -2,10 +2,10 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
 using System.Text;
-using TestData.Models;
+using TestDataGenerator.Models;
 using UKHO.S100PermitService.Common.Encryption;
 
-namespace TestDataGenerator1.Controllers
+namespace TestDataGenerator.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -22,7 +22,7 @@ namespace TestDataGenerator1.Controllers
         }
 
         [HttpGet]
-        [Route("/testdata/GenerateUserPermit")]
+        [Route("/GenerateUserPermit")]
         public virtual async Task<IActionResult> GenerateUserPermit()
         {
             var upn = CreateUserPermit();
@@ -33,7 +33,7 @@ namespace TestDataGenerator1.Controllers
         }
 
         [HttpGet]
-        [Route("/testdata/GenerateProductKey")]
+        [Route("/GenerateProductKey")]
         public virtual async Task<IActionResult> GenerateProductKey()
         {
             var dataKey = CreateRandomHex32String();
@@ -52,7 +52,7 @@ namespace TestDataGenerator1.Controllers
         }
 
         [HttpGet]
-        [Route("/testdata/ExtractHwIdFromUPN")]
+        [Route("/ExtractHwIdFromUPN")]
         public virtual async Task<IActionResult> ExtractHwIdFromUPN(string upn, string mKey)
         {
             var decryptedHardwareId = _aesEncryption.Decrypt(upn[..EncryptedHardwareIdLength], mKey);
@@ -63,7 +63,7 @@ namespace TestDataGenerator1.Controllers
         }
 
         [HttpGet]
-        [Route("/testdata/DecryptProductKey")]
+        [Route("/DecryptProductKey")]
         public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
             var decryptedProductKey = _aesEncryption.Decrypt(productKey, WellknownHardwareId);
@@ -74,7 +74,7 @@ namespace TestDataGenerator1.Controllers
         }
 
         [HttpGet]
-        [Route("/testdata/CreateEncryptedKey")]
+        [Route("/CreateEncryptedKey")]
         public virtual async Task<IActionResult> CreateEncryptedKey(string decryptedProductKey, string hwId)
         {
             var encryptedKey = _aesEncryption.Encrypt(decryptedProductKey, hwId);

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 
-namespace TestData.Models
+namespace TestDataGenerator.Models
 {
     public class Upn
     {
