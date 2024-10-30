@@ -35,12 +35,12 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             _logger.LogInformation(EventIds.GetAccessTokenStarted.ToEventId(), "Getting access token to call external endpoint started.");
 
-            var authTokenFromCache = GetAuthTokenFromCache(resource);
-            if(authTokenFromCache is { AccessToken: not null } && authTokenFromCache.ExpiresIn > DateTime.UtcNow)
-            {
-                _logger.LogInformation(EventIds.CachedAccessTokenFound.ToEventId(), "Valid access token found in cache to call external endpoint.");
-                return authTokenFromCache.AccessToken;
-            }
+            //var authTokenFromCache = GetAuthTokenFromCache(resource);
+            //if(authTokenFromCache is { AccessToken: not null } && authTokenFromCache.ExpiresIn > DateTime.UtcNow)
+            //{
+            //    _logger.LogInformation(EventIds.CachedAccessTokenFound.ToEventId(), "Valid access token found in cache to call external endpoint.");
+            //    return authTokenFromCache.AccessToken;
+            //}
 
             var newAuthToken = await GetAuthToken(resource);
             AddAuthTokenToCache(resource, newAuthToken);
