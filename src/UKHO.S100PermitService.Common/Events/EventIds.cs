@@ -33,12 +33,12 @@
         /// <summary>
         /// 840006 - File creation call started.
         /// </summary>
-        PermitXmlFileCreationStarted = 840006,
+        PermitXmlCreationStarted = 840006,
 
         /// <summary>
         /// 840007 - File creation call end.
         /// </summary>
-        PermitXmlFileCreationCompleted = 840007,
+        PermitXmlCreationCompleted = 840007,
 
         /// <summary>
         /// 840008 - Empty permit xml is received.
@@ -223,11 +223,21 @@
         /// <summary>
         /// 840044 - Permit zip file creation completed.
         /// </summary>
-        PermitZipFileCreationCompleted = 840044,
+        PermitZipCreationCompleted = 840044,
 
         /// <summary>
         /// 840045 - Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyFoundInCache = 840045
+        ManufacturerKeyFoundInCache = 840045,
+
+        /// <summary>
+        /// 840046 - Request to UserPermitService GetUserPermits responded licence not found
+        /// </summary>
+        UserPermitServiceGetUserPermitsLicenceNotFound = 840046,
+
+        /// <summary>
+        /// 840047 - Request to HoldingsService GetHoldings responded licence not found
+        /// </summary>
+        HoldingServiceGetHoldingsLicenceNotFound = 840047
     }
 }

@@ -21,7 +21,16 @@ namespace UKHO.S100PermitService.Common.Encryption
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        public IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
+        /// <summary>
+        /// Get decrypted product keys
+        /// </summary>
+        /// <remarks>
+        /// Get Decrypted keys from Product Key Service key and well known hardware id with AES algorithm.
+        /// </remarks>
+        /// <param name="productKeyServiceResponses">Product Key Service response details.</param>
+        /// <param name="hardwareId">Well known hardware id.</param>
+        /// <returns>Decrypted product key details.</returns>
+        public async Task<IEnumerable<ProductKey>> GetDecryptedKeysFromProductKeysAsync(IEnumerable<ProductKeyServiceResponse> productKeyServiceResponses, string hardwareId)
         {
             _logger.LogInformation(EventIds.DecryptProductKeysStarted.ToEventId(), "Decryption of product keys started.");
 
@@ -33,7 +42,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                     ProductName = productKeyServiceResponse.ProductName,
                     Edition = productKeyServiceResponse.Edition,
                     Key = productKeyServiceResponse.Key,
-                    DecryptedKey = _aesEncryption.Decrypt(productKeyServiceResponse.Key, hardwareId)
+                    DecryptedKey = await _aesEncryption.DecryptAsync(productKeyServiceResponse.Key, hardwareId)
                 });
             }
 
@@ -42,7 +51,15 @@ namespace UKHO.S100PermitService.Common.Encryption
             return productKeys;
         }
 
-        public IEnumerable<UpnInfo> GetDecryptedHardwareIdFromUserPermit(UserPermitServiceResponse userPermitServiceResponse)
+        /// <summary>
+        /// Get decrypted hardware id (HW_ID).
+        /// </summary>
+        /// <remarks>
+        /// Decrypt User Permit(EncryptedHardwareId part of User Permit) and MKey with AES algorithm.
+        /// </remarks>
+        /// <param name="userPermitServiceResponse">User Permit Service response details.</param>
+        /// <returns>Decrypted HardwareIds (HW_ID).</returns>
+        public async Task<IEnumerable<UpnInfo>> GetDecryptedHardwareIdFromUserPermitAsync(UserPermitServiceResponse userPermitServiceResponse)
         {
             _logger.LogInformation(EventIds.ExtractDecryptedHardwareIdFromUserPermitStarted.ToEventId(), "Extraction of decrypted HW_ID from user permits started.");
 
@@ -56,7 +73,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 };
 
                 var mKey = _manufacturerKeyService.GetManufacturerKeys(userPermit.Upn[^MIdLength..]);
-                upnInfo.DecryptedHardwareId = _aesEncryption.Decrypt(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
+                upnInfo.DecryptedHardwareId = await _aesEncryption.DecryptAsync(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
 
                 listOfUpnInfo.Add(upnInfo);
             }
@@ -66,9 +83,18 @@ namespace UKHO.S100PermitService.Common.Encryption
             return listOfUpnInfo;
         }
 
-        public string CreateEncryptedKey(string productKeyServiceKey, string hardwareId)
+        /// <summary>
+        /// Get EncryptedKey.
+        /// </summary>
+        /// <remarks>
+        /// Encrypt decrypted product key and decrypted HW_ID with AES algorithm.
+        /// </remarks>
+        /// <param name="productKeyServiceKey">Productkey.</param>
+        /// <param name="hardwareId">HardwareId (HW_ID).</param>
+        /// <returns>EncryptedKey</returns>
+        public async Task<string> CreateEncryptedKeyAsync(string productKeyServiceKey, string hardwareId)
         {
-            return _aesEncryption.Encrypt(productKeyServiceKey, hardwareId);
+            return await _aesEncryption.EncryptAsync(productKeyServiceKey, hardwareId);
         }
     }
 }

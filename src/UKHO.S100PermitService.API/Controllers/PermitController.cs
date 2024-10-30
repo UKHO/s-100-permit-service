@@ -24,6 +24,21 @@ namespace UKHO.S100PermitService.API.Controllers
             _permitService = permitService ?? throw new ArgumentNullException(nameof(permitService));
         }
 
+        /// <summary>
+        /// Provide Permits for requested licence Id.
+        /// </summary>
+        /// <remarks>
+        /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) for a given licence and provides the zip stream containing PERMIT.XML.
+        /// </remarks>
+        /// <param name="licenceId">Requested licence id.</param>
+        /// <response code="200">Zip stream containing PERMIT.XML.</response>
+        /// <response code="204">NoContent - when dependent services responded with empty response.</response>
+        /// <response code="400">Bad Request.</response>
+        /// <response code="401">Unauthorized - either you have not provided any credentials, or your credentials are not recognized.</response>
+        /// <response code="403">Forbidden - you have been authorized, but you are not allowed to access this resource.</response>
+        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
+        /// <response code="429">You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
+        /// <response code="500">InternalServerError - exception occurred.</response>
         [HttpGet]
         [Route("/permits/{licenceId}")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
@@ -35,7 +50,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
-            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode);
+            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode, string.Empty);
         }
     }
 }

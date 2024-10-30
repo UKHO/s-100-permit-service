@@ -48,22 +48,49 @@ namespace UKHO.S100PermitService.Common.Services
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
         }
 
+        /// <summary>
+        /// Get required data from dependent services and build zip stream containing PERMIT.XML.
+        /// </summary>
+        /// <remarks>
+        /// If dependent services responded with empty response, Then status code 204 NoContent will be returned.
+        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
+        /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
+        /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception will be thrown.
+        /// If any required validation failed, Then PermitServiceException exception will be thrown.
+        /// </remarks>
+        /// <param name="licenceId">Requested licence id.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
+        /// <param name="correlationId">Guid based id to track request.</param>
+        /// <response code="200">Zip stream containing PERMIT.XML.</response>
+        /// <response code="204">NoContent - when dependent services responded with empty response.</response>
+        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
+        /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<(HttpStatusCode httpStatusCode, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var userPermitServiceResponse = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var (userPermitStatusCode, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
+                if(userPermitStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
-            var holdingsServiceResponse = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+            var (holdingsStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
+                if(holdingsStatusCode == HttpStatusCode.NotFound)
+                {
+                    return (HttpStatusCode.NotFound, new MemoryStream());
+                }
+
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
                 return (HttpStatusCode.NoContent, new MemoryStream());
@@ -75,25 +102,36 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
+            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
+            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponse);
 
-            var permitDetails = BuildPermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
+            var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
             return (HttpStatusCode.OK, permitDetails);
         }
 
-        private Stream BuildPermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        /// <summary>
+        /// Build zip stream containing PERMIT.XML.
+        /// </summary>
+        /// <remarks>
+        /// Generate PERMIT.XML for the respective User Permit Number (UPN) and provides the zip stream containing all the PERMIT.XML.
+        /// If any exception occurred, Then PermitServiceException exception will be thrown.
+        /// </remarks>
+        /// <param name="holdingsServiceResponses">Holding details.</param>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
+        /// <returns>Zip stream containing PERMIT.XML.</returns>
+        private async Task<Stream> BuildPermitsAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
             foreach(var upnInfo in upnInfos)
             {
-                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId);
+                var productsList = await GetProductsListAsync(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId);
 
                 var permit = new Permit
                 {
@@ -111,13 +149,20 @@ namespace UKHO.S100PermitService.Common.Services
                 permitDictionary.Add(upnInfo.Title, permit);
             }
 
-            var permitDetails = _permitReaderWriter.CreatePermitZip(permitDictionary);
+            var permitDetails = await _permitReaderWriter.CreatePermitZipAsync(permitDictionary);
 
             return permitDetails;
         }
 
+        /// <summary>
+        /// Get product details from HoldingServiceResponse and ProductKeyService
+        /// </summary>
+        /// <param name="holdingsServiceResponse">Holding details.</param>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
+        /// <returns>Products</returns>
         [ExcludeFromCodeCoverage]
-        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
+        private async Task<IEnumerable<Products>> GetProductsListAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
         {
             var productsList = new List<Products>();
             var products = new Products();
@@ -131,7 +176,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, cell.CellCode),
+                        EncryptedKey = await GetEncryptedKeyAsync(decryptedProductKeys, hardwareId, cell.CellCode),
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate
                     };
@@ -142,7 +187,7 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                     else
                     {
-                        products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
+                        products.DatasetPermit = [dataPermit];
                         productsList.Add(products);
                     }
                     products = new();
@@ -151,6 +196,11 @@ namespace UKHO.S100PermitService.Common.Services
             return productsList;
         }
 
+        /// <summary>
+        /// Create ProductKeyServiceRequest from HoldingsServiceResponse
+        /// </summary>
+        /// <param name="holdingsServiceResponse">Holding details.</param>
+        /// <returns>ProductKeyServiceRequests</returns>
         private List<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
@@ -159,11 +209,18 @@ namespace UKHO.S100PermitService.Common.Services
                 Edition = y.LatestEditionNumber
             })).ToList();
 
-        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
+        /// <summary>
+        /// Get EncryptedKey from decrypted productkey and HW_ID
+        /// </summary>
+        /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
+        /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
+        /// <param name="cellCode">ProductName</param>
+        /// <returns>EncryptedKey</returns>
+        private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
-            return _s100Crypt.CreateEncryptedKey(decryptedProductKey, hardwareId);
+            return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }
     }
 }

@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenNoSecretsInMemoryCacheOrKeyVault_ThenThrowException()
         {
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
+            A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
 
             var result = () => _manufacturerKeyService.GetManufacturerKeys("pqr");
 
@@ -57,7 +57,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var secret = SetCacheKeyValue();
             var secretKey = secret.FirstOrDefault(s => s.Key == "abc").Value;
 
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(secretKey);
+            A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(secretKey);
 
             var result = _manufacturerKeyService.GetManufacturerKeys("abc");
 
@@ -81,13 +81,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var secretKey = "mpn";
             var secretValue = "";
 
-            A.CallTo(() => _fakeCacheProvider.GetCacheKey(A<string>.Ignored)).Returns(string.Empty);
+            A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
             var result = _manufacturerKeyService.GetManufacturerKeys(secretKey);
 
-            A.CallTo(() => _fakeCacheProvider.SetCacheKey(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeCacheProvider.SetCache(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
              call.Method.Name == "Log"

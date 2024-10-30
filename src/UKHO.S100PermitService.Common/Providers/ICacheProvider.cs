@@ -2,7 +2,7 @@
 {
     public interface ICacheProvider
     {
-        public string GetCacheKey(string key);
-        public void SetCacheKey(string key, string value);
+        public string GetCacheValue(string key);
+        public void SetCache(string key, string value);
     }
 }

@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="accessToken">Sets the access Token</param>
         /// <param name="licenceId">Sets the licence ID</param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> PermitServiceEndPoint(string? baseUrl, string? accessToken, string licenceId)
+        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, string licenceId)
         {
             _uri = $"{baseUrl}/permits/{licenceId}";
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _uri);
@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </summary>
         /// <param name="response"></param>
         /// <returns></returns>
-        public static async Task<string> DownloadZipFile(HttpResponseMessage response)
+        public static async Task<string> AsyncDownloadZipFile(HttpResponseMessage response)
         {
             var tempFilePath = Path.Combine(Path.GetTempPath(), "temp");
             if(!Directory.Exists(tempFilePath))
