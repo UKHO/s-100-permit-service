@@ -8,7 +8,6 @@ namespace UKHO.S100PermitService.Common.Configuration
         public string? Version { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
-        public string? Email { get; set; }
-        public string GitHubUrl { get; set; }
+        public string? Email { get; set; }      
     }
 }
