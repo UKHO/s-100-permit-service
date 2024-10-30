@@ -245,6 +245,11 @@ namespace UKHO.S100PermitService.API
                     {
                         Name = Ukho,
                         Email = swaggerConfiguration.Email
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = swaggerConfiguration.GitHubUrl,
+                        Url = new Uri(swaggerConfiguration.GitHubUrl)
                     }
                 });
 
