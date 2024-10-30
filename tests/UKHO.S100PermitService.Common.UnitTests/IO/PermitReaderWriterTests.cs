@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
@@ -30,6 +31,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
+
+            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator);
+            nullPermitReaderWriterLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
             Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null);
             nullSchemaValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("schemaValidator");
         }
