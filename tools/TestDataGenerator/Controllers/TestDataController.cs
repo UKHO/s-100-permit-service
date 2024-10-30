@@ -38,7 +38,7 @@ namespace TestDataGenerator.Controllers
         public virtual async Task<IActionResult> GenerateProductKey()
         {
             var dataKey = CreateRandomHex32String();
-            var encryptedProductKey = _aesEncryption.Encrypt(dataKey, _configuration["HardwareId"]);
+            var encryptedProductKey = await _aesEncryption.EncryptAsync(dataKey, _configuration["HardwareId"]);
 
             var productKey = new ProductKey
             {
@@ -56,7 +56,7 @@ namespace TestDataGenerator.Controllers
         [Route("/ExtractHwIdFromUPN")]
         public virtual async Task<IActionResult> ExtractHwIdFromUPN(string upn, string mKey)
         {
-            var decryptedHardwareId = _aesEncryption.Decrypt(upn[..EncryptedHardwareIdLength], mKey);
+            var decryptedHardwareId = await _aesEncryption.DecryptAsync(upn[..EncryptedHardwareIdLength], mKey);
 
             await Task.CompletedTask;
 
@@ -67,7 +67,7 @@ namespace TestDataGenerator.Controllers
         [Route("/DecryptProductKey")]
         public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
-            var decryptedProductKey = _aesEncryption.Decrypt(productKey, _configuration["HardwareId"]);
+            var decryptedProductKey = await _aesEncryption.DecryptAsync(productKey, _configuration["HardwareId"]);
 
             await Task.CompletedTask;
 
@@ -78,7 +78,7 @@ namespace TestDataGenerator.Controllers
         [Route("/CreateEncryptedKey")]
         public virtual async Task<IActionResult> CreateEncryptedKey(string decryptedProductKey, string hwId)
         {
-            var encryptedKey = _aesEncryption.Encrypt(decryptedProductKey, hwId);
+            var encryptedKey = await _aesEncryption.EncryptAsync(decryptedProductKey, hwId);
 
             await Task.CompletedTask;
 
@@ -86,13 +86,13 @@ namespace TestDataGenerator.Controllers
         }
 
         [NonAction]
-        public Upn CreateUserPermit()
+        public async Task<Upn> CreateUserPermit()
         {
             var mId = GenerateRandomMIDString();
             var mKey = CreateRandomHex32String();
             var hwId = CreateRandomHex32String();
 
-            var hwIdEncrypted = _aesEncryption.Encrypt(hwId, mKey);
+            var hwIdEncrypted = await _aesEncryption.EncryptAsync(hwId, mKey);
             var checksum = GetEncryptedHwIdCRC(hwIdEncrypted);
 
             var upn = new Upn
