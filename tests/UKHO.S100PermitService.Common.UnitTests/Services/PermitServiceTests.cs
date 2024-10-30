@@ -95,17 +95,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                                             .Returns([new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" }]);
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeys(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermit(A<UserPermitServiceResponse>.Ignored))
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<UserPermitServiceResponse>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
-            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKey(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
+            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
 
-            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZip(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
+            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
             var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 

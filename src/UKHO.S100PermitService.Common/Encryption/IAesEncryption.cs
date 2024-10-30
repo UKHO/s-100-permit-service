@@ -2,8 +2,8 @@
 {
     public interface IAesEncryption
     {
-        string Decrypt(string hexString, string keyHexEncoded);
+        Task<string> DecryptAsync(string hexString, string keyHexEncoded);
 
-        string Encrypt(string hexString, string keyHexEncoded);
+        Task<string> EncryptAsync(string hexString, string keyHexEncoded);
     }
 }

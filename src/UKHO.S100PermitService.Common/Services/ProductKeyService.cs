@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Providers;
@@ -19,15 +20,18 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IProductKeyServiceAuthTokenProvider _productKeyServiceAuthTokenProvider;
         private readonly IProductKeyServiceApiClient _productKeyServiceApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
+        private readonly IUriFactory _uriFactory;
+
         private const string KeysEnc = "/keys/s100";
 
-        public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
+        public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient, IWaitAndRetryPolicy waitAndRetryPolicy, IUriFactory uriFactory)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
             _productKeyServiceAuthTokenProvider = productKeyServiceAuthTokenProvider ?? throw new ArgumentNullException(nameof(productKeyServiceAuthTokenProvider));
             _productKeyServiceApiClient = productKeyServiceApiClient ?? throw new ArgumentNullException(nameof(productKeyServiceApiClient));
             _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
+            _uriFactory = uriFactory ?? throw new ArgumentNullException(nameof(uriFactory));
         }
 
         /// <summary>
@@ -44,20 +48,20 @@ namespace UKHO.S100PermitService.Common.Services
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
         public async Task<List<ProductKeyServiceResponse>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, CancellationToken cancellationToken, string correlationId)
         {
-            var uri = new Uri(_productKeyServiceApiConfiguration.Value.BaseUrl + KeysEnc);
+            var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
 
             _logger.LogInformation(EventIds.GetProductKeysRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsolutePath);
 
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = _waitAndRetryPolicy.GetRetryPolicy(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).Execute(() =>
+            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).ExecuteAsync(async () =>
             {
-                return _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId).Result;
+                return await _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, cancellationToken, correlationId);
             });
 
             if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
@@ -67,7 +71,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
-                var bodyJson = httpResponseMessage.Content.ReadAsStringAsync(cancellationToken).GetAwaiter().GetResult();
+                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
                 throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(),
                     "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}",

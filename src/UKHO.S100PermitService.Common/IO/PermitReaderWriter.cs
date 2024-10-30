@@ -53,14 +53,14 @@ namespace UKHO.S100PermitService.Common.IO
         /// </summary>
         /// <param name="permits">Permit details.</param>
         /// <returns>Zip Stream</returns>
-        public Stream CreatePermitZip(IReadOnlyDictionary<string, Permit> permits)
+        public async Task<Stream> CreatePermitZipAsync(IReadOnlyDictionary<string, Permit> permits)
         {
             var memoryStream = new MemoryStream();
             using(var archive = new ZipArchive(memoryStream, ZipArchiveMode.Create, true))
             {
                 foreach(var permit in permits)
                 {
-                    CreatePermitXml(archive, permit.Key, permit.Value);
+                  await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
                 }
             }
 
@@ -76,7 +76,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive">Zip object.</param>
         /// <param name="upnTitle">User permit title.</param>
         /// <param name="permit">Permit details.</param>
-        private void CreatePermitXml(ZipArchive zipArchive, string upnTitle, Permit permit)
+        private async Task CreatePermitXmlAsync(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
             _logger.LogInformation(EventIds.PermitXmlCreationStarted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} started.", upnTitle);
             
@@ -122,7 +122,7 @@ namespace UKHO.S100PermitService.Common.IO
 
             // Write the modified XML content to the zip entry
             using var streamWriter = new StreamWriter(entryStream);
-            streamWriter.Write(xmlContent);
+            await streamWriter.WriteAsync(xmlContent);
 
             _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN {UpnTitle} completed.", upnTitle);
         }

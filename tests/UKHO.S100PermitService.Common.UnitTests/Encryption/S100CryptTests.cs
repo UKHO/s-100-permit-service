@@ -45,15 +45,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenProductKeysDecryptedSuccessfully_ThenReturnsDecryptedKeys()
+        public async Task WhenProductKeysDecryptedSuccessfully_ThenReturnsDecryptedKeys()
         {
             var test101ProductKey = "20191817161514131211109876543210";
             var test102ProductKey = "36353433323130292827262524232221";
 
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored))
                                              .Returns(test101ProductKey).Once().Then.Returns(test102ProductKey);
 
-            var result = _s100Crypt.GetDecryptedKeysFromProductKeys(GetProductKeyServiceResponse(), FakeHardwareId);
+            var result = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(GetProductKeyServiceResponse(), FakeHardwareId);
 
             result.Should().NotBeNull();
             result.FirstOrDefault().DecryptedKey.Should().Be(test101ProductKey);
@@ -76,16 +76,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
+        public async Task WhenValidMKeyAndUpnInfo_ThenListOfDecryptedHardwareIdIsReturned()
         {
             const string FakeDecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB";
             const string FakeMKey = "validMKey12345678901234567890123";
 
             A.CallTo(() => _fakeManufacturerKeyService.GetManufacturerKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            A.CallTo(() => _fakeAesEncryption.Decrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
+            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
 
-            var result = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(GetUserPermitServiceResponse());
+            var result = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(GetUserPermitServiceResponse());
 
             result.Equals(GetUpnInfo());
 
@@ -106,15 +106,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public void WhenValidHardwareIdAndPKSKeyPassed_ThenEncryptedKeyIsReturned()
+        public async Task WhenValidHardwareIdAndPKSKeyPassed_ThenEncryptedKeyIsReturned()
         {
             const string FakeEncryptedKey = "86C520323CEA3056B5ED7000F98814CB";
             const string FakeKey = "2F72DDDD2144B24939KBKPS76FH52FDD1";
             const string FakeHardwareId = "H5P2P62BDDBHS32PM6PSSA256P2000A1";
 
-            A.CallTo(() => _fakeAesEncryption.Encrypt(A<string>.Ignored, A<string>.Ignored)).Returns(FakeEncryptedKey);
+            A.CallTo(() => _fakeAesEncryption.EncryptAsync(A<string>.Ignored, A<string>.Ignored)).Returns(FakeEncryptedKey);
 
-            var result = _s100Crypt.CreateEncryptedKey(FakeKey, FakeHardwareId);
+            var result = await _s100Crypt.CreateEncryptedKeyAsync(FakeKey, FakeHardwareId);
             
             result.Equals(FakeEncryptedKey);            
         }

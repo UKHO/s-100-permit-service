@@ -10,6 +10,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
@@ -28,7 +29,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IUserPermitApiClient _fakeUserPermitApiClient;
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
         private IUserPermitValidator _fakeUserPermitValidator;
-        private UserPermitService _userPermitService;
+        private IUriFactory _fakeUriFactory;
+
+        private IUserPermitService _userPermitService;
 
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
 
@@ -48,30 +51,34 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
             _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
             _fakeUserPermitValidator = A.Fake<IUserPermitValidator>();
+            _fakeUriFactory = A.Fake<UriFactory>();
 
-            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
+            _userPermitService = new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, _fakeUriFactory);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
+            Action nullUserPermitServiceLogger = () => new UserPermitService(null, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, _fakeUriFactory);
             nullUserPermitServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
+            Action nullUserPermitServiceApiConfiguration = () => new UserPermitService(_fakeLogger, null, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, _fakeUriFactory);
             nullUserPermitServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceApiConfiguration");
 
-            Action nullAuthUserPermitServiceTokenProvider = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, null, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
+            Action nullAuthUserPermitServiceTokenProvider = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, null, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, _fakeUriFactory);
             nullAuthUserPermitServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitServiceAuthTokenProvider");
 
-            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator);
+            Action nullUserPermitApiClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, _fakeUriFactory);
             nullUserPermitApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitApiClient");
 
-            Action nullWaitAndRetryClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, null, _fakeUserPermitValidator);
+            Action nullWaitAndRetryClient = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, null, _fakeUserPermitValidator, _fakeUriFactory);
             nullWaitAndRetryClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("waitAndRetryPolicy");
 
-            Action nullUserPermitServiceValidator = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, null);
+            Action nullUserPermitServiceValidator = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, null, _fakeUriFactory);
             nullUserPermitServiceValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitValidator");
+
+            Action nullUriFactory = () => new UserPermitService(_fakeLogger, _fakeUserPermitServiceApiConfiguration, _fakeUserPermitServiceAuthTokenProvider, _fakeUserPermitApiClient, _fakeWaitAndRetryPolicy, _fakeUserPermitValidator, null);
+            nullUriFactory.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("uriFactory");
         }
 
         [Test]
