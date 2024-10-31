@@ -47,7 +47,6 @@ namespace UKHO.S100PermitService.API.Middleware
             var correlationId = httpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
             var problemDetails = new ProblemDetails
             {
-                Status = httpContext.Response.StatusCode,
                 Extensions =
                 {
                     ["correlationId"] = correlationId
