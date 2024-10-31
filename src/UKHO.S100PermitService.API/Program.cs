@@ -21,6 +21,7 @@ using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 using UKHO.S100PermitService.Common.Validations;
+using UKHO.S100PermitService.API.Filters;
 using UKHO.S100PermitService.Common.Factories;
 
 namespace UKHO.S100PermitService.API
@@ -37,6 +38,7 @@ namespace UKHO.S100PermitService.API
         private const string PermitFileConfiguration = "PermitFileConfiguration";
         private const string AzureAdScheme = "AzureAd";
         private const string AzureAdConfiguration = "AzureAdConfiguration";
+        private const string Ukho = "UKHO";
 
         private static void Main(string[] args)
         {
@@ -243,8 +245,36 @@ namespace UKHO.S100PermitService.API
                     Description = swaggerConfiguration.Description,
                     Contact = new OpenApiContact
                     {
-                        Email = swaggerConfiguration.Email,
-                    },
+                        Name = Ukho,
+                        Email = swaggerConfiguration.Email
+                    }                    
+                });
+
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+                c.EnableAnnotations();
+                c.OperationFilter<AddHeaderOperationFilter>();
+
+                c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Please Enter Token",
+                    Name = "Authorization"
+                });
+
+                c.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "bearer" }
+                        },
+                        Array.Empty<string>()
+                    }
                 });
             });
         }

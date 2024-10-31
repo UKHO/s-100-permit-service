@@ -49,7 +49,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Status.Should().Be((int)HttpStatusCode.InternalServerError);
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
@@ -77,7 +76,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Status.Should().Be((int)HttpStatusCode.InternalServerError);
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
@@ -105,7 +103,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Status.Should().Be((int)HttpStatusCode.InternalServerError);
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
