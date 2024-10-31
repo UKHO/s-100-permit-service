@@ -23,13 +23,13 @@ namespace UKHO.S100PermitService.Common.Handlers
         /// <param name="logger">Logger</param>
         /// <param name="eventId">EventId</param>
         /// <returns>Service response message</returns>
-        public RetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger, EventIds eventId)
+        public AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicyAsync(ILogger logger, EventIds eventId)
         {
             var retryCount = int.Parse(_waitAndRetryConfiguration.Value.RetryCount);
             var sleepDuration = double.Parse(_waitAndRetryConfiguration.Value.SleepDurationInSeconds);
 
-            return Policy.HandleResult<HttpResponseMessage>(res => res.StatusCode == HttpStatusCode.ServiceUnavailable ||
-                             res.StatusCode == HttpStatusCode.TooManyRequests).WaitAndRetry(retryCount, _ => TimeSpan.FromSeconds(sleepDuration),
+            return Policy.HandleResult<HttpResponseMessage>(res => res.StatusCode is HttpStatusCode.ServiceUnavailable or
+                             HttpStatusCode.TooManyRequests).WaitAndRetryAsync(retryCount, _ => TimeSpan.FromSeconds(sleepDuration),
                              onRetry: (response, timespan, retryAttempt, context) =>
                              {
                                  var correlationId = response.Result.RequestMessage!.Headers.FirstOrDefault(h => h.Key.ToLowerInvariant() == PermitServiceConstants.XCorrelationIdHeaderKey);

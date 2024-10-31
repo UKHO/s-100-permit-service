@@ -102,11 +102,11 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
 
-            var decryptedProductKeys = _s100Crypt.GetDecryptedKeysFromProductKeys(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
+            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = _s100Crypt.GetDecryptedHardwareIdFromUserPermit(userPermitServiceResponse);
+            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponse);
 
-            var permitDetails = BuildPermits(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
+            var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
@@ -124,14 +124,14 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
         /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
         /// <returns>Zip stream containing PERMIT.XML.</returns>
-        private Stream BuildPermits(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
+        private async Task<Stream> BuildPermitsAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
             foreach(var upnInfo in upnInfos)
             {
-                var productsList = GetProductsList(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId);
+                var productsList = await GetProductsListAsync(holdingsServiceResponses, decryptedProductKeys, upnInfo.DecryptedHardwareId);
 
                 var permit = new Permit
                 {
@@ -149,7 +149,7 @@ namespace UKHO.S100PermitService.Common.Services
                 permitDictionary.Add(upnInfo.Title, permit);
             }
 
-            var permitDetails = _permitReaderWriter.CreatePermitZip(permitDictionary);
+            var permitDetails = await _permitReaderWriter.CreatePermitZipAsync(permitDictionary);
 
             return permitDetails;
         }
@@ -162,7 +162,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
         /// <returns>Products</returns>
         [ExcludeFromCodeCoverage]
-        private IEnumerable<Products> GetProductsList(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
+        private async Task<IEnumerable<Products>> GetProductsListAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
         {
             var productsList = new List<Products>();
             var products = new Products();
@@ -176,7 +176,7 @@ namespace UKHO.S100PermitService.Common.Services
                     var dataPermit = new ProductsProductDatasetPermit
                     {
                         EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = GetEncryptedKey(decryptedProductKeys, hardwareId, cell.CellCode),
+                        EncryptedKey = await GetEncryptedKeyAsync(decryptedProductKeys, hardwareId, cell.CellCode),
                         Filename = cell.CellCode,
                         Expiry = holding.ExpiryDate
                     };
@@ -187,7 +187,7 @@ namespace UKHO.S100PermitService.Common.Services
                     }
                     else
                     {
-                        products.DatasetPermit = new List<ProductsProductDatasetPermit> { dataPermit };
+                        products.DatasetPermit = [dataPermit];
                         productsList.Add(products);
                     }
                     products = new();
@@ -216,11 +216,11 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
         /// <param name="cellCode">ProductName</param>
         /// <returns>EncryptedKey</returns>
-        private string GetEncryptedKey(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
+        private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
-            return _s100Crypt.CreateEncryptedKey(decryptedProductKey, hardwareId);
+            return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }
     }
 }

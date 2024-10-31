@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Auth
         /// <param name="clientId">Sets the Client ID to generate the token</param>
         /// <param name="clientSecret">Sets the Client Secret to generate the token</param>
         /// <returns></returns>
-        public async Task<string> GetPermitServiceToken(string clientId, string clientSecret)
+        public async Task<string> AsyncGetPermitServiceToken(string clientId, string clientSecret)
         {
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;

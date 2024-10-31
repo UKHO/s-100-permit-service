@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Handlers
 {
     public interface IWaitAndRetryPolicy
     {
-        public RetryPolicy<HttpResponseMessage> GetRetryPolicy(ILogger logger, EventIds eventId);
+        public AsyncRetryPolicy<HttpResponseMessage> GetRetryPolicyAsync(ILogger logger, EventIds eventId);
 
     }
 }

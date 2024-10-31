@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// <param name="hexKey">Secret Key.</param>
         /// <returns>Decrypted data.</returns>
         /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
-        public string Decrypt(string hexString, string hexKey)
+        public async Task<string> DecryptAsync(string hexString, string hexKey)
         {
             if(hexString.Length != HexSize)
             {
@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             using var aes = CreateAes(hexKey);
             using var decrypt = aes.CreateDecryptor(aes.Key, aes.IV);
-            return PerformCryptography(hexString, decrypt);
+            return await PerformCryptographyAsync(hexString, decrypt);
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// <param name="keyHexEncoded">Secret Key.</param>
         /// <returns>Encrypted data.</returns>
         /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
-        public string Encrypt(string hexString, string keyHexEncoded)
+        public async Task<string> EncryptAsync(string hexString, string keyHexEncoded)
         {
             if(hexString.Length != HexSize)
             {
@@ -65,7 +65,7 @@ namespace UKHO.S100PermitService.Common.Encryption
 
             using var aes = CreateAes(keyHexEncoded);
             using var encrypt = aes.CreateEncryptor(aes.Key, aes.IV);
-            return PerformCryptography(hexString, encrypt);
+            return await PerformCryptographyAsync(hexString, encrypt);
         }
 
         /// <summary>
@@ -95,14 +95,14 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// <param name="hexString">Data to transform.</param>
         /// <param name="cryptoTransform">Cryptographic object to perform transformations.</param>
         /// <returns>Hexadecimal string</returns>
-        private static string PerformCryptography(string hexString, ICryptoTransform cryptoTransform)
+        private static async Task<string> PerformCryptographyAsync(string hexString, ICryptoTransform cryptoTransform)
         {
             var cypherBytes = StringToByteArray(hexString);
 
             using var memoryStream = new MemoryStream();
             using var cryptoStream = new CryptoStream(memoryStream, cryptoTransform, CryptoStreamMode.Write);
-            cryptoStream.Write(cypherBytes, 0, cypherBytes.Length);
-            cryptoStream.FlushFinalBlock();
+            await cryptoStream?.WriteAsync(cypherBytes, 0, cypherBytes.Length);
+            await cryptoStream.FlushFinalBlockAsync();
             return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
         }
 

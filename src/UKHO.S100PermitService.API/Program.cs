@@ -22,6 +22,7 @@ using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 using UKHO.S100PermitService.Common.Validations;
 using UKHO.S100PermitService.API.Filters;
+using UKHO.S100PermitService.Common.Factories;
 
 namespace UKHO.S100PermitService.API
 {
@@ -187,6 +188,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IAesEncryption, AesEncryption>();
             builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
             builder.Services.AddScoped<ISchemaValidator, SchemaValidator>();
+            builder.Services.AddScoped<IUriFactory, UriFactory>();
 
             builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
             builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();

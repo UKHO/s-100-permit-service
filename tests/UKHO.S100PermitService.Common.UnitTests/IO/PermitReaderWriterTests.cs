@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
@@ -30,6 +31,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
+
+            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator);
+            nullPermitReaderWriterLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+
             Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null);
             nullSchemaValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("schemaValidator");
         }
@@ -43,11 +48,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         }
 
         [Test]
-        public void WhenProductModelIsPassed_ThenReturnXmlString()
+        public async Task WhenProductModelIsPassed_ThenReturnXmlString()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
 
-            var result = _permitReaderWriter.CreatePermitZip(GetPermitDetails());
+            var result = await _permitReaderWriter.CreatePermitZipAsync(GetPermitDetails());
 
             result.Should().NotBeNull();
 
@@ -85,8 +90,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZip(GetInValidPermitDetails())).Should().
-                                            ThrowExactly<PermitServiceException>().WithMessage("Invalid permit xml schema.");
+            FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZipAsync(GetInValidPermitDetails())).Should().
+                                            ThrowExactlyAsync<PermitServiceException>().WithMessage("Invalid permit xml schema.");
         }
 
         private Dictionary<string, Permit> GetPermitDetails()

@@ -10,6 +10,7 @@ using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
@@ -27,6 +28,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IHoldingsApiClient _fakeHoldingsApiClient;
         private IHoldingsService _holdingsService;
         private IWaitAndRetryPolicy _fakeWaitAndRetryPolicy;
+        private IUriFactory _fakeUriFactory;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
         const string FakeUri = "http://test.com";
         const string AccessToken = "access-token";
@@ -45,26 +47,30 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeWaitAndRetryConfiguration = Options.Create(new WaitAndRetryConfiguration() { RetryCount = "2", SleepDurationInSeconds = "2" });
 
             _fakeWaitAndRetryPolicy = new WaitAndRetryPolicy(_fakeWaitAndRetryConfiguration);
-            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
+            _fakeUriFactory = A.Fake<UriFactory>();
+            _holdingsService = new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullHoldingsLogger = () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
+            Action nullHoldingsLogger = () => new HoldingsService(null, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
             nullHoldingsLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullHoldingsApiConfiguration = () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
+            Action nullHoldingsApiConfiguration = () => new HoldingsService(_fakeLogger, null, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
             nullHoldingsApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsApiConfiguration");
 
-            Action nullAuthHoldingsServiceTokenProvider = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy);
+            Action nullAuthHoldingsServiceTokenProvider = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, null, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
             nullAuthHoldingsServiceTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsServiceAuthTokenProvider");
 
-            Action nullHoldingsApiClient = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy);
+            Action nullHoldingsApiClient = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy, _fakeUriFactory);
             nullHoldingsApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsApiClient");
 
-            Action nullWaitAndRetryPolicy = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, null);
+            Action nullWaitAndRetryPolicy = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, null, _fakeUriFactory);
             nullWaitAndRetryPolicy.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("waitAndRetryPolicy");
+
+            Action nullUriFactory = () => new HoldingsService(_fakeLogger, _fakeHoldingsServiceApiConfiguration, _fakeHoldingsServiceAuthTokenProvider, _fakeHoldingsApiClient, _fakeWaitAndRetryPolicy, null);
+            nullUriFactory.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("uriFactory");
         }
 
         [Test]
