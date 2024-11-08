@@ -20,8 +20,22 @@ resource "azurerm_windows_web_app" "webapp_service" {
       current_stack  = "dotnet"
       dotnet_version = "v8.0"
     }
+    
     always_on  = true
     ftps_state = "Disabled"
+
+    dynamic "ip_restriction" {
+      for_each = local.ip_restrictions[var.env_name]
+      content {
+        name                      = ip_restriction.value.name
+        ip_address                = ip_restriction.value["ip_address"]
+        action                    = ip_restriction.value["action"]
+        priority                  = ip_restriction.value["priority"]
+        service_tag               = ip_restriction.value["service_tag"]
+        virtual_network_subnet_id = ip_restriction.value["virtual_network_subnet_id"]
+        headers                   = ip_restriction.value["headers"]
+      }
+    }
   }
      
   app_settings = var.app_settings
