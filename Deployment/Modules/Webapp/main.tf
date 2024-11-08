@@ -25,7 +25,7 @@ resource "azurerm_windows_web_app" "webapp_service" {
     ftps_state = "Disabled"
 
     dynamic "ip_restriction" {
-      for_each = local.ip_restrictions[var.env_name]
+      for_each = local.ip_restrictions[lower(var.env_name)]
       content {
         name                      = ip_restriction.value.name
         ip_address                = ip_restriction.value["ip_address"]
