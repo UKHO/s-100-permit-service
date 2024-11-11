@@ -49,6 +49,16 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var licenceId = ExtractLicenceId(requestMessage);
 
+            var validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds;//.Split(",");
+
+            //string[] validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds.Split(",");
+
+            //var validLicences = validLicenceIds
+            //    .Select(s => int.TryParse(s, out int number) ? (int?)number : null)
+            //    .Where(n => n.HasValue)
+            //    .Select(n => n.Value)
+            //    .ToArray();
+
             var responseMessage = new ResponseMessage
             {
                 BodyData = new BodyData
@@ -60,9 +70,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
             string filePath;
             switch(licenceId)
             {
-                case int n when (n >= 1 && n <= 13) || (n == 50) || (n == 999):
+                case var n when validLicenceIds.Contains(n):
                     filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
+                    break;
+
+                case 5:
+                case 7:
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-204-licenceid-{licenceId}.json");
+                    responseMessage.StatusCode = HttpStatusCode.NoContent;
                     break;
 
                 case 0:

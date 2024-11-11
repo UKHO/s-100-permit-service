@@ -3,5 +3,6 @@
     public class HoldingsServiceConfiguration
     {
         public required string Url { get; set; }
+        public required List<int> ValidLicenceIds { get; set; }
     }
 }

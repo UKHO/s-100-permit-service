@@ -29,6 +29,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_holdingsServiceConfiguration.Url + "/*" + ProductStandard, true))
                 .UsingGet()
+                //.WithHeader("X-Correlation-ID", ".*", MatchBehaviour.RejectOnMatch)
                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
                 .RespondWith(Response.Create()
                 .WithStatusCode(HttpStatusCode.Unauthorized)
@@ -48,6 +49,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var licenceId = ExtractLicenceId(request);
 
+            var validLicenceIds = _holdingsServiceConfiguration.ValidLicenceIds;
+
             var responseMessage = new ResponseMessage
             {
                 BodyData = new BodyData
@@ -59,9 +62,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
             string filePath;
             switch(licenceId)
             {
-                case int n when(n >= 1 && n <= 12) || (n == 22) || (n == 50):
+                case var n when validLicenceIds.Contains(n):
                     filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
+                    break;
+
+                case 5:
+                case 6:
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-204-licenceid-{licenceId}.json");
+                    responseMessage.StatusCode = HttpStatusCode.NoContent;
                     break;
 
                 case 0:
