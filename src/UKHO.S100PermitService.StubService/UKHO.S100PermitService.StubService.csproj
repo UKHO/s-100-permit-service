@@ -40,7 +40,7 @@
     <None Update="StubData\Holdings\response-200-licenceid-7.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-6.json">
+    <None Update="StubData\Holdings\response-204-licenceid-6.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\request-200-11-DuplicateCell.json">
@@ -100,7 +100,7 @@
     <None Update="StubData\Holdings\response-200-licenceid-4.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-5.json">
+    <None Update="StubData\Holdings\response-204-licenceid-5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 	  <None Update="StubData\Holdings\response-200-licenceid-22.json">
@@ -145,7 +145,7 @@
 	  <None Update="StubData\UserPermits\response-200-licenceid-50.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-7.json">
+    <None Update="StubData\UserPermits\response-204-licenceid-7.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-200-licenceid-6.json">
@@ -163,7 +163,7 @@
     <None Update="StubData\UserPermits\response-200-licenceid-4.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-5.json">
+    <None Update="StubData\UserPermits\response-204-licenceid-5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-400.json">
