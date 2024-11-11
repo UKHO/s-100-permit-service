@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IProductKeyServiceAuthTokenProvider _productKeyServiceAuthTokenProvider;
         private readonly IProductKeyServiceApiClient _productKeyServiceApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
-        private const string KeysEnc = "/Keys/S-100";
+        private const string KeysEnc = "/Keys/s100";
 
         public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient, IWaitAndRetryPolicy waitAndRetryPolicy)
         {
