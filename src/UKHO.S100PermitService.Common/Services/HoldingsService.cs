@@ -104,7 +104,7 @@ namespace UKHO.S100PermitService.Common.Services
                     "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
                     httpResponseMessage.StatusCode.ToString());
 
-                return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
+                return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ?
                     JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson) : null);
             }
 
@@ -115,18 +115,13 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
-                _logger.LogError(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                     "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
-                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest
+                    ? EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId()
+                    : EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId();
 
-                return (httpResponseMessage, null);
-            }
-
-            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
-            {
-                _logger.LogError(EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId(),
+                _logger.LogError(eventId,
                     "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 

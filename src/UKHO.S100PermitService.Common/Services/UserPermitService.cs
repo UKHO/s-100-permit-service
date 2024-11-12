@@ -100,18 +100,13 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
+            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
-               _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
-                    "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest
+                    ? EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId()
+                    : EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId();
 
-                return (httpResponseMessage, null);
-            }
-
-            if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
-            {
-                _logger.LogError(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
+                _logger.LogError(eventId,
                     "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
