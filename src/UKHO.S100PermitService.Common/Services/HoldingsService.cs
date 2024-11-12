@@ -117,9 +117,11 @@ namespace UKHO.S100PermitService.Common.Services
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
-                throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
-                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                _logger.LogError(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),
+                     "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+
+                return (httpResponseMessage, null);
             }
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
