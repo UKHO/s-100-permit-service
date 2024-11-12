@@ -49,15 +49,9 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var licenceId = ExtractLicenceId(requestMessage);
 
-            var validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds;//.Split(",");
+            var validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds;
 
-            //string[] validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds.Split(",");
-
-            //var validLicences = validLicenceIds
-            //    .Select(s => int.TryParse(s, out int number) ? (int?)number : null)
-            //    .Where(n => n.HasValue)
-            //    .Select(n => n.Value)
-            //    .ToArray();
+            var correlationId = ExtractCorrelationId(requestMessage);
 
             var responseMessage = new ResponseMessage
             {
@@ -92,7 +86,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                     break;
             }
 
-            responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
+            responseMessage.BodyData.BodyAsString = ResponseHelper.UpdateCorrelationIdInResponse(filePath, correlationId, (HttpStatusCode)responseMessage.StatusCode);
             responseMessage.AddHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType);
             responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString());
 
@@ -103,6 +97,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             var value = requestMessage.AbsolutePath.Split('/')[2];
             return int.TryParse(value, out var licenceId) ? licenceId : 0;
+        }
+
+        private static string ExtractCorrelationId(IRequestMessage request)
+        {
+            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
+            {
+                return correlationId.First();
+            }
+            return Guid.NewGuid().ToString();
         }
     }
 }
