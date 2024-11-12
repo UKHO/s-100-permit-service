@@ -1,9 +1,12 @@
-{
-  "correlationId": "",
+{  
   "errors": [
     {
-      "source": "GetProductKey",
-      "description": "Invalid LicenceId"
+      "source": "ProductName",
+      "description": "ProductName cannot be null or empty"
+    },
+    {
+      "source": "Edition",
+      "description": "Edition cannot be null or empty"
     }
   ]
 }
