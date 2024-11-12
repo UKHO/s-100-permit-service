@@ -1,0 +1,9 @@
+{
+  "correlationId": "",
+  "errors": [
+    {
+      "source": "GetProductKey",
+      "description": "Invalid LicenceId"
+    }
+  ]
+}
