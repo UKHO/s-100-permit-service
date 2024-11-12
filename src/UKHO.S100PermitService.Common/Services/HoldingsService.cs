@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="200">Holding details.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
-        public async Task<(HttpStatusCode httpStatusCode, IEnumerable<HoldingsServiceResponse>? holdingsServiceResponse)>
+        public async Task<(HttpResponseMessage httpResponseMessage, IEnumerable<HoldingsServiceResponse>? holdingsServiceResponse)>
             GetHoldingsAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = _uriFactory.CreateUri(_holdingsServiceApiConfiguration.Value.BaseUrl, HoldingsUrl, licenceId);
@@ -73,10 +73,10 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>Filtered holding details.</returns>
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
-            var allCells = holdingsServiceResponse.SelectMany(p => p.Cells.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Datasets.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
 
             var latestCells = allCells
-                .GroupBy(c => c.Cell.CellCode)
+                .GroupBy(c => c.Cell.DatasetName)
                 .Select(g => g.OrderByDescending(c => c.ExpiryDate).First());
 
             var filteredHoldings = latestCells
@@ -86,7 +86,7 @@ namespace UKHO.S100PermitService.Common.Services
                     ProductCode = g.Key.ProductCode,
                     ProductTitle = g.Key.ProductTitle,
                     ExpiryDate = g.Max(c => c.ExpiryDate),
-                    Cells = g.Select(c => c.Cell).ToList()
+                    Datasets = g.Select(c => c.Cell).ToList()
                 }).ToList();
 
             _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Filtered holdings: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", allCells.Count(), latestCells.Count());
@@ -94,7 +94,7 @@ namespace UKHO.S100PermitService.Common.Services
             return filteredHoldings;
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
+        private async Task<(HttpResponseMessage httpResponseMessage, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
             {
@@ -104,13 +104,14 @@ namespace UKHO.S100PermitService.Common.Services
                     "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
                     httpResponseMessage.StatusCode.ToString());
 
-                return (httpResponseMessage.StatusCode, JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson));
+                return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
+                    JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson) : null);
             }
 
             return await HandleErrorResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
+        private async Task<(HttpResponseMessage httpResponseMessage, List<HoldingsServiceResponse>? holdingsServiceResponse)> HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -127,7 +128,7 @@ namespace UKHO.S100PermitService.Common.Services
                     "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
-                return (httpResponseMessage.StatusCode, null);
+                return (httpResponseMessage, null);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(),

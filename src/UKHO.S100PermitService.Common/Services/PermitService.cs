@@ -65,35 +65,35 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        public async Task<(HttpStatusCode httpStatusCode, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpResponseMessage httpResponseMessage, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var (userPermitStatusCode, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var (userPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
-                if(userPermitStatusCode == HttpStatusCode.NotFound)
+                if(userPermitHttpResponseMessage.StatusCode == HttpStatusCode.NotFound || userPermitHttpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    return (HttpStatusCode.NotFound, new MemoryStream());
+                    return (userPermitHttpResponseMessage, new MemoryStream());
                 }
 
                 _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
-                return (HttpStatusCode.NoContent, new MemoryStream());
+                return (userPermitHttpResponseMessage, new MemoryStream());
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
-            var (holdingsStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
+            var (holdingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
-                if(holdingsStatusCode == HttpStatusCode.NotFound)
+                if(holdingsHttpResponseMessage.StatusCode == HttpStatusCode.NotFound || holdingsHttpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
                 {
-                    return (HttpStatusCode.NotFound, new MemoryStream());
+                    return (holdingsHttpResponseMessage, new MemoryStream());
                 }
 
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
-                return (HttpStatusCode.NoContent, new MemoryStream());
+                return (holdingsHttpResponseMessage, new MemoryStream());
             }
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
@@ -110,7 +110,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
-            return (HttpStatusCode.OK, permitDetails);
+            return (holdingsHttpResponseMessage, permitDetails);
         }
 
         /// <summary>
@@ -169,15 +169,15 @@ namespace UKHO.S100PermitService.Common.Services
 
             foreach(var holding in holdingsServiceResponse)
             {
-                foreach(var cell in holding.Cells.OrderBy(x => x.CellCode))
+                foreach(var cell in holding.Datasets.OrderBy(x => x.DatasetName))
                 {
-                    products.Id = $"S-{cell.CellCode[..3]}";
+                    products.Id = $"S-{cell.DatasetName[..3]}";
 
                     var dataPermit = new ProductsProductDatasetPermit
                     {
-                        EditionNumber = byte.Parse(cell.LatestEditionNumber),
-                        EncryptedKey = await GetEncryptedKeyAsync(decryptedProductKeys, hardwareId, cell.CellCode),
-                        Filename = cell.CellCode,
+                        EditionNumber = byte.Parse(cell.LatestEditionNumber.ToString()),
+                        EncryptedKey = await GetEncryptedKeyAsync(decryptedProductKeys, hardwareId, cell.DatasetName),
+                        Filename = cell.DatasetName,
                         Expiry = holding.ExpiryDate
                     };
 
@@ -203,10 +203,10 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>ProductKeyServiceRequests</returns>
         private List<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
-            holdingsServiceResponse.SelectMany(x => x.Cells.Select(y => new ProductKeyServiceRequest
+            holdingsServiceResponse.SelectMany(x => x.Datasets.Select(y => new ProductKeyServiceRequest
             {
-                ProductName = y.CellCode,
-                Edition = y.LatestEditionNumber
+                ProductName = y.DatasetName,
+                Edition = y.LatestEditionNumber.ToString()
             })).ToList();
 
         /// <summary>

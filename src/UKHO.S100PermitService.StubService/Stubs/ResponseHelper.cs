@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text.Json;
+using WireMock;
 
 namespace UKHO.S100PermitService.StubService.Stubs
 {
@@ -20,6 +21,21 @@ namespace UKHO.S100PermitService.StubService.Stubs
             responseBody = JsonSerializer.Serialize(jsonResponse);
 
             return responseBody;
+        }
+
+        public static int ExtractLicenceId(IRequestMessage requestMessage)
+        {
+            var value = requestMessage.AbsolutePath.Split('/')[2];
+            return int.TryParse(value, out var licenceId) ? licenceId : 0;
+        }
+
+        public static string ExtractCorrelationId(IRequestMessage request)
+        {
+            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
+            {
+                return correlationId.First();
+            }
+            return Guid.NewGuid().ToString();
         }
     }
 }
