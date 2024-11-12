@@ -61,7 +61,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="200">User Permit Number (UPN) details.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
-        public async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = _uriFactory.CreateUri(_userPermitServiceApiConfiguration.Value.BaseUrl, UserPermitUrl, licenceId);
 
@@ -79,7 +79,7 @@ namespace UKHO.S100PermitService.Common.Services
             return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
+        private async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)>
             HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
@@ -88,23 +88,25 @@ namespace UKHO.S100PermitService.Common.Services
 
                 _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
-                return (httpResponseMessage.StatusCode,
-                    JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson));
+                return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
+                    JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson) : null);
             }
 
             return await HandleErrorResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<(HttpStatusCode httpStatusCode, UserPermitServiceResponse? userPermitServiceResponse)>
+        private async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)>
             HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest)
             {
-                throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
+               _logger.LogError(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                     "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+
+                return (httpResponseMessage, null);
             }
 
             if(httpResponseMessage.StatusCode is HttpStatusCode.NotFound)
@@ -113,7 +115,7 @@ namespace UKHO.S100PermitService.Common.Services
                     "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
-                return (httpResponseMessage.StatusCode, null);
+                return (httpResponseMessage, null);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),

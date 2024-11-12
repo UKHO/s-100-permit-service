@@ -273,21 +273,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 },
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         },
@@ -296,14 +296,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ProductTitle = "ProductTitle1",
                             ProductCode = "ProductCode1",
                             ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle1",
-                                    CellCode = "CellCode1",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle1",
+                                    DatasetName = "CellCode1",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         },
@@ -312,14 +312,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ProductTitle = "ProductTitle",
                             ProductCode = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(3),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         }
@@ -413,14 +413,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     ProductTitle = "ProductTitle",
                     ProductCode = "ProductCode",
                     ExpiryDate = DateTime.UtcNow.AddDays(5),
-                    Cells =
+                    Datasets =
                     [
-                        new Cell
+                        new Dataset
                         {
-                            CellTitle = "CellTitle",
-                            CellCode = "CellCode",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                            DatasetTitle = "CellTitle",
+                            DatasetName = "CellCode",
+                            LatestEditionNumber = 1,
+                            LatestUpdateNumber = 1
                         }
                     ]
                 },
@@ -429,14 +429,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     ProductTitle = "ProductTitle1",
                     ProductCode = "ProductCode1",
                     ExpiryDate = DateTime.UtcNow.AddDays(4),
-                    Cells =
+                    Datasets =
                     [
-                        new Cell
+                        new Dataset
                         {
-                            CellTitle = "CellTitle1",
-                            CellCode = "CellCode1",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                            DatasetTitle = "CellTitle1",
+                            DatasetName = "CellCode1",
+                            LatestEditionNumber = 1,
+                            LatestUpdateNumber = 1
                         }
                     ]
                 }

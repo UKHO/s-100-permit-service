@@ -13,7 +13,7 @@ namespace UKHO.S100PermitService.Common.Models.Holdings
         [JsonPropertyName("expiryDate")]
         public DateTime ExpiryDate { get; set; }
 
-        [JsonPropertyName("cells")]
-        public List<Cell> Cells { get; set; }
+        [JsonPropertyName("datasets")]
+        public List<Dataset> Datasets { get; set; }
     }
 }
