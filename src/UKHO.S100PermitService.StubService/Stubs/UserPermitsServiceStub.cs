@@ -47,11 +47,11 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         private ResponseMessage SetResponseFromLicenseId(IRequestMessage requestMessage)
         {
-            var licenceId = ExtractLicenceId(requestMessage);
+            var licenceId = ResponseHelper.ExtractLicenceId(requestMessage);
 
             var validLicenceIds = _userPermitsServiceConfiguration.ValidLicenceIds;
 
-            var correlationId = ExtractCorrelationId(requestMessage);
+            var correlationId = ResponseHelper.ExtractCorrelationId(requestMessage);
 
             var responseMessage = new ResponseMessage
             {
@@ -91,21 +91,6 @@ namespace UKHO.S100PermitService.StubService.Stubs
             responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString());
 
             return responseMessage;
-        }
-
-        private static int ExtractLicenceId(IRequestMessage requestMessage)
-        {
-            var value = requestMessage.AbsolutePath.Split('/')[2];
-            return int.TryParse(value, out var licenceId) ? licenceId : 0;
-        }
-
-        private static string ExtractCorrelationId(IRequestMessage request)
-        {
-            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
-            {
-                return correlationId.First();
-            }
-            return Guid.NewGuid().ToString();
         }
     }
 }
