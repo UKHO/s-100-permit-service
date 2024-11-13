@@ -101,7 +101,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var response = await _userPermitService.GetUserPermitAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             response.Should().NotBeNull();
-            response.Equals(userPermitServiceResponse);
+            response.userPermitServiceResponse.LicenceId.Should().Be(userPermitServiceResponse.LicenceId);
+            response.userPermitServiceResponse.UserPermits.FirstOrDefault().Title.Should().Be(userPermitServiceResponse.UserPermits.FirstOrDefault().Title);
+            response.userPermitServiceResponse.UserPermits.FirstOrDefault().Upn.Should().Be(userPermitServiceResponse.UserPermits.FirstOrDefault().Upn);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -138,7 +140,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (getUserPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(5, CancellationToken.None, _fakeCorrelationId);
 
             getUserPermitHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            userPermitServiceResponse?.Equals(null);
+            userPermitServiceResponse?.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

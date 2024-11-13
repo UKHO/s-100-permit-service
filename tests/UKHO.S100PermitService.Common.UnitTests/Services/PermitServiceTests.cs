@@ -33,6 +33,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         const string NotFound = "notFound";
         const string BadRequest = "badRequest";
 
+        private const string ErrorHoldingsNotFoundContent = "{\r\n  \"correlationId\": \"\",\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorHoldingsBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Incorrect LicenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorUserPermitsNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorUserPermitsBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"LicenceId is incorrect\"\r\n    }\r\n  ]\r\n}";
+
         private IPermitService _permitService;
 
         [SetUp]
@@ -212,6 +217,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorUserPermitsNotFoundContent);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
@@ -241,6 +247,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorUserPermitsBadRequestContent);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
@@ -273,6 +280,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorHoldingsNotFoundContent);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
@@ -305,6 +313,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorHoldingsBadRequestContent);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
@@ -407,13 +416,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 case NotFound:
                     return (new HttpResponseMessage()
                     {
-                        StatusCode = HttpStatusCode.NotFound
+                        StatusCode = HttpStatusCode.NotFound,
+                        Content = new StringContent(ErrorHoldingsNotFoundContent, Encoding.UTF8, "application/json")
                     }, null);
 
                 case BadRequest:
                     return (new HttpResponseMessage()
                     {
-                        StatusCode = HttpStatusCode.BadRequest
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Content = new StringContent(ErrorHoldingsBadRequestContent, Encoding.UTF8, "application/json")
                     }, null);
 
                 default:
@@ -453,13 +464,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 case NotFound:
                     return (new HttpResponseMessage()
                     {
-                        StatusCode = HttpStatusCode.NotFound
+                        StatusCode = HttpStatusCode.NotFound,
+                        Content = new StringContent(ErrorUserPermitsNotFoundContent, Encoding.UTF8, "application/json")
                     }, null);
 
                 case BadRequest:
                     return (new HttpResponseMessage()
                     {
-                        StatusCode = HttpStatusCode.BadRequest
+                        StatusCode = HttpStatusCode.BadRequest,
+                        Content = new StringContent(ErrorUserPermitsBadRequestContent, Encoding.UTF8, "application/json")
                     }, null);
 
                 default:
