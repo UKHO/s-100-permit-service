@@ -107,9 +107,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.OK);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
             stream.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
@@ -139,9 +139,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NoContent);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -179,7 +179,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
+            result.httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
@@ -206,9 +206,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
@@ -238,9 +238,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
@@ -261,12 +261,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            ).MustNotHaveHappened();
         }
 
-        private static (HttpStatusCode, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
+        private static (HttpResponseMessage, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
         {
             switch(responseType)
             {
                 case OkResponse:
-                    return (HttpStatusCode.OK,
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK
+                    },
                     [
                         new HoldingsServiceResponse
                         {
@@ -326,41 +329,68 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     ]);
 
                 case NoContent:
-                    return (HttpStatusCode.NoContent, []);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, []);
 
                 case "":
-                    return (HttpStatusCode.NoContent, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, null);
 
                 case NotFound:
-                    return (HttpStatusCode.NotFound, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NotFound
+                    }, null);
 
                 default:
-                    return (HttpStatusCode.NoContent, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, null);
             }
         }
 
-        private static (HttpStatusCode, UserPermitServiceResponse?) GetUserPermits(string responseType)
+        private static (HttpResponseMessage, UserPermitServiceResponse?) GetUserPermits(string responseType)
         {
             switch(responseType)
             {
                 case OkResponse:
-                    return (HttpStatusCode.OK, new UserPermitServiceResponse
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.OK
+                    }, new UserPermitServiceResponse
                     {
                         LicenceId = 1,
                         UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
                     });
 
                 case NoContent:
-                    return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, new UserPermitServiceResponse());
 
                 case "":
-                    return (HttpStatusCode.NoContent, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, null);
 
                 case NotFound:
-                    return (HttpStatusCode.NotFound, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NotFound
+                    }, null);
 
                 default:
-                    return (HttpStatusCode.NoContent, null);
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.NoContent
+                    }, null);
             }
         }
 

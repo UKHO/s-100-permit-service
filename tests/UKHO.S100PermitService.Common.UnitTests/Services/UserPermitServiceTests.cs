@@ -133,9 +133,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                     .Returns(httpResponseMessage);
 
-            var (httpStatusCode, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var (getUserPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(14, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            getUserPermitHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
             userPermitServiceResponse?.Equals(null);
 
             A.CallTo(_fakeLogger).Where(call =>

@@ -126,9 +126,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                     .Returns(httpResponseMessage);
 
-            var (httpStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
+            getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
             holdingsServiceResponse?.Equals(null);
 
             A.CallTo(_fakeLogger).Where(call =>
