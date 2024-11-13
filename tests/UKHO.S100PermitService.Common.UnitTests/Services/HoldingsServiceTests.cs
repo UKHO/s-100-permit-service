@@ -160,7 +160,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}");
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+
+            getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            holdingsServiceResponse?.Equals(ErrorBadRequestContent);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -168,6 +171,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
             ).MustHaveHappenedOnceExactly();
         }
 
