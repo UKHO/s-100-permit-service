@@ -281,6 +281,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
             httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorHoldingsNotFoundContent);
+            stream.Should().NotBeNull();
             stream.Length.Should().Be(0);
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();

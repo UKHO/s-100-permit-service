@@ -72,28 +72,32 @@ namespace UKHO.S100PermitService.Common.Services
             var (userPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
             if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
             {
-                if(userPermitHttpResponseMessage.StatusCode == HttpStatusCode.NotFound || userPermitHttpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+                if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
                 {
                     return (userPermitHttpResponseMessage, new MemoryStream());
                 }
+                else
+                {
+                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
-                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
-
-                return (userPermitHttpResponseMessage, new MemoryStream());
+                    return (userPermitHttpResponseMessage, new MemoryStream());
+                }
             }
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             var (holdingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
             if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
             {
-                if(holdingsHttpResponseMessage.StatusCode == HttpStatusCode.NotFound || holdingsHttpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+                if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
                 {
                     return (holdingsHttpResponseMessage, new MemoryStream());
                 }
+                else
+                {
+                    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
-                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
-
-                return (holdingsHttpResponseMessage, new MemoryStream());
+                    return (holdingsHttpResponseMessage, new MemoryStream());
+                }
             }
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
