@@ -36,6 +36,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private const string OkResponseContent = "[\r\n  {\r\n    \"productCode\": \"P1231\",\r\n    \"productTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
         private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Incorrect LicenceId\"\r\n    }\r\n  ]\r\n}";
         private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+        private const string NoContentResponse = "{[\r\n  {\r\n    \"unitName\": \"P1231\",\r\n    \"unitTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  },\r\n  {\r\n    \"unitName\": \"P1232\",\r\n    \"unitTitle\": \"P1232\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  }\r\n]}";
 
         [SetUp]
         public void Setup()
@@ -93,6 +94,44 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
             response.holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
             response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task WhenLicenceIsValidButHoldingsAreNotAvailable_ThenHoldingsServiceReturns204NoContentResponse()
+        {
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NoContent,
+                    RequestMessage = new HttpRequestMessage
+                    {
+                        RequestUri = new Uri(FakeUri)
+                    },
+                    Content = new StringContent(NoContentResponse)
+                });
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
+
+            var(getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+            getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            holdingsServiceResponse?.Equals(null);
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"

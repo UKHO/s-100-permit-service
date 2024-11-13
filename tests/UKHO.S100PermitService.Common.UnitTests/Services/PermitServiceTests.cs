@@ -31,6 +31,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         const string NoContent = "noContent";
         const string OkResponse = "okResponse";
         const string NotFound = "notFound";
+        const string BadRequest = "badRequest";
 
         private IPermitService _permitService;
 
@@ -142,6 +143,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            stream?.Equals(null);
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
 
@@ -177,9 +179,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
-            var result = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
 
-            result.httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            stream?.Equals(null);
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
@@ -229,6 +232,35 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustNotHaveHappened();
         }
 
+        [TestCase(BadRequest)]
+        public async Task WhenUserPermitServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
+        {
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(responseType));
+
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            stream.Length.Should().Be(0);
+
+            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+                    .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
+            ).MustNotHaveHappened();
+        }
+
         [TestCase(NotFound)]
         public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
         {
@@ -259,6 +291,38 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
            ).MustNotHaveHappened();
+        }
+
+        [TestCase(BadRequest)]
+        public async Task WhenHoldingsServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
+        {
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetUserPermits(OkResponse));
+
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                .Returns(GetHoldingDetails(responseType));
+
+            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            stream.Length.Should().Be(0);
+
+            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
+                    .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
+            ).MustNotHaveHappened();
         }
 
         private static (HttpResponseMessage, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
@@ -346,6 +410,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                         StatusCode = HttpStatusCode.NotFound
                     }, null);
 
+                case BadRequest:
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.BadRequest
+                    }, null);
+
                 default:
                     return (new HttpResponseMessage()
                     {
@@ -384,6 +454,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     return (new HttpResponseMessage()
                     {
                         StatusCode = HttpStatusCode.NotFound
+                    }, null);
+
+                case BadRequest:
+                    return (new HttpResponseMessage()
+                    {
+                        StatusCode = HttpStatusCode.BadRequest
                     }, null);
 
                 default:
