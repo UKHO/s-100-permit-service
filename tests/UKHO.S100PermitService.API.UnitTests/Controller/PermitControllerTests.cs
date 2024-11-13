@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                            .Returns((HttpStatusCode.OK, expectedStream));
+                            .Returns((new HttpResponseMessage() { StatusCode = HttpStatusCode.OK }, expectedStream));
 
             var result = await _permitController.GeneratePermits(007);
 
@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
         {
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((HttpStatusCode.NoContent, new MemoryStream()));
+                .Returns((new HttpResponseMessage() { StatusCode = HttpStatusCode.NoContent }, new MemoryStream()));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
@@ -97,7 +97,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotFoundResponse()
         {
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((HttpStatusCode.NotFound, null));
+                .Returns((new HttpResponseMessage() { StatusCode = HttpStatusCode.NotFound }, null));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
