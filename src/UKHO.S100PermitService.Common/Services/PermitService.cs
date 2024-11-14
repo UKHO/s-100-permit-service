@@ -5,13 +5,11 @@ using System.Net;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
-using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -70,34 +68,33 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
             var (userPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
-            if(UserPermitServiceResponseValidator.IsResponseNull(userPermitServiceResponse))
-            {
-                if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-                {
-                    return (userPermitHttpResponseMessage, new MemoryStream());
-                }
-                else
-                {
-                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
-                    return (userPermitHttpResponseMessage, new MemoryStream());
-                }
+            if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            {
+                return (userPermitHttpResponseMessage, new MemoryStream());
             }
+            
+            if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
+            {
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
+
+                return (userPermitHttpResponseMessage, new MemoryStream());
+            }
+
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
 
             var (holdingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-            if(ListExtensions.IsNullOrEmpty(holdingsServiceResponse))
-            {
-                if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-                {
-                    return (holdingsHttpResponseMessage, new MemoryStream());
-                }
-                else
-                {
-                    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
 
-                    return (holdingsHttpResponseMessage, new MemoryStream());
-                }
+            if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            {
+                return (holdingsHttpResponseMessage, new MemoryStream());
+            }
+            
+            if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
+            {
+                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
+
+                return (holdingsHttpResponseMessage, new MemoryStream());
             }
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
