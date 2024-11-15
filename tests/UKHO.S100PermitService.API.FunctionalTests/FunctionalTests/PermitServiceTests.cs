@@ -81,7 +81,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithInvalidLicenceId_ThenInternalServerError500IsReturned()
         {
             var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidLicenceId.ToString()!);
-            response.StatusCode.Should().Be((HttpStatusCode)500);
+            response.StatusCode.Should().Be((HttpStatusCode)400);
 
         }
 
