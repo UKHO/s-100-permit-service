@@ -124,7 +124,7 @@ namespace UKHO.S100PermitService.Common.IO
             using var streamWriter = new StreamWriter(entryStream);
             await streamWriter.WriteAsync(xmlContent);
 
-            _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN {UpnTitle} completed.", upnTitle);
+            _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} completed.", upnTitle);
         }
 
         private string GetTargetNamespace()

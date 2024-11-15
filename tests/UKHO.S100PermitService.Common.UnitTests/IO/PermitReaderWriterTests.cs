@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.PermitXmlCreationCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML for UPN {UpnTitle} completed."
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML for UPN: {UpnTitle} completed."
             ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -86,11 +86,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         }
 
         [Test]
-        public void WhenSchemaIsInvalid_ThenReturnsFalse()
+        public async Task WhenSchemaIsInvalid_ThenReturnsFalse()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            FluentActions.Invoking(() => _permitReaderWriter.CreatePermitZipAsync(GetInValidPermitDetails())).Should().
+            await FluentActions.Invoking(async () => await _permitReaderWriter.CreatePermitZipAsync(GetInValidPermitDetails())).Should().
                                             ThrowExactlyAsync<PermitServiceException>().WithMessage("Invalid permit xml schema.");
         }
 
