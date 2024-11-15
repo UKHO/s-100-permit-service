@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Validations;
@@ -61,7 +62,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="200">User Permit Number (UPN) details.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
-        public async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<ServiceResponseResult<UserPermitServiceResponse>> GetUserPermitAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             var uri = _uriFactory.CreateUri(_userPermitServiceApiConfiguration.Value.BaseUrl, UserPermitUrl, licenceId);
 
@@ -79,43 +80,63 @@ namespace UKHO.S100PermitService.Common.Services
             return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)>
+        private async Task<ServiceResponseResult<UserPermitServiceResponse>>
             HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
-        {
-            if(httpResponseMessage.IsSuccessStatusCode)
-            {
-                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
-
-                _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
-
-                return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
-                    JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson) : null);
-            }
-
-            return await HandleErrorResponseAsync(httpResponseMessage, uri, cancellationToken);
-        }
-
-        private async Task<(HttpResponseMessage httpResponseMessage, UserPermitServiceResponse? userPermitServiceResponse)>
-            HandleErrorResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+            if(httpResponseMessage.IsSuccessStatusCode)
             {
-                var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest
-                    ? EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId()
-                    : EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId();
+                if(httpResponseMessage.StatusCode == HttpStatusCode.OK)
+                {
+                    var response = JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson);
 
-                _logger.LogError(eventId,
-                    "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                    _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
-                return (httpResponseMessage, null);
+                    return ServiceResponseResult<UserPermitServiceResponse>.Success(response);
+                }
+
+                if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
+                {
+                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
+
+                    return ServiceResponseResult<UserPermitServiceResponse>.NoContent();
+                }
+            }
+
+            return await HandleNonSuccessResponseAsync(httpResponseMessage, uri, cancellationToken);
+        }
+
+        private async Task<ServiceResponseResult<UserPermitServiceResponse>>
+            HandleNonSuccessResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
+        {
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
+
+            if(httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
+            {
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
+                //TODO: add / update event id
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
+                "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+
+                return ServiceResponseResult<UserPermitServiceResponse>.BadRequest(errorResponse);
+            }
+
+            if(httpResponseMessage.StatusCode == HttpStatusCode.NotFound)
+            {
+                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
+
+                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId(),
+                "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+
+                return ServiceResponseResult<UserPermitServiceResponse>.NotFound(errorResponse);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                 "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}",
-                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                uri.AbsolutePath, httpResponseMessage.StatusCode);
         }
 
         /// <summary>

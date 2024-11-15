@@ -6,6 +6,7 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
@@ -63,39 +64,50 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        public async Task<(HttpResponseMessage httpResponseMessage, Stream stream)> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<PermitServiceResult> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var (userPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var userPermitResult = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
 
-            if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            if(!userPermitResult.IsSuccess)
             {
-                return (userPermitHttpResponseMessage, new MemoryStream());
+                return userPermitResult.StatusCode switch
+                {
+                    HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(userPermitResult.ErrorResponse),
+                    HttpStatusCode.NotFound => PermitServiceResult.NotFound(userPermitResult.ErrorResponse),
+                    HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
+                    _ => PermitServiceResult.InternalServerError()
+                };
             }
-            
-            if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
-            {
-                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
 
-                return (userPermitHttpResponseMessage, new MemoryStream());
-            }
+            _userPermitService.ValidateUpnsAndChecksum(userPermitResult.Value);
 
-            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponse);
+            //if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            //{
+            //    return (userPermitHttpResponseMessage, new MemoryStream());
+            //}
+
+            //if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
+            //{
+            //    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
+
+            //    return (userPermitHttpResponseMessage, new MemoryStream());
+            //}
 
             var (holdingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
 
-            if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-            {
-                return (holdingsHttpResponseMessage, new MemoryStream());
-            }
-            
-            if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
-            {
-                _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
+            //if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
+            //{
+            //    return (holdingsHttpResponseMessage, new MemoryStream());
+            //}
 
-                return (holdingsHttpResponseMessage, new MemoryStream());
-            }
+            //if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
+            //{
+            //    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
+
+            //    return (holdingsHttpResponseMessage, new MemoryStream());
+            //}
 
             var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
 
@@ -105,13 +117,13 @@ namespace UKHO.S100PermitService.Common.Services
 
             var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponse);
+            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitResult.Value);
 
             var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
             _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
 
-            return (holdingsHttpResponseMessage, permitDetails);
+            return PermitServiceResult.Success(permitDetails);
         }
 
         /// <summary>

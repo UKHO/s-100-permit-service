@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
-using System.Text.Json;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Services;
@@ -58,13 +57,18 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started.");
 
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var result = await _permitService.ProcessPermitRequestAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
-            var responseContent = httpResponseMessage.Content.ReadAsStringAsync().Result;
-
-            return httpResponseMessage.StatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpResponseMessage.StatusCode, string.IsNullOrEmpty(responseContent) ? string.Empty : JsonSerializer.Deserialize<object>(responseContent));
+            return result.StatusCode switch
+            {
+                HttpStatusCode.OK => File(result.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
+                HttpStatusCode.BadRequest => BadRequest(result.ErrorResponse),
+                HttpStatusCode.NotFound => NotFound(result.ErrorResponse),
+                HttpStatusCode.NoContent => NoContent(),
+                _ => StatusCode((int)result.StatusCode)
+            };
         }
     }
 }
