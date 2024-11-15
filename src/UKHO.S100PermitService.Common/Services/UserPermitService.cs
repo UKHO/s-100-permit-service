@@ -86,8 +86,15 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-                _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompleted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
-
+                if(httpResponseMessage.StatusCode == HttpStatusCode.OK)
+                {
+                    _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithOkResponse.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                }
+                if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
+                {
+                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                }
+                
                 return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
                     JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson) : null);
             }
@@ -103,11 +110,11 @@ namespace UKHO.S100PermitService.Common.Services
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
                 var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest
-                    ? EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId()
+                    ? EventIds.UserPermitServiceGetUserPermitsRequestReturnsBadRequest.ToEventId()
                     : EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId();
 
-                _logger.LogError(eventId,
-                    "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                _logger.LogWarning(eventId,
+                    "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage, null);

@@ -63,7 +63,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-                _logger.LogInformation(EventIds.GetProductKeysRequestCompleted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithOkResponse.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
 
                 var productKeyServiceResponse = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(bodyJson)!;
                 return productKeyServiceResponse;

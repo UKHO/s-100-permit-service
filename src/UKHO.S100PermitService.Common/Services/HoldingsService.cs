@@ -100,10 +100,16 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-                _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId(),
-                    "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
-                    httpResponseMessage.StatusCode.ToString());
-
+                if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
+                {
+                    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                }
+                else
+                {
+                    _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithOkResponse.ToEventId(),
+                        "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath,
+                        httpResponseMessage.StatusCode.ToString());
+                }
                 return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ?
                     JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson) : null);
             }
@@ -118,11 +124,11 @@ namespace UKHO.S100PermitService.Common.Services
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
                 var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest
-                    ? EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId()
+                    ? EventIds.HoldingsServiceGetHoldingsRequestReturnsBadRequest.ToEventId()
                     : EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId();
 
-                _logger.LogError(eventId,
-                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}",
+                _logger.LogWarning(eventId,
+                    "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Warning Response: {Response}",
                     uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
 
                 return (httpResponseMessage, null);
