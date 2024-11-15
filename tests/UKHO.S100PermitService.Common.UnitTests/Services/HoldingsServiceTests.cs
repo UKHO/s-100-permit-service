@@ -91,9 +91,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
-            response.holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
-            response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
+            var (httpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
+            holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
+            holdingsServiceResponse.Should().BeEquivalentTo(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -129,9 +130,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            var(getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            holdingsServiceResponse?.Equals(null);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -168,7 +169,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
 
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            holdingsServiceResponse?.Equals(null);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -186,7 +187,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public async Task WhenHoldingsInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
+        [TestCase(-2, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
+        public async Task WhenLicenceIdIs0OrNegative_ThenHoldingsServiceReturnsBadRequestResponse(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -195,14 +197,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
+
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId);
 
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            holdingsServiceResponse?.Equals(ErrorBadRequestContent);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
