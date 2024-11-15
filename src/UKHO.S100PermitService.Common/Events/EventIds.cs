@@ -91,7 +91,7 @@
         HoldingsServiceGetHoldingsRequestStarted = 840017,
 
         /// <summary>
-        /// 840018 - Request to Holdings service GetHoldings completed.
+        /// 840018 - Request to Holdings service GetHoldings completed With Ok Response.
         /// </summary>
         HoldingsServiceGetHoldingsRequestCompletedWithOkResponse = 840018,
 
@@ -111,7 +111,7 @@
         UserPermitServiceGetUserPermitsRequestStarted = 840021,
 
         /// <summary>
-        /// 840022 - Request to UserPermitService GetUserPermit endpoint completed.
+        /// 840022 - Request to UserPermitService GetUserPermit endpoint completed with Ok Response.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestCompletedWithOkResponse = 840022,
 
@@ -176,7 +176,7 @@
         RetryHttpClientProductKeyServiceRequest = 840034,
 
         /// <summary>
-        /// 840035 - Request to UserPermitService GetUserPermit endpoint completed with no content.
+        /// 840035 - Request to UserPermitService GetUserPermit completed with no content.
         /// </summary>
         UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840035,
 
