@@ -347,8 +347,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     [
                         new HoldingsServiceResponse
                         {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
                             Datasets =
                             [
@@ -370,8 +370,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                         },
                         new HoldingsServiceResponse
                         {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
+                            UnitTitle = "ProductTitle1",
+                            UnitName = "ProductCode1",
                             ExpiryDate = DateTime.UtcNow.AddDays(4),
                             Datasets =
                             [
@@ -386,8 +386,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                         },
                         new HoldingsServiceResponse
                         {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(3),
                             Datasets =
                             [
@@ -530,8 +530,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             [
                 new HoldingsServiceResponse
                 {
-                    ProductTitle = "ProductTitle",
-                    ProductCode = "ProductCode",
+                    UnitTitle = "ProductTitle",
+                    UnitName = "ProductCode",
                     ExpiryDate = DateTime.UtcNow.AddDays(5),
                     Datasets =
                     [
@@ -546,8 +546,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 },
                 new HoldingsServiceResponse
                 {
-                    ProductTitle = "ProductTitle1",
-                    ProductCode = "ProductCode1",
+                    UnitTitle = "ProductTitle1",
+                    UnitName = "ProductCode1",
                     ExpiryDate = DateTime.UtcNow.AddDays(4),
                     Datasets =
                     [

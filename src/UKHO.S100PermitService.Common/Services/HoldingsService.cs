@@ -73,18 +73,18 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>Filtered holding details.</returns>
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
-            var allCells = holdingsServiceResponse.SelectMany(p => p.Datasets.Select(c => new { p.ProductCode, p.ProductTitle, p.ExpiryDate, Cell = c }));
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Datasets.Select(c => new { p.UnitName, p.UnitTitle, p.ExpiryDate, Cell = c }));
 
             var latestCells = allCells
                 .GroupBy(c => c.Cell.DatasetName)
                 .Select(g => g.OrderByDescending(c => c.ExpiryDate).First());
 
             var filteredHoldings = latestCells
-                .GroupBy(c => new { c.ProductCode, c.ProductTitle })
+                .GroupBy(c => new { c.UnitName, c.UnitTitle })
                 .Select(g => new HoldingsServiceResponse
                 {
-                    ProductCode = g.Key.ProductCode,
-                    ProductTitle = g.Key.ProductTitle,
+                    UnitName = g.Key.UnitName,
+                    UnitTitle = g.Key.UnitTitle,
                     ExpiryDate = g.Max(c => c.ExpiryDate),
                     Datasets = g.Select(c => c.Cell).ToList()
                 }).ToList();
