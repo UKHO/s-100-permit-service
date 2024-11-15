@@ -74,7 +74,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                     responseMessage.StatusCode = HttpStatusCode.NoContent;
                     break;
 
-                case 0:
+                case int n when n <= 0:
                     filePath = Path.Combine(_responseFileDirectoryPath, "response-400.json");
                     responseMessage.StatusCode = HttpStatusCode.BadRequest;
                     break;
