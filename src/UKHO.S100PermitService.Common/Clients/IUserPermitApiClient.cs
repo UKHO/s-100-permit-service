@@ -2,6 +2,6 @@
 {
     public interface IUserPermitApiClient
     {
-        Task<HttpResponseMessage> GetUserPermitsAsync(string uri, int licenceId, string accessToken, CancellationToken cancellationToken, string correlationId);
+        Task<HttpResponseMessage> GetUserPermitsAsync(string uri, int licenceId, string accessToken, string correlationId, CancellationToken cancellationToken);
     }
 }
