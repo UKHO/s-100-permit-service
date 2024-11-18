@@ -93,7 +93,7 @@
         /// <summary>
         /// 840018 - Request to Holdings service GetHoldings completed.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompleted = 840018,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus200OK = 840018,
 
         /// <summary>
         /// 840019 - Request to Holdings service GetHoldings failed.
@@ -108,7 +108,7 @@
         /// <summary>
         /// 840021 - Request to UserPermitService GetUserPermit endpoint completed.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompleted = 840021,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus200Ok = 840021,
 
         /// <summary>
         /// 840022 - Request to UserPermitService GetUserPermit endpoint failed.
@@ -121,9 +121,9 @@
         GetProductKeysRequestStarted = 840023,
 
         /// <summary>
-        /// 840024 - Get product key from Product Key Service completed.
+        /// 840024 - Get product key from Product Key Service completed with Ok response.
         /// </summary>
-        GetProductKeysRequestCompleted = 840024,
+        GetProductKeysRequestCompletedWithStatus200OK = 840024,
 
         /// <summary>
         /// 840025 - Exception occurred while get product key from Product Key Service.
@@ -168,12 +168,12 @@
         /// <summary>
         /// 840033 - Request to UserPermitService GetUserPermit endpoint completed with no content.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithNoContent = 840033,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent = 840033,
 
         /// <summary>
         /// 840034 - Request to Holdings service GetHoldings completed with no content.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithNoContent = 840034,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent = 840034,
 
         /// <summary>
         /// 840035 - Expected hex string length not found.
@@ -233,11 +233,31 @@
         /// <summary>
         /// 840046 - Request to UserPermitService GetUserPermits responded licence not found
         /// </summary>
-        UserPermitServiceGetUserPermitsLicenceNotFound = 840046,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound = 840046,
 
         /// <summary>
         /// 840047 - Request to HoldingsService GetHoldings responded licence not found
         /// </summary>
-        HoldingServiceGetHoldingsLicenceNotFound = 840047
+        HoldingServiceGetHoldingsRequestCompletedWithStatus404NotFound = 840047,
+
+        /// <summary>
+        /// 840048 - Request to ProductKeyService GetProductKeys responded with status not found
+        /// </summary>
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840048,
+
+        /// <summary>
+        /// 840049 - Request to ProductKeyService GetProductKeys responded with status bad request
+        /// </summary>
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840049,
+
+        /// <summary>
+        /// 840050 - Request to UserPermitService GetUserPermits responded with status bad request
+        /// </summary>
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest = 840050,
+
+        /// <summary>
+        /// 840051 - Request to HoldingsService GetHoldings responded with status bad request
+        /// </summary>
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest = 840051
     }
 }

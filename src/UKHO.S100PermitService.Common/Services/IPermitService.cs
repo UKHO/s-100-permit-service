@@ -4,6 +4,6 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public interface IPermitService
     {
-        Task<PermitServiceResult> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId);
+        Task<PermitServiceResult> ProcessPermitRequestAsync(int licenceId, string correlationId, CancellationToken cancellationToken);
     }
 }

@@ -58,66 +58,49 @@ namespace UKHO.S100PermitService.Common.Services
         /// If any required validation failed, Then PermitServiceException exception will be thrown.
         /// </remarks>
         /// <param name="licenceId">Requested licence id.</param>
-        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
+        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        public async Task<PermitServiceResult> ProcessPermitRequestAsync(int licenceId, CancellationToken cancellationToken, string correlationId)
+        public async Task<PermitServiceResult> ProcessPermitRequestAsync(int licenceId, string correlationId, CancellationToken cancellationToken)
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var userPermitResult = await _userPermitService.GetUserPermitAsync(licenceId, cancellationToken, correlationId);
+            var userPermitServiceResponseResult = await _userPermitService.GetUserPermitAsync(licenceId, correlationId, cancellationToken);
 
-            if(!userPermitResult.IsSuccess)
+            var permitServiceResult = HandleServiceResponse(userPermitServiceResponseResult);
+            if(permitServiceResult != null)
             {
-                return userPermitResult.StatusCode switch
-                {
-                    HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(userPermitResult.ErrorResponse),
-                    HttpStatusCode.NotFound => PermitServiceResult.NotFound(userPermitResult.ErrorResponse),
-                    HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
-                    _ => PermitServiceResult.InternalServerError()
-                };
+                return permitServiceResult;
             }
 
-            _userPermitService.ValidateUpnsAndChecksum(userPermitResult.Value);
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult.Value);
 
-            //if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-            //{
-            //    return (userPermitHttpResponseMessage, new MemoryStream());
-            //}
+            var holdingsServiceResponseResult = await _holdingsService.GetHoldingsAsync(licenceId, correlationId, cancellationToken);
 
-            //if(userPermitHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
-            //{
-            //    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService responded with empty response.");
+            permitServiceResult = HandleServiceResponse(holdingsServiceResponseResult);
+            if(permitServiceResult != null)
+            {
+                return permitServiceResult;
+            }
 
-            //    return (userPermitHttpResponseMessage, new MemoryStream());
-            //}
-
-            var (holdingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, cancellationToken, correlationId);
-
-            //if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.BadRequest)
-            //{
-            //    return (holdingsHttpResponseMessage, new MemoryStream());
-            //}
-
-            //if(holdingsHttpResponseMessage.StatusCode is HttpStatusCode.NoContent)
-            //{
-            //    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId(), "Request to HoldingsService responded with empty response.");
-
-            //    return (holdingsHttpResponseMessage, new MemoryStream());
-            //}
-
-            var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponse);
+            var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponseResult.Value);
 
             var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
 
-            var productKeys = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, cancellationToken, correlationId);
+            var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
 
-            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeys, _productKeyServiceApiConfiguration.Value.HardwareId);
+            permitServiceResult = HandleServiceResponse(productKeyServiceResponseResult);
+            if(permitServiceResult != null)
+            {
+                return permitServiceResult;
+            }
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitResult.Value);
+            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
+
+            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult.Value);
 
             var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
@@ -234,6 +217,22 @@ namespace UKHO.S100PermitService.Common.Services
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
             return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
+        }
+
+        private PermitServiceResult HandleServiceResponse<T>(ServiceResponseResult<T> serviceResponseResult)
+        {
+            if(!serviceResponseResult.IsSuccess)
+            {
+                return serviceResponseResult.StatusCode switch
+                {
+                    HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(serviceResponseResult.ErrorResponse),
+                    HttpStatusCode.NotFound => PermitServiceResult.NotFound(serviceResponseResult.ErrorResponse),
+                    HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
+                    _ => PermitServiceResult.InternalServerError()
+                };
+            }
+
+            return null;
         }
     }
 }
