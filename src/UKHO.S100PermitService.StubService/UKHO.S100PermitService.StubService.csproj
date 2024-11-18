@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="9.0.0" />
+    <PackageReference Include="System.Text.Json" Version="6.0.11" />
     <PackageReference Include="WireMock.Net" Version="1.6.0" />
     <PackageReference Include="WireMock.Net.Abstractions" Version="1.6.0" />
     <PackageReference Include="WireMock.Org.Abstractions" Version="1.6.0" />
