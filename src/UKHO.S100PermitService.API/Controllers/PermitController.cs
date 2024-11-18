@@ -62,7 +62,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
-            var responseContent = httpResponseMessage.Content.ReadAsStringAsync().Result;
+            var responseContent = await httpResponseMessage.Content.ReadAsStringAsync();
 
             return httpResponseMessage.StatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpResponseMessage.StatusCode, string.IsNullOrEmpty(responseContent) ? string.Empty : JsonSerializer.Deserialize<object>(responseContent));
         }
