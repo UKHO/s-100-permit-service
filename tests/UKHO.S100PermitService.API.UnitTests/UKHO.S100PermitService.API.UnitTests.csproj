@@ -25,7 +25,8 @@
     <PackageReference Include="coverlet.msbuild" Version="6.0.2">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>	  
+    </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />	  
   </ItemGroup>
 
   <ItemGroup>
