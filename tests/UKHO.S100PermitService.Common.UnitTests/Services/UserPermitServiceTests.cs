@@ -150,9 +150,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -178,16 +178,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information    
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                     && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}"
                 ).MustHaveHappenedOnceExactly();
         }
 
@@ -221,9 +221,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestReturnsBadRequest.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}"
             ).MustHaveHappenedOnceExactly();
         }
 

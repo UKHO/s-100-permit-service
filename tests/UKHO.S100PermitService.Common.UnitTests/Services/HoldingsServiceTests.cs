@@ -131,6 +131,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
             holdingsServiceResponse.Should().BeNull();
 
@@ -144,10 +145,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<LogLevel>(0) == LogLevel.Warning
             && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -180,9 +181,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                     && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Warning Response: {Response}"
                 ).MustHaveHappenedOnceExactly();
         }
 
@@ -217,9 +218,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestReturnsBadRequest.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Warning Response: {Response}"
             ).MustHaveHappenedOnceExactly();
         }
 

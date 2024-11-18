@@ -63,7 +63,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
-                _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithOkResponse.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithOkResponse.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
                 var productKeyServiceResponse = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(bodyJson)!;
                 return productKeyServiceResponse;
@@ -75,12 +75,12 @@ namespace UKHO.S100PermitService.Common.Services
 
                 throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(),
                     "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                    uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
             }
 
             throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(),
                 "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}",
-                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                uri.AbsolutePath, httpResponseMessage.StatusCode);
         }
     }
 }

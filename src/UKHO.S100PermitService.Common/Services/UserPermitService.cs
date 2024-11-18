@@ -88,11 +88,11 @@ namespace UKHO.S100PermitService.Common.Services
 
                 if(httpResponseMessage.StatusCode == HttpStatusCode.OK)
                 {
-                    _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithOkResponse.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                    _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithOkResponse.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
                 }
                 if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
                 {
-                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
                 }
                 
                 return (httpResponseMessage, httpResponseMessage.StatusCode != HttpStatusCode.NoContent ? 
@@ -115,14 +115,14 @@ namespace UKHO.S100PermitService.Common.Services
 
                 _logger.LogWarning(eventId,
                     "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}",
-                    uri.AbsolutePath, httpResponseMessage.StatusCode.ToString(), bodyJson);
+                    uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
                 return (httpResponseMessage, null);
             }
 
             throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(),
                 "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}",
-                uri.AbsolutePath, httpResponseMessage.StatusCode.ToString());
+                uri.AbsolutePath, httpResponseMessage.StatusCode);
         }
 
         /// <summary>
