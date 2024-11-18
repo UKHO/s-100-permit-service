@@ -20,6 +20,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private IPermitService _fakePermitService;
         private PermitController _permitController;
 
+        private const string ErrorNotFound = "{\r\n  \"correlationId\": \"\",\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+       
         [SetUp]
         public void Setup()
         {
@@ -72,11 +74,16 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
         {
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((new HttpResponseMessage() { StatusCode = HttpStatusCode.NoContent }, new MemoryStream()));
+                .Returns((new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.NoContent,
+                    Content = new StringContent(string.Empty, Encoding.UTF8, "application/json")
+                }, new MemoryStream()));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
             result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+            result.Value.Should().Be(string.Empty);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -97,12 +104,17 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotFoundResponse()
         {
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((new HttpResponseMessage() { StatusCode = HttpStatusCode.NotFound }, null));
+                .Returns((new HttpResponseMessage()
+                {
+                    StatusCode = HttpStatusCode.NotFound,
+                    Content = new StringContent(ErrorNotFound, Encoding.UTF8, "application/json")
+
+                }, null));
 
             var result = (ObjectResult)await _permitController.GeneratePermits(1);
 
             result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-            result.Value.Should().Be(string.Empty);
+            result.Value.ToString().Should().Be(ErrorNotFound);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
