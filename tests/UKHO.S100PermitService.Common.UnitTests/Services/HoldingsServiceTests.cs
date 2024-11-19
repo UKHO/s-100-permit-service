@@ -91,9 +91,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
-            response.holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
-            response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
+            var (httpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
+            holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
+            holdingsServiceResponse.Should().BeEquivalentTo(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -106,7 +107,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId()
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithOkResponse.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                 ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
@@ -129,9 +130,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            var(getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
+
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            holdingsServiceResponse?.Equals(null);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -143,10 +145,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId()
+            && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -168,7 +170,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
 
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            holdingsServiceResponse?.Equals(null);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -179,14 +181,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                     && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Warning Response: {Response}"
                 ).MustHaveHappenedOnceExactly();
         }
 
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public async Task WhenHoldingsInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
+        [TestCase(-2, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
+        public async Task WhenLicenceIdIs0OrNegative_ThenHoldingsServiceReturnsBadRequestResponse(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -195,14 +198,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
+
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
                     (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var (getHoldingsHttpResponseMessage, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId);
 
             getHoldingsHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            holdingsServiceResponse?.Equals(ErrorBadRequestContent);
+            holdingsServiceResponse.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -214,9 +218,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestReturnsBadRequest.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Warning Response: {Response}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -314,8 +318,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 //Duplicate dataset with different edition number
                 "MultipleUpdateNumber" => [
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
                             Datasets =
                             [
@@ -329,8 +333,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
+                            UnitTitle = "ProductTitle1",
+                            UnitName = "ProductCode1",
                             ExpiryDate = DateTime.UtcNow.AddDays(4),
                             Datasets =
                             [
@@ -344,8 +348,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(3),
                             Datasets =
                             [
@@ -363,8 +367,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 //Duplicate dataset with different expiry
                 "DifferentExpiry" => [
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
                             Datasets =
                             [
@@ -378,8 +382,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(3),
                             Datasets =
                             [
@@ -393,8 +397,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
+                            UnitTitle = "ProductTitle1",
+                            UnitName = "ProductCode1",
                             ExpiryDate = DateTime.UtcNow.AddDays(4),
                             Datasets =
                             [
@@ -412,8 +416,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 //Duplicate dataset
                 "DuplicateDataset" => [
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
                             Datasets =
                             [
@@ -427,8 +431,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
                             Datasets =
                             [
@@ -442,8 +446,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             ]
                         },
                         new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
+                            UnitTitle = "ProductTitle1",
+                            UnitName = "ProductCode1",
                             ExpiryDate = DateTime.UtcNow.AddDays(4),
                             Datasets =
                             [
