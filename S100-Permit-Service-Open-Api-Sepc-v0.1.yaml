@@ -5,7 +5,7 @@ info:
     The UKHO S100 Permit Service API.
   contact:
     name: UKHO
-    email: martin.rock-evans@ukho.co.uk
+    email: abzudeliveryteam@ukho.gov.uk
   version: 0.0.1
   
 externalDocs:
@@ -71,7 +71,7 @@ paths:
                 correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
                 errors:
                 - source: licenceId
-                  description: Invalid LicenceId
+                  description: Invalid licenceId
             application/zip:
               schema:
                 $ref: '#/components/schemas/errorDescription'
@@ -105,7 +105,7 @@ paths:
                 correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
                 errors:
                 - source: licenceId
-                  description: Licence not found.
+                  description: Licence not found
             application/zip:
               schema:
                 $ref: '#/components/schemas/errorDescription'
