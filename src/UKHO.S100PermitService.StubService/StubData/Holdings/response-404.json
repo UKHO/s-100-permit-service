@@ -2,8 +2,8 @@
   "correlationId": "",
   "errors": [
     {
-      "source": "GetHoldings",
-      "description": "Licence Not Found"
+      "source": "licenceId",
+      "description": "Licence not found"
     }
   ]
 }

@@ -2,8 +2,8 @@
   "correlationId": "",
   "errors": [
     {
-      "source": "GetUserPermits",
-      "description": "Licence Not Found"
+      "source": "licenceId",
+      "description": "Licence not found"
     }
   ]
 }
