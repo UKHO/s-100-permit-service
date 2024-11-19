@@ -89,16 +89,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetHoldingDetails(OkResponse));
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
                 .Returns(GetFilteredHoldingDetails());
 
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                             .Returns([new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" }]);
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
@@ -139,10 +139,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase("")]
         public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -150,9 +150,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
             stream?.Equals(null);
 
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened();
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -167,7 +167,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase("")]
         public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -175,7 +175,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
             stream?.Equals(null);
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -189,7 +189,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(NotFound)]
         public async Task WhenUserPermitServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -219,7 +219,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(BadRequest)]
         public async Task WhenUserPermitServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -249,10 +249,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(NotFound)]
         public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
@@ -283,10 +283,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(BadRequest)]
         public async Task WhenHoldingsServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetUserPermits(OkResponse));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetHoldingDetails(responseType));
 
             var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
