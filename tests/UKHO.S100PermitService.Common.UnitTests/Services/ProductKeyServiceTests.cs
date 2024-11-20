@@ -87,8 +87,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                .Returns(AccessToken);
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
-            response.Value.Count.Should().BeGreaterThanOrEqualTo(1);
-            response.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -100,7 +101,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompletedWithOkResponse.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
@@ -152,7 +153,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

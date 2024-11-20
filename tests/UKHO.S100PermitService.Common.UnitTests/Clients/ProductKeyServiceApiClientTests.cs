@@ -44,7 +44,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", CancellationToken.None, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
             var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -74,7 +74,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", new List<ProductKeyServiceRequest>() { }, "", CancellationToken.None, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "", _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -102,7 +102,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", new List<ProductKeyServiceRequest>() { }, null, CancellationToken.None, _fakeCorrelationId);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], null, _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

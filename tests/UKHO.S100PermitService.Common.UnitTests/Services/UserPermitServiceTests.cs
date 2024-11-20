@@ -12,7 +12,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
-using UKHO.S100PermitService.Common.Models.Holdings;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         private const string OkResponseContent = "{\r\n  \"licenceId\": 1,\r\n  \"userPermits\": [\r\n    {\r\n      \"title\": \"Port Radar\",\r\n      \"upn\": \"FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3\"\r\n    }\r\n  ]\r\n}";
         private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"LicenceId is incorrect\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
 
         [SetUp]
         public void SetUp()
@@ -95,14 +95,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var (httpResponseMsg, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(1, CancellationToken.None, _fakeCorrelationId);
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
+            var response = await _userPermitService.GetUserPermitAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            userPermitServiceResponse.Should().NotBeNull();
-            userPermitServiceResponse.Should().BeEquivalentTo(JsonSerializer.Deserialize<UserPermitServiceResponse>(OkResponseContent));
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Should().BeEquivalentTo(JsonSerializer.Deserialize<UserPermitServiceResponse>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -114,7 +113,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithOkResponse.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus200Ok.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
@@ -133,13 +132,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var (getUserPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(5, CancellationToken.None, _fakeCorrelationId);
+            var response = await _userPermitService.GetUserPermitAsync(5, _fakeCorrelationId, CancellationToken.None);
 
-            getUserPermitHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            userPermitServiceResponse?.Should().BeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            response.Value.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -151,8 +150,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} responded with empty response completed. | StatusCode: {StatusCode}"
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -168,17 +167,23 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                     .Returns(httpResponseMessage);
 
-            var (getUserPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var response = await _userPermitService.GetUserPermitAsync(14, _fakeCorrelationId, CancellationToken.None);
 
-            getUserPermitHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            userPermitServiceResponse.Should().BeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.ErrorResponse.Should().BeEquivalentTo(new
+            {
+                Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence Not Found", Source = "GetUserPermits" }
+                    }
+            });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information    
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} started."
             ).MustHaveHappenedOnceExactly();
@@ -186,8 +191,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                     && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                    && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}"
+                    && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
                 ).MustHaveHappenedOnceExactly();
         }
 
@@ -204,13 +209,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(httpResponseMessage);
 
-            var (getUserPermitHttpResponseMessage, userPermitServiceResponse) = await _userPermitService.GetUserPermitAsync(licenceId, CancellationToken.None, _fakeCorrelationId);
+            var response = await _userPermitService.GetUserPermitAsync(licenceId, _fakeCorrelationId, CancellationToken.None);
 
-            getUserPermitHttpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            userPermitServiceResponse.Should().BeNull();
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.ErrorResponse.Should().BeEquivalentTo(new
+            {
+                Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Invalid licenceId", Source = "GetUserPermits" }
+                    }
+            });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -222,8 +233,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestReturnsBadRequest.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} Completed. | StatusCode: {StatusCode} | Warning Response: {Response}"
+                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -236,7 +247,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
@@ -247,7 +258,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                 });
 
-            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}");
+            await FluentActions.Invoking(async () => await _userPermitService.GetUserPermitAsync(4, _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -264,7 +275,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(AccessToken);
 
             A.CallTo(() => _fakeUserPermitApiClient.GetUserPermitsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
@@ -276,8 +287,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 });
 
             await FluentActions.Invoking(async () => await
-                _userPermitService.GetUserPermitAsync(4, CancellationToken.None, _fakeCorrelationId))
-                .Should().ThrowAsync<PermitServiceException>().WithMessage("Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}");
+                _userPermitService.GetUserPermitAsync(4, _fakeCorrelationId, CancellationToken.None))
+                .Should().ThrowAsync<PermitServiceException>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -325,9 +336,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             return new UserPermitServiceResponse()
             {
                 LicenceId = 1,
-                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
-                    new UserPermit{  Title= "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
-                    new UserPermit{ Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
+                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
+                    new UserPermit { Title = "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
+                    new UserPermit { Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
                 ]
             };
         }

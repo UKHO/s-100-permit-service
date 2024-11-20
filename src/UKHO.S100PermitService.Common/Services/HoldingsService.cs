@@ -110,7 +110,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
                 {
-                    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+                    _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
                     return ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>.NoContent();
                 }

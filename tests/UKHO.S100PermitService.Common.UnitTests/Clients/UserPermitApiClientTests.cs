@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", CancellationToken.None, _fakeCorrelationId);
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 1, "testToken", _fakeCorrelationId, CancellationToken.None);
 
             var deSerializedResult = JsonSerializer.Deserialize<List<UserPermitServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -71,7 +71,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, string.Empty, CancellationToken.None, _fakeCorrelationId);
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, string.Empty, _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -99,7 +99,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _userPermitApiClient = new UserPermitApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, null, CancellationToken.None, _fakeCorrelationId);
+            var result = _userPermitApiClient.GetUserPermitsAsync("http://test.com", 0, null, _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
