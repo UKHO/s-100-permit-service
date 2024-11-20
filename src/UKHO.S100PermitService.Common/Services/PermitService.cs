@@ -92,12 +92,6 @@ namespace UKHO.S100PermitService.Common.Services
 
             var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
 
-            permitServiceResult = HandleServiceResponse(productKeyServiceResponseResult);
-            if(permitServiceResult != null)
-            {
-                return permitServiceResult;
-            }
-
             var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
 
             var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult.Value);

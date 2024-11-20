@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="200">Holding details.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
-        public async Task<ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>> GetHoldingsAsync(int licenceId, string correlationId, CancellationToken cancellationToken)
+        public async Task<ServiceResponseResult<List<HoldingsServiceResponse>>> GetHoldingsAsync(int licenceId, string correlationId, CancellationToken cancellationToken)
         {
             var uri = _uriFactory.CreateUri(_holdingsServiceApiConfiguration.Value.BaseUrl, HoldingsUrl, licenceId);
 
@@ -94,7 +94,7 @@ namespace UKHO.S100PermitService.Common.Services
             return filteredHoldings;
         }
 
-        private async Task<ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
+        private async Task<ServiceResponseResult<List<HoldingsServiceResponse>>> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
             {
@@ -104,22 +104,22 @@ namespace UKHO.S100PermitService.Common.Services
                 {
                     _logger.LogInformation(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus200OK.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
-                    var response = JsonSerializer.Deserialize<IEnumerable<HoldingsServiceResponse>>(bodyJson);
-                    return ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>.Success(response);
+                    var response = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(bodyJson);
+                    return ServiceResponseResult<List<HoldingsServiceResponse>>.Success(response);
                 }
 
                 if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
                 {
                     _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
-                    return ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>.NoContent();
+                    return ServiceResponseResult<List<HoldingsServiceResponse>>.NoContent();
                 }
             }
 
             return await HandleNonSuccessResponseAsync(httpResponseMessage, uri, cancellationToken);
         }
 
-        private async Task<ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>> HandleNonSuccessResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
+        private async Task<ServiceResponseResult<List<HoldingsServiceResponse>>> HandleNonSuccessResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -128,7 +128,7 @@ namespace UKHO.S100PermitService.Common.Services
                 _logger.LogWarning(EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
-                return ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>.BadRequest(errorResponse);
+                return ServiceResponseResult<List<HoldingsServiceResponse>>.BadRequest(errorResponse);
             }
 
             if(httpResponseMessage.StatusCode == HttpStatusCode.NotFound)
@@ -136,7 +136,7 @@ namespace UKHO.S100PermitService.Common.Services
                 _logger.LogWarning(EventIds.HoldingServiceGetHoldingsRequestCompletedWithStatus404NotFound.ToEventId(), "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
                 var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
-                return ServiceResponseResult<IEnumerable<HoldingsServiceResponse>>.NotFound(errorResponse);
+                return ServiceResponseResult<List<HoldingsServiceResponse>>.NotFound(errorResponse);
             }
 
             throw new PermitServiceException(EventIds.HoldingsServiceGetHoldingsRequestFailed.ToEventId(), "Request to HoldingsService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);

@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(PermitResults(httpStatusCode));
+                .Returns(GetPermitServiceResult(httpStatusCode));
 
             var result = await _permitController.GeneratePermits(1);
 
@@ -130,7 +130,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             ).MustHaveHappenedOnceExactly();
         }
 
-        private PermitServiceResult PermitResults(HttpStatusCode httpStatusCode)
+        private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
         {
             return httpStatusCode switch
             {

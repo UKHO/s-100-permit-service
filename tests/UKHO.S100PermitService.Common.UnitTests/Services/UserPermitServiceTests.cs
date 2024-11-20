@@ -214,7 +214,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _userPermitService.GetUserPermitAsync(licenceId, _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.StatusCode.Should().Be(statusCode);
             response.ErrorResponse.Should().BeEquivalentTo(new
             {
                 Errors = new List<ErrorDetail>

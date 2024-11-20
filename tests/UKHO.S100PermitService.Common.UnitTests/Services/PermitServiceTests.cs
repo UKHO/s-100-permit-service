@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Data;
 using System.Net;
 using System.Text;
 using UKHO.S100PermitService.Common.Configuration;
@@ -29,15 +30,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
         private IOptions<PermitFileConfiguration> _fakePermitFileConfiguration;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
-        const string NoContent = "noContent";
-        const string OkResponse = "okResponse";
-        const string NotFound = "notFound";
-        const string BadRequest = "badRequest";
-
-        private const string ErrorHoldingsNotFoundContent = "{\r\n  \"correlationId\": \"\",\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorHoldingsBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Incorrect LicenceId\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorUserPermitsNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorUserPermitsBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"LicenceId is incorrect\"\r\n    }\r\n  ]\r\n}";
 
         private IPermitService _permitService;
 
@@ -91,16 +83,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetHoldingDetails(OkResponse));
+                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
                 .Returns(GetFilteredHoldingDetails());
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                                            .Returns([new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" }]);
+                                            .Returns(GetServiceResponse<List<ProductKeyServiceResponse>>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
@@ -114,10 +106,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.OK);
-            stream.Length.Should().Be(expectedStream.Length);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
@@ -136,25 +128,48 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            ).MustHaveHappenedOnceExactly();
         }
 
-        [TestCase(NoContent)]
-        [TestCase("")]
-        public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
+        [TestCase(HttpStatusCode.NoContent)]
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        public async Task WhenHoldingServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetHoldingDetails(responseType));
+                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(httpStatusCode));
 
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            stream?.Equals(null);
+            switch(response.StatusCode)
+            {
+                case HttpStatusCode.NoContent:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    break;
 
+                case HttpStatusCode.BadRequest:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "LicenceId is incorrect", Source = "GetHoldings" }
+                    }
+                    });
+                    break;
+
+                case HttpStatusCode.NotFound:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence Not Found", Source = "GetHoldings" }
+                    }
+                    });
+                    break;
+            }
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustHaveHappened();
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -164,20 +179,46 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [TestCase(NoContent)]
-        [TestCase("")]
-        public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
+        [TestCase(HttpStatusCode.NoContent)]
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        public async Task WhenUserPermitServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(responseType));
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(httpStatusCode));
 
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NoContent);
-            stream?.Equals(null);
+            switch(response.StatusCode)
+            {
+                case HttpStatusCode.NoContent:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    break;
+
+                case HttpStatusCode.BadRequest:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "LicenceId is incorrect", Source = "GetUserPermits" }
+                    }
+                    });
+                    break;
+
+                case HttpStatusCode.NotFound:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence Not Found", Source = "GetUserPermits" }
+                    }
+                    });
+                    break;
+            }
 
             A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -187,149 +228,37 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
         }
 
-        [TestCase(NotFound)]
-        public async Task WhenUserPermitServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
+        private static ServiceResponseResult<T> GetServiceResponse<T>(HttpStatusCode httpStatusCode) where T : class, new()
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(responseType));
+            var source = typeof(T) == typeof(UserPermitServiceResponse) ? "GetUserPermits" : "GetHoldings";
 
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorUserPermitsNotFoundContent);
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-            ).MustNotHaveHappened();
-        }
-
-        [TestCase(BadRequest)]
-        public async Task WhenUserPermitServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(responseType));
-
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorUserPermitsBadRequestContent);
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                    .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-            ).MustNotHaveHappened();
-        }
-
-        [TestCase(NotFound)]
-        public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetHoldingDetails(responseType));
-
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorHoldingsNotFoundContent);
-            stream.Should().NotBeNull();
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-               call.Method.Name == "Log"
-               && call.GetArgument<LogLevel>(0) == LogLevel.Information
-               && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-               .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-           ).MustNotHaveHappened();
-        }
-
-        [TestCase(BadRequest)]
-        public async Task WhenHoldingsServiceReturnsBadRequestResponse_ThenPermitServiceReturnsBadRequestResponse(string responseType)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetHoldingDetails(responseType));
-
-            var (httpResponseMessage, stream) = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            httpResponseMessage.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            httpResponseMessage.Content.ReadAsStringAsync().Result.Should().Be(ErrorHoldingsBadRequestContent);
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                    .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-            ).MustNotHaveHappened();
-        }
-
-        private static (HttpResponseMessage, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
-        {
-            switch(responseType)
+            switch(httpStatusCode)
             {
-                case OkResponse:
-                    return (new HttpResponseMessage()
+                case HttpStatusCode.OK:
+
+                    var response = new T();
+
+                    if(response is UserPermitServiceResponse userPermitServiceResponse)
                     {
-                        StatusCode = HttpStatusCode.OK
-                    },
-                    [
-                        new HoldingsServiceResponse
-                        {
-                            UnitTitle = "ProductTitle",
-                            UnitName = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Datasets =
+                        userPermitServiceResponse.LicenceId = 1;
+                        userPermitServiceResponse.UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }];
+                    }
+                    else if(response is List<ProductKeyServiceResponse> productKeyServiceResponse)
+                    {
+                        productKeyServiceResponse = [new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
+                            new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }];
+                    }
+
+                    else if(response is List<HoldingsServiceResponse> holdingsServiceResponse)
+                    {
+                        holdingsServiceResponse =
+                        [
+                            new()
+                            {
+                                UnitTitle = "ProductTitle",
+                                UnitName = "ProductCode",
+                                ExpiryDate = DateTime.UtcNow.AddDays(5),
+                                Datasets =
                             [
                                 new Dataset
                                 {
@@ -346,13 +275,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     LatestUpdateNumber = 1
                                 }
                             ]
-                        },
-                        new HoldingsServiceResponse
-                        {
-                            UnitTitle = "ProductTitle1",
-                            UnitName = "ProductCode1",
-                            ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Datasets =
+                            },
+                            new()
+                            {
+                                UnitTitle = "ProductTitle1",
+                                UnitName = "ProductCode1",
+                                ExpiryDate = DateTime.UtcNow.AddDays(4),
+                                Datasets =
                             [
                                 new Dataset
                                 {
@@ -362,13 +291,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     LatestUpdateNumber = 1
                                 }
                             ]
-                        },
-                        new HoldingsServiceResponse
-                        {
-                            UnitTitle = "ProductTitle",
-                            UnitName = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(3),
-                            Datasets =
+                            },
+                            new()
+                            {
+                                UnitTitle = "ProductTitle",
+                                UnitName = "ProductCode",
+                                ExpiryDate = DateTime.UtcNow.AddDays(3),
+                                Datasets =
                             [
                                 new Dataset
                                 {
@@ -378,79 +307,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     LatestUpdateNumber = 1
                                 }
                             ]
-                        }
-                    ]);
+                            }
+                        ];
+                    };
 
-                case NoContent:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, []);
+                    return new ServiceResponseResult<T>(response, HttpStatusCode.OK);
 
-                case "":
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, null);
+                case HttpStatusCode.NoContent:
+                    return ServiceResponseResult<T>.NoContent();
 
-                case NotFound:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NotFound,
-                        Content = new StringContent(ErrorHoldingsNotFoundContent, Encoding.UTF8, "application/json")
-                    }, null);
+                case HttpStatusCode.NotFound:
+                    return ServiceResponseResult<T>.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence Not Found", Source = source }] });
 
-                case BadRequest:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.BadRequest,
-                        Content = new StringContent(ErrorHoldingsBadRequestContent, Encoding.UTF8, "application/json")
-                    }, null);
-
-                default:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, null);
-            }
-        }
-
-        private static ServiceResponseResult<UserPermitServiceResponse> GetUserPermits(string responseType)
-        {
-            switch(responseType)
-            {
-                case OkResponse:
-                    return new ServiceResponseResult<UserPermitServiceResponse>(new UserPermitServiceResponse
-                    {
-                        LicenceId = 1,
-                        UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
-                    }, HttpStatusCode.OK);
-
-                case NoContent:
-                    return new ServiceResponseResult<UserPermitServiceResponse>(default, HttpStatusCode.NoContent);
-
-                case "":
-                    return new ServiceResponseResult<UserPermitServiceResponse>(default, HttpStatusCode.NoContent);
-
-                case NotFound:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NotFound,
-                        Content = new StringContent(ErrorUserPermitsNotFoundContent, Encoding.UTF8, "application/json")
-                    }, null);
-
-                case BadRequest:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.BadRequest,
-                        Content = new StringContent(ErrorUserPermitsBadRequestContent, Encoding.UTF8, "application/json")
-                    }, null);
-
-                default:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, null);
+                default: //BadRequest
+                    return ServiceResponseResult<T>.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "LicenceId is incorrect", Source = source }] });
             }
         }
 
@@ -542,7 +412,5 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             return expectedResult;
         }
-
-        private class
     }
 }
