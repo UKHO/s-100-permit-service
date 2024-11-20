@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
@@ -414,31 +415,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             }
         }
 
-        private static (HttpResponseMessage, UserPermitServiceResponse?) GetUserPermits(string responseType)
+        private static ServiceResponseResult<UserPermitServiceResponse> GetUserPermits(string responseType)
         {
             switch(responseType)
             {
                 case OkResponse:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.OK
-                    }, new UserPermitServiceResponse
+                    return new ServiceResponseResult<UserPermitServiceResponse>(new UserPermitServiceResponse
                     {
                         LicenceId = 1,
                         UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
-                    });
+                    }, HttpStatusCode.OK);
 
                 case NoContent:
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, new UserPermitServiceResponse());
+                    return new ServiceResponseResult<UserPermitServiceResponse>(default, HttpStatusCode.NoContent);
 
                 case "":
-                    return (new HttpResponseMessage()
-                    {
-                        StatusCode = HttpStatusCode.NoContent
-                    }, null);
+                    return new ServiceResponseResult<UserPermitServiceResponse>(default, HttpStatusCode.NoContent);
 
                 case NotFound:
                     return (new HttpResponseMessage()
@@ -550,5 +542,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             return expectedResult;
         }
+
+        private class
     }
 }
