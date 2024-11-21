@@ -108,41 +108,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         [Test]
         [TestCase(HttpStatusCode.BadRequest)]
-        
-        public async Task WhenRequestIsInvalid_ThenLogWarningAndThrowException(HttpStatusCode httpStatusCode)
-        {
-            A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                            .Returns(new HttpResponseMessage()
-                            {
-                                StatusCode = httpStatusCode,
-                                RequestMessage = new HttpRequestMessage()
-                                {
-                                    RequestUri = new Uri("http://test.com")
-                                },
-                                Content = new StringContent(RequestError)
-                            });
-            A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
-
-            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}"
-            ).MustHaveHappenedOnceExactly();
-        }
-
         [TestCase(HttpStatusCode.NotFound)]
-        public async Task WhenRequestIsNonExistData_ThenLogWarningAndThrowException(HttpStatusCode httpStatusCode)
+        public async Task WhenRequestIsInvalidOrNonExistData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
                     (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
@@ -164,14 +131,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}"
-            ).MustHaveHappenedOnceExactly();
+            ).MustHaveHappenedOnceExactly();            
         }
 
         [Test]
