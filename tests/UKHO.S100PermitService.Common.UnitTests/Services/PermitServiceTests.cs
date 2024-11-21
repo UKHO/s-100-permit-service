@@ -311,7 +311,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                         ];
                     };
 
-                    return new ServiceResponseResult<T>(response, HttpStatusCode.OK);
+                    return ServiceResponseResult<T>.Success(response);
 
                 case HttpStatusCode.NoContent:
                     return ServiceResponseResult<T>.NoContent();

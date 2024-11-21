@@ -137,7 +137,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "LicenceId is incorrect", Source = "GetUserPermits" }] }),
                 HttpStatusCode.NotFound => PermitServiceResult.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence Not Found", Source = "GetUserPermits" }] }),
                 HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
-                HttpStatusCode.InternalServerError => PermitServiceResult.InternalServerError()
+                _ => PermitServiceResult.InternalServerError()
             };
         }
 
