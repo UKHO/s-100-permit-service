@@ -24,9 +24,7 @@ namespace UKHO.S100PermitService.Common.IO
 
         private readonly ILogger<PermitReaderWriter> _logger;
         private readonly ISchemaValidator _schemaValidator;
-       
-
-        public PermitReaderWriter(ILogger<PermitReaderWriter> logger, 
+        public PermitReaderWriter(ILogger<PermitReaderWriter> logger,
                                   ISchemaValidator schemaValidator)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -60,7 +58,7 @@ namespace UKHO.S100PermitService.Common.IO
             {
                 foreach(var permit in permits)
                 {
-                  await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
+                    await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
                 }
             }
 
@@ -79,8 +77,8 @@ namespace UKHO.S100PermitService.Common.IO
         private async Task CreatePermitXmlAsync(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
             _logger.LogInformation(EventIds.PermitXmlCreationStarted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} started.", upnTitle);
-            
-            var fileName= $"{upnTitle}/{PermitXmlFileName}";
+
+            var fileName = $"{upnTitle}/{PermitXmlFileName}";
             // Create an entry for the XML file
             var zipEntry = zipArchive.CreateEntry(fileName);
 

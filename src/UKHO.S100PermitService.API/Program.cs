@@ -11,18 +11,18 @@ using Serilog.Events;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
+using UKHO.S100PermitService.API.Filters;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
+using UKHO.S100PermitService.Common.Encryption;
+using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
-using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Services;
 using UKHO.S100PermitService.Common.Validations;
-using UKHO.S100PermitService.API.Filters;
-using UKHO.S100PermitService.Common.Factories;
 
 namespace UKHO.S100PermitService.API
 {
@@ -247,7 +247,7 @@ namespace UKHO.S100PermitService.API
                     {
                         Name = Ukho,
                         Email = swaggerConfiguration.Email
-                    }                    
+                    }
                 });
 
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";

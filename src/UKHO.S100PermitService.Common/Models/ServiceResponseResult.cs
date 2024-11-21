@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Models
     {
         public new ErrorResponse ErrorResponse { get; }
 
-        public ServiceResponseResult(T value, HttpStatusCode statusCode, ErrorResponse errorResponse = null)
+        private ServiceResponseResult(T value, HttpStatusCode statusCode, ErrorResponse errorResponse = null)
             : base(value, statusCode, errorResponse)
         {
             ErrorResponse = errorResponse;
