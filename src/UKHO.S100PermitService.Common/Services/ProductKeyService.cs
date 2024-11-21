@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest ? EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest.ToEventId() : EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound.ToEventId();
 
-                throw new PermitServiceException(eventId, "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+                _logger.LogWarning(eventId, "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
             }
 
             throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);

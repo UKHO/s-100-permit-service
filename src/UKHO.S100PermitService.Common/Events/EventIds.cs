@@ -178,12 +178,12 @@
         /// <summary>
         /// 840035 - Request to UserPermitService GetUserPermit completed with no content.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent = 840033,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent = 840035,
 
         /// <summary>
         /// 840036 - Request to Holdings service GetHoldings completed with no content.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent = 840034,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent = 840036,
 
         /// <summary>
         /// 840037 - Expected hex string length not found.
@@ -243,31 +243,31 @@
         /// <summary>
         /// 840048 - Request to UserPermitService GetUserPermits responded licence not found
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound = 840046,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound = 840048,
 
         /// <summary>
         /// 840049 - Request to HoldingsService GetHoldings responded licence not found
         /// </summary>
-        HoldingServiceGetHoldingsRequestCompletedWithStatus404NotFound = 840047,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus404NotFound = 840049,
 
         /// <summary>
-        /// 840048 - Request to ProductKeyService GetProductKeys responded with status not found
+        /// 840050 - Request to ProductKeyService GetProductKeys responded with status not found
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840048,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840050,
 
         /// <summary>
-        /// 840049 - Request to ProductKeyService GetProductKeys responded with status bad request
+        /// 840051 - Request to ProductKeyService GetProductKeys responded with status bad request
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840049,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840051,
 
         /// <summary>
-        /// 840050 - Request to UserPermitService GetUserPermits responded with status bad request
+        /// 840052 - Request to UserPermitService GetUserPermits responded with status bad request
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest = 840050,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest = 840052,
 
         /// <summary>
-        /// 840051 - Request to HoldingsService GetHoldings responded with status bad request
+        /// 840053 - Request to HoldingsService GetHoldings responded with status bad request
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest = 840051
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest = 840053
     }
 }

@@ -189,8 +189,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                     && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                    && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsRequestCompletedWithStatus404NotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
+                    && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus404NotFound.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
                 ).MustHaveHappenedOnceExactly();
         }
 
@@ -233,7 +233,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Warning
                 && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
             ).MustHaveHappenedOnceExactly();
         }
 
