@@ -41,233 +41,218 @@
         PermitXmlCreationCompleted = 840007,
 
         /// <summary>
-        /// 840008 - Empty permit xml is received.
+        /// 840008 - Permit service exception.
         /// </summary>
-        EmptyPermitXml = 840008,
+        PermitServiceException = 840008,
 
         /// <summary>
-        /// 840009 - Permit service exception.
+        /// 840009 - Get access token to call external api started.
         /// </summary>
-        PermitServiceException = 840009,
+        GetAccessTokenStarted = 840009,
 
         /// <summary>
-        /// 840010 - Get access token to call external api started.
+        /// 840010 - Cached access token to call external api found.
         /// </summary>
-        GetAccessTokenStarted = 840010,
+        CachedAccessTokenFound = 840010,
 
         /// <summary>
-        /// 840011 - Cached access token to call external api found.
+        /// 840011 - Get new access token to call external api started.
         /// </summary>
-        CachedAccessTokenFound = 840011,
+        GetNewAccessTokenStarted = 840011,
 
         /// <summary>
-        /// 840012 - Get new access token to call external api started.
+        /// 840012 - Get new access token to call external api completed.
         /// </summary>
-        GetNewAccessTokenStarted = 840012,
+        GetNewAccessTokenCompleted = 840012,
 
         /// <summary>
-        /// 840013 - Get new access token to call external api completed.
+        /// 840013 - Get access token to call external api completed.
         /// </summary>
-        GetNewAccessTokenCompleted = 840013,
+        GetAccessTokenCompleted = 840013,
 
         /// <summary>
-        /// 840014 - Get access token to call external api completed.
+        /// 840014 - Caching access token to call external api started.
         /// </summary>
-        GetAccessTokenCompleted = 840014,
+        CachingExternalEndPointTokenStarted = 840014,
 
         /// <summary>
-        /// 840015 - Caching access token to call external api started.
+        /// 840015 - Caching access token to call external api completed.
         /// </summary>
-        CachingExternalEndPointTokenStarted = 840015,
+        CachingExternalEndPointTokenCompleted = 840015,
 
         /// <summary>
-        /// 840016 - Caching access token to call external api completed.
+        /// 840016 - Request to Holdings service GetHoldings started.
         /// </summary>
-        CachingExternalEndPointTokenCompleted = 840016,
+        HoldingsServiceGetHoldingsRequestStarted = 840016,
 
         /// <summary>
-        /// 840017 - Request to Holdings service GetHoldings started.
+        /// 840017 - Request to Holdings service GetHoldings completed With Ok Response.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestStarted = 840017,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus200OK = 840017,
 
         /// <summary>
-        /// 840018 - Request to Holdings service GetHoldings completed With Ok Response.
+        /// 840018 - Request to Holdings service GetHoldings failed.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus200OK = 840018,
+        HoldingsServiceGetHoldingsRequestFailed = 840018,
 
         /// <summary>
-        /// 840019 - Request to Holdings service GetHoldings failed.
+        /// 840019 - Request to UserPermitService GetUserPermit endpoint started.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestFailed = 840019,
+        UserPermitServiceGetUserPermitsRequestStarted = 840019,
 
         /// <summary>
-        /// 840020 - Request to Holdings service GetHoldings endpoint returns Bad Request status.
+        /// 840020 - Request to UserPermitService GetUserPermit endpoint completed with Ok Response.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestReturnsBadRequest = 840020,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus200Ok = 840020,
 
         /// <summary>
-        /// 840021 - Request to UserPermitService GetUserPermit endpoint started.
+        /// 840021 - Request to UserPermitService GetUserPermit endpoint failed.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestStarted = 840021,
+        UserPermitServiceGetUserPermitsRequestFailed = 840021,
 
         /// <summary>
-        /// 840022 - Request to UserPermitService GetUserPermit endpoint completed with Ok Response.
+        /// 840022 - Get product key from Product Key Service completed with Ok response.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus200Ok = 840022,
+        GetProductKeysRequestCompletedWithStatus200OK = 840022,
 
         /// <summary>
-        /// 840023 - Request to UserPermitService GetUserPermit endpoint failed.
+        /// 840023 - Get product key from Product Key Service started.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestFailed = 840023,
+        GetProductKeysRequestStarted = 840023,
 
         /// <summary>
-        /// 840024 - Get product key from Product Key Service completed with Ok response.
+        /// 840024 - Exception occurred while get product key from Product Key Service.
         /// </summary>
-        GetProductKeysRequestCompletedWithStatus200OK = 840024,
+        GetProductKeysRequestFailed = 840024,
 
         /// <summary>
-        /// 840025 - Get product key from Product Key Service started.
+        /// 840025 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
         /// </summary>
-        GetProductKeysRequestStarted = 840025,
+        ManufacturerIdNotFoundInKeyVault = 840025,
 
         /// <summary>
-        /// 840026 - Get product key from Product Key Service completed with Ok response.
+        /// 840026 - Filtered holdings total count before filtering and after filtering for highest expiry dates and removing duplicates.
         /// </summary>
-        GetProductKeysRequestCompletedWithOkResponse = 840026,
+        HoldingsFilteredCellCount = 840026,
 
         /// <summary>
-        /// 840027 - Exception occurred while get product key from Product Key Service.
+        /// 840027 - New Manufacturer Key is added in Cache.
         /// </summary>
-        GetProductKeysRequestFailed = 840027,
+        AddingNewManufacturerKeyInCache = 840027,
 
         /// <summary>
-        /// 840028 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
+        /// 840028 - Access token is empty or null.
         /// </summary>
-        ManufacturerIdNotFoundInKeyVault = 840028,
+        MissingAccessToken = 840028,
 
         /// <summary>
-        /// 840029 - Filtered holdings total count before filtering and after filtering for highest expiry dates and removing duplicates.
+        /// 840029 - Request for retrying holdings api endpoint.
         /// </summary>
-        HoldingsFilteredCellCount = 840029,
+        RetryHttpClientHoldingsRequest = 840029,
 
         /// <summary>
-        /// 840030 - New Manufacturer Key is added in Cache.
+        /// 840030 - Request for retrying user permit api endpoint.
         /// </summary>
-        AddingNewManufacturerKeyInCache = 840030,
+        RetryHttpClientUserPermitRequest = 840030,
 
         /// <summary>
-        /// 840031 - Access token is empty or null.
+        /// 840031 - Request for retrying product key service api endpoint.
         /// </summary>
-        MissingAccessToken = 840031,
+        RetryHttpClientProductKeyServiceRequest = 840031,
 
         /// <summary>
-        /// 840032 - Request for retrying holdings api endpoint.
+        /// 840032 - Request to UserPermitService GetUserPermit completed with no content.
         /// </summary>
-        RetryHttpClientHoldingsRequest = 840032,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent = 840032,
 
         /// <summary>
-        /// 840033 - Request for retrying user permit api endpoint.
+        /// 840033 - Request to Holdings service GetHoldings completed with no content.
         /// </summary>
-        RetryHttpClientUserPermitRequest = 840033,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent = 840033,
 
         /// <summary>
-        /// 840034 - Request for retrying product key service api endpoint.
+        /// 840034 - Expected hex string length not found.
         /// </summary>
-        RetryHttpClientProductKeyServiceRequest = 840034,
+        HexStringLengthError = 840034,
 
         /// <summary>
-        /// 840035 - Request to UserPermitService GetUserPermit completed with no content.
+        /// 840035 - Expected hex key length not found.
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent = 840035,
+        HexKeyLengthError = 840035,
 
         /// <summary>
-        /// 840036 - Request to Holdings service GetHoldings completed with no content.
+        /// 840036 - Decryption of product keys started.
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent = 840036,
+        DecryptProductKeysStarted = 840036,
 
         /// <summary>
-        /// 840037 - Expected hex string length not found.
+        /// 840037 - Decryption of product keys completed.
         /// </summary>
-        HexStringLengthError = 840037,
+        DecryptProductKeysCompleted = 840037,
 
         /// <summary>
-        /// 840038 - Expected hex key length not found.
+        /// 840038 - Aes encryption exception.
         /// </summary>
-        HexKeyLengthError = 840038,
+        AesEncryptionException = 840038,
 
         /// <summary>
-        /// 840039 - Decryption of product keys started.
+        /// 840039 - Extraction of decrypted HW_ID from user permits started.
         /// </summary>
-        DecryptProductKeysStarted = 840039,
+        ExtractDecryptedHardwareIdFromUserPermitStarted = 840039,
 
         /// <summary>
-        /// 840040 - Decryption of product keys completed.
+        /// 840040 - Extraction of decrypted HW_ID from user permits completed.
         /// </summary>
-        DecryptProductKeysCompleted = 840040,
+        ExtractDecryptedHardwareIdFromUserPermitCompleted = 840040,
 
         /// <summary>
-        /// 840041 - Aes encryption exception.
+        /// 840041 - Upn length or checksum validation failed.
         /// </summary>
-        AesEncryptionException = 840041,
+        UpnLengthOrChecksumValidationFailed = 840041,
 
         /// <summary>
-        /// 840042 - Extraction of decrypted HW_ID from user permits started.
+        /// 840042 - Invalid Permit Xml Schema is received.
         /// </summary>
-        ExtractDecryptedHardwareIdFromUserPermitStarted = 840042,
+        InvalidPermitXmlSchema = 840042,
 
         /// <summary>
-        /// 840043 - Extraction of decrypted HW_ID from user permits completed.
+        /// 840043 - Permit zip file creation completed.
         /// </summary>
-        ExtractDecryptedHardwareIdFromUserPermitCompleted = 840043,
+        PermitZipCreationCompleted = 840043,
 
         /// <summary>
-        /// 840044 - Upn length or checksum validation failed.
+        /// 840044 - Manufacturer Key found in Cache.
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840044,
+        ManufacturerKeyFoundInCache = 840044,
 
         /// <summary>
-        /// 840045 - Invalid Permit Xml Schema is received.
+        /// 840045 - Request to UserPermitService GetUserPermits responded licence not found
         /// </summary>
-        InvalidPermitXmlSchema = 840045,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound = 840045,
 
         /// <summary>
-        /// 840046 - Permit zip file creation completed.
+        /// 840046 - Request to HoldingsService GetHoldings responded licence not found
         /// </summary>
-        PermitZipCreationCompleted = 840046,
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus404NotFound = 840046,
 
         /// <summary>
-        /// 840047 - Manufacturer Key found in Cache.
+        /// 840047 - Request to ProductKeyService GetProductKeys responded with status not found
         /// </summary>
-        ManufacturerKeyFoundInCache = 840047,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840047,
 
         /// <summary>
-        /// 840048 - Request to UserPermitService GetUserPermits responded licence not found
+        /// 840048 - Request to ProductKeyService GetProductKeys responded with status bad request
         /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound = 840048,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840048,
 
         /// <summary>
-        /// 840049 - Request to HoldingsService GetHoldings responded licence not found
+        /// 840049 - Request to UserPermitService GetUserPermits responded with status bad request
         /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus404NotFound = 840049,
+        UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest = 840049,
 
         /// <summary>
-        /// 840050 - Request to ProductKeyService GetProductKeys responded with status not found
+        /// 840050 - Request to HoldingsService GetHoldings responded with status bad request
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840050,
-
-        /// <summary>
-        /// 840051 - Request to ProductKeyService GetProductKeys responded with status bad request
-        /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840051,
-
-        /// <summary>
-        /// 840052 - Request to UserPermitService GetUserPermits responded with status bad request
-        /// </summary>
-        UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest = 840052,
-
-        /// <summary>
-        /// 840053 - Request to HoldingsService GetHoldings responded with status bad request
-        /// </summary>
-        HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest = 840053
+        HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest = 840050
     }
 }
