@@ -47,6 +47,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <response code="200">Holding details.</response>
+        /// <response code="204">NoContent - when service returned with empty response.</response>
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
         public async Task<ServiceResponseResult<List<HoldingsServiceResponse>>> GetHoldingsAsync(int licenceId, string correlationId, CancellationToken cancellationToken)
