@@ -12,7 +12,7 @@
         public IEnumerable<int>? NoDataLicenceId { get; set; }
         public int? InvalidExpiryDateLicenceId { get; set; }
         public IEnumerable<string>? InvalidChars { get; set; }
-        public IEnumerable<string>? PermitHeaders { get; set; }
+        public List<string>? PermitHeaders { get; set; }
         public IReadOnlyDictionary<string, string>? UserPermitNumbers { get; set; }
         public string? TempFolderName { get; set; }
     }

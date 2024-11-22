@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             foreach(var licenceId in _permitServiceApiConfiguration!.InvalidLicenceId!)
             {
-                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidLicenceId.ToString()!);
+                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString()!);
                 response.StatusCode.Should().Be((HttpStatusCode)400);
             }
 
