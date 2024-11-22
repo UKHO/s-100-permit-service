@@ -153,7 +153,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "LicenceId is incorrect", Source = "GetHoldings" }
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
                     }
                     });
                     break;
@@ -164,7 +164,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Licence Not Found", Source = "GetHoldings" }
+                        new() { Description = "Licence not found", Source = "licenceId" }
                     }
                     });
                     break;
@@ -201,7 +201,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "LicenceId is incorrect", Source = "GetUserPermits" }
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
                     }
                     });
                     break;
@@ -212,7 +212,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Licence Not Found", Source = "GetUserPermits" }
+                        new() { Description = "Licence not found", Source = "licenceId" }
                     }
                     });
                     break;
@@ -230,8 +230,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         private static ServiceResponseResult<T> GetServiceResponse<T>(HttpStatusCode httpStatusCode) where T : class, new()
         {
-            var source = typeof(T) == typeof(UserPermitServiceResponse) ? "GetUserPermits" : "GetHoldings";
-
             switch(httpStatusCode)
             {
                 case HttpStatusCode.OK:
@@ -317,10 +315,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     return ServiceResponseResult<T>.NoContent();
 
                 case HttpStatusCode.NotFound:
-                    return ServiceResponseResult<T>.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence Not Found", Source = source }] });
+                    return ServiceResponseResult<T>.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] });
 
                 default: //BadRequest
-                    return ServiceResponseResult<T>.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "LicenceId is incorrect", Source = source }] });
+                    return ServiceResponseResult<T>.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] });
             }
         }
 

@@ -40,8 +40,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private const string AccessToken = "access-token";
 
         private const string OkResponseContent = "{\r\n  \"licenceId\": 1,\r\n  \"userPermits\": [\r\n    {\r\n      \"title\": \"Port Radar\",\r\n      \"upn\": \"FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetUserPermits\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Licence not found\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
 
         [SetUp]
         public void SetUp()
@@ -177,7 +177,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             {
                 Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Licence Not Found", Source = "GetUserPermits" }
+                        new() { Description = "Licence not found", Source = "licenceId" }
                     }
             });
 
@@ -219,7 +219,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             {
                 Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Invalid licenceId", Source = "GetUserPermits" }
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
                     }
             });
 

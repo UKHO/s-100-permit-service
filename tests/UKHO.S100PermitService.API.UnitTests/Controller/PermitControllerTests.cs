@@ -93,7 +93,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "LicenceId is incorrect", Source = "GetUserPermits" }
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
                     }
                     });
                     break;
@@ -104,7 +104,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                     {
                         Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Licence Not Found", Source = "GetUserPermits" }
+                        new() { Description = "Licence not found", Source = "licenceId" }
                     }
                     });
                     break;
@@ -134,8 +134,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             return httpStatusCode switch
             {
-                HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "LicenceId is incorrect", Source = "GetUserPermits" }] }),
-                HttpStatusCode.NotFound => PermitServiceResult.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence Not Found", Source = "GetUserPermits" }] }),
+                HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] }),
+                HttpStatusCode.NotFound => PermitServiceResult.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] }),
                 HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
                 _ => PermitServiceResult.InternalServerError()
             };

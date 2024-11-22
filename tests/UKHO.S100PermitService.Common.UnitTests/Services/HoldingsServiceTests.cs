@@ -35,8 +35,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         const string AccessToken = "access-token";
 
         private const string OkResponseContent = "[\r\n  {\r\n    \"unitName\": \"P1231\",\r\n    \"unitTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
-        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Licence not found\"\r\n    }\r\n  ]\r\n}";
         private const string NoContentResponse = "{[\r\n  {\r\n    \"unitName\": \"P1231\",\r\n    \"unitTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  },\r\n  {\r\n    \"unitName\": \"P1232\",\r\n    \"unitTitle\": \"P1232\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  }\r\n]}";
 
         [SetUp]
@@ -175,7 +175,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             {
                 Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Licence Not Found", Source = "GetHoldings" }
+                        new() { Description = "Licence not found", Source = "licenceId" }
                     }
             });
 
@@ -217,7 +217,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             {
                 Errors = new List<ErrorDetail>
                     {
-                        new() { Description = "Invalid licenceId", Source = "GetHoldings" }
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
                     }
             });
 
