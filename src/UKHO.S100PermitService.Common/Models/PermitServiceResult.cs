@@ -20,8 +20,6 @@ namespace UKHO.S100PermitService.Common.Models
 
         public static PermitServiceResult NotFound(ErrorResponse errorResponse) => new(null, HttpStatusCode.NotFound, errorResponse);
 
-        public static PermitServiceResult NoContent(ErrorResponse errorResponse) => new(null, HttpStatusCode.NoContent, errorResponse);
-
         public static PermitServiceResult BadRequest(ErrorResponse errorResponse) => new(null, HttpStatusCode.BadRequest, errorResponse);
 
         public static PermitServiceResult InternalServerError() => new(null, HttpStatusCode.InternalServerError);

@@ -74,10 +74,10 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>Filtered holding details.</returns>
         public IEnumerable<HoldingsServiceResponse> FilterHoldingsByLatestExpiry(IEnumerable<HoldingsServiceResponse> holdingsServiceResponse)
         {
-            var allCells = holdingsServiceResponse.SelectMany(p => p.Datasets.Select(d => new { p.UnitName, p.UnitTitle, p.ExpiryDate, DataSet = d }));
+            var allCells = holdingsServiceResponse.SelectMany(p => p.Datasets.Select(d => new { p.UnitName, p.UnitTitle, p.ExpiryDate, Dataset = d }));
 
             var latestCells = allCells
-                .GroupBy(c => c.DataSet.DatasetName)
+                .GroupBy(c => c.Dataset.DatasetName)
                 .Select(g => g.OrderByDescending(c => c.ExpiryDate).First());
 
             var filteredHoldings = latestCells
@@ -87,7 +87,7 @@ namespace UKHO.S100PermitService.Common.Services
                     UnitName = g.Key.UnitName,
                     UnitTitle = g.Key.UnitTitle,
                     ExpiryDate = g.Max(c => c.ExpiryDate),
-                    Datasets = g.Select(c => c.DataSet).ToList()
+                    Datasets = g.Select(c => c.Dataset).ToList()
                 }).ToList();
 
             _logger.LogInformation(EventIds.HoldingsFilteredCellCount.ToEventId(), "Filtered holdings: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", allCells.Count(), latestCells.Count());
