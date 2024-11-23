@@ -1,0 +1,12 @@
+{  
+  "errors": [
+    {
+      "source": "ProductName",
+      "description": "ProductName cannot be null or empty"
+    },
+    {
+      "source": "Edition",
+      "description": "Edition cannot be null or empty"
+    }
+  ]
+}

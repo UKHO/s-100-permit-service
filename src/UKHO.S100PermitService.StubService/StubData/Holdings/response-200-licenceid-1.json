@@ -1,14 +1,14 @@
 [
   {
-    "productCode": "P1231",
-    "productTitle": "P1231",
+    "unitName": "P1231",
+    "unitTitle": "P1231",
     "expiryDate": "2026-01-31T23:59:00Z",
-    "cells": [
+    "datasets": [
       {
-        "cellCode": "101GB40079ABCDEFG.000",
-        "cellTitle": "101GB40079ABCDEFG",
-        "latestEditionNumber": "1",
-        "latestUpdateNumber": "11"
+        "datasetName": "101GB40079ABCDEFG.000",
+        "datasetTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": 1,
+        "latestUpdateNumber": 11
       }
     ]
   }

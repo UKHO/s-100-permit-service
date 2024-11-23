@@ -12,6 +12,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -33,9 +34,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         const string FakeUri = "http://test.com";
         const string AccessToken = "access-token";
 
-        private const string OkResponseContent = "[\r\n  {\r\n    \"productCode\": \"P1231\",\r\n    \"productTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
-        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Incorrect LicenceId\"\r\n    }\r\n  ]\r\n}";
-        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"GetHoldings\",\r\n      \"description\": \"Licence Not Found\"\r\n    }\r\n  ]\r\n}";
+        private const string OkResponseContent = "[\r\n  {\r\n    \"unitName\": \"P1231\",\r\n    \"unitTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"cells\": [\r\n      {\r\n        \"cellCode\": \"1\",\r\n        \"cellTitle\": \"1\",\r\n        \"latestEditionNumber\": \"1\",\r\n        \"latestUpdateNumber\": \"11\"\r\n      }\r\n    ]\r\n  }\r\n]";
+        private const string ErrorBadRequestContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Invalid licenceId\"\r\n    }\r\n  ]\r\n}";
+        private const string ErrorNotFoundContent = "{\r\n  \"errors\": [\r\n    {\r\n      \"source\": \"licenceId\",\r\n      \"description\": \"Licence not found\"\r\n    }\r\n  ]\r\n}";
+        private const string NoContentResponse = "{[\r\n  {\r\n    \"unitName\": \"P1231\",\r\n    \"unitTitle\": \"P1231\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  },\r\n  {\r\n    \"unitName\": \"P1232\",\r\n    \"unitTitle\": \"P1232\",\r\n    \"expiryDate\": \"2026-01-31T23:59:00Z\",\r\n    \"datasets\": []\r\n  }\r\n]}";
 
         [SetUp]
         public void Setup()
@@ -77,7 +79,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenValidLicenceId_ThenHoldingsServiceReturns200OkResponse()
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
@@ -90,9 +92,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            var response = await _holdingsService.GetHoldingsAsync(1, CancellationToken.None, _fakeCorrelationId);
-            response.holdingsServiceResponse.Count().Should().BeGreaterThanOrEqualTo(1);
-            response.holdingsServiceResponse.Equals(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
+            var response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Should().BeEquivalentTo(JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(OkResponseContent));
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -105,9 +108,48 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompleted.ToEventId()
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus200OK.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                 ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}"
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task WhenLicenceIsValidButHoldingsAreNotAvailable_ThenHoldingsServiceReturns204NoContentResponse()
+        {
+            A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.NoContent,
+                    RequestMessage = new HttpRequestMessage
+                    {
+                        RequestUri = new Uri(FakeUri)
+                    },
+                    Content = new StringContent(NoContentResponse)
+                });
+            A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
+                .Returns(AccessToken);
+
+            var response = await _holdingsService.GetHoldingsAsync(1, _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(HttpStatusCode.NoContent);
+            response.Value.Should().BeNull();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+            && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus204NoContent.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
+                ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -123,13 +165,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     .Returns(AccessToken);
 
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                     .Returns(httpResponseMessage);
 
-            var (httpStatusCode, holdingsServiceResponse) = await _holdingsService.GetHoldingsAsync(14, CancellationToken.None, _fakeCorrelationId);
+            var response = await _holdingsService.GetHoldingsAsync(14, _fakeCorrelationId, CancellationToken.None);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
-            holdingsServiceResponse?.Equals(null);
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            response.ErrorResponse.Should().BeEquivalentTo(new
+            {
+                Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence not found", Source = "licenceId" }
+                    }
+            });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -140,14 +188,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
-                    && call.GetArgument<LogLevel>(0) == LogLevel.Error
-                    && call.GetArgument<EventId>(1) == EventIds.HoldingServiceGetHoldingsLicenceNotFound.ToEventId()
-                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}"
+                    && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                    && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus404NotFound.ToEventId()
+                    && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
                 ).MustHaveHappenedOnceExactly();
         }
 
         [TestCase(0, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
-        public async Task WhenHoldingsInvalidForGivenLicenceId_ThenHoldingsServiceReturnsException(int licenceId, HttpStatusCode statusCode, string content)
+        [TestCase(-2, HttpStatusCode.BadRequest, ErrorBadRequestContent)]
+        public async Task WhenLicenceIdIs0OrNegative_ThenHoldingsServiceReturnsBadRequestResponse(int licenceId, HttpStatusCode statusCode, string content)
         {
             var httpResponseMessage = new HttpResponseMessage(statusCode)
             {
@@ -156,11 +205,21 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
+
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(httpResponseMessage);
 
-            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(licenceId, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | Error Details: {Errors}");
+            var response = await _holdingsService.GetHoldingsAsync(licenceId, _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.ErrorResponse.Should().BeEquivalentTo(new
+            {
+                Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
+                    }
+            });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -168,6 +227,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
+                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithStatus400BadRequest.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}"
             ).MustHaveHappenedOnceExactly();
         }
 
@@ -177,7 +243,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenHoldingsServiceResponseOtherThanOkBadRequestAndNotFound_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
@@ -190,7 +256,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode}");
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to HoldingsService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
@@ -202,10 +268,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [TestCase(HttpStatusCode.TooManyRequests, "TooManyRequests")]
-        public void WhenHoldingsServiceResponseTooManyRequests_ThenReturnsException(HttpStatusCode statusCode, string content)
+        public async Task WhenHoldingsServiceResponseTooManyRequests_ThenReturnsException(HttpStatusCode statusCode, string content)
         {
             A.CallTo(() => _fakeHoldingsApiClient.GetHoldingsAsync
-                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<int>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(new HttpResponseMessage
                 {
                     StatusCode = statusCode,
@@ -218,7 +284,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeHoldingsServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            Assert.ThrowsAsync<PermitServiceException>(() => _holdingsService.GetHoldingsAsync(23, CancellationToken.None, _fakeCorrelationId));
+            await FluentActions.Invoking(async () => await _holdingsService.GetHoldingsAsync(23, _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>();
 
             A.CallTo(_fakeLogger).Where(call =>
               call.Method.Name == "Log"
@@ -264,149 +330,158 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             {
                 //Duplicate dataset with different edition number
                 "MultipleUpdateNumber" => [
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                        new HoldingsServiceResponse
+                        {
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "2",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 2,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
-                            ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Cells =
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle1",
+                        UnitName = "ProductCode1",
+                        ExpiryDate = DateTime.UtcNow.AddDays(4),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle1",
-                                    CellCode = "CellCode1",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle1",
+                                    DatasetName = "CellCode1",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(3),
-                            Cells =
+                    },
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle",
+                        UnitName = "ProductCode",
+                        ExpiryDate = DateTime.UtcNow.AddDays(3),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        }
+                    }
                     ],
 
                 //Duplicate dataset with different expiry
                 "DifferentExpiry" => [
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                        new HoldingsServiceResponse
+                        {
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(3),
-                            Cells =
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle",
+                        UnitName = "ProductCode",
+                        ExpiryDate = DateTime.UtcNow.AddDays(3),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
-                            ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Cells =
+                    },
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle1",
+                        UnitName = "ProductCode1",
+                        ExpiryDate = DateTime.UtcNow.AddDays(4),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle1",
-                                    CellCode = "CellCode1",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle1",
+                                    DatasetName = "CellCode1",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        }
+                    }
                     ],
 
                 //Duplicate dataset
                 "DuplicateDataset" => [
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
+                        new HoldingsServiceResponse
+                        {
+                            UnitTitle = "ProductTitle",
+                            UnitName = "ProductCode",
                             ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
+                            Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
                         },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle",
+                        UnitName = "ProductCode",
+                        ExpiryDate = DateTime.UtcNow.AddDays(5),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        },
-                        new HoldingsServiceResponse {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
-                            ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Cells =
+                    },
+                    new HoldingsServiceResponse
+                    {
+                        UnitTitle = "ProductTitle1",
+                        UnitName = "ProductCode1",
+                        ExpiryDate = DateTime.UtcNow.AddDays(4),
+                        Datasets =
                             [
-                                new Cell
+                                new Dataset
                                 {
-                                    CellTitle = "CellTitle1",
-                                    CellCode = "CellCode1",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
+                                    DatasetTitle = "CellTitle1",
+                                    DatasetName = "CellCode1",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
                                 }
                             ]
-                        }
+                    }
                     ],
 
                 _ => []

@@ -74,7 +74,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Equals(secretKey);
         }
 
-
         [Test]
         public void WhenSecretKeyPassedWhichIsNotInMemoryCache_ThenFetchSecretsFromKeyVault()
         {

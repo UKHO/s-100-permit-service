@@ -46,7 +46,11 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         private ResponseMessage SetResponseFromLicenseId(IRequestMessage request)
         {
-            var licenceId = ExtractLicenceId(request);
+            var licenceId = ResponseHelper.ExtractLicenceId(request);
+
+            var validLicenceIds = _holdingsServiceConfiguration.ValidLicenceIds;
+
+            var correlationId = ResponseHelper.ExtractCorrelationId(request);
 
             var responseMessage = new ResponseMessage
             {
@@ -59,12 +63,18 @@ namespace UKHO.S100PermitService.StubService.Stubs
             string filePath;
             switch(licenceId)
             {
-                case int n when(n >= 1 && n <= 12) || (n == 22) || (n == 50):
+                case var n when validLicenceIds.Contains(n):
                     filePath = Path.Combine(_responseFileDirectoryPath, $"response-200-licenceid-{licenceId}.json");
                     responseMessage.StatusCode = HttpStatusCode.OK;
                     break;
 
-                case 0:
+                case 5:
+                case 6:
+                    filePath = Path.Combine(_responseFileDirectoryPath, $"response-204-licenceid-{licenceId}.json");
+                    responseMessage.StatusCode = HttpStatusCode.NoContent;
+                    break;
+
+                case int n when n <= 0:
                     filePath = Path.Combine(_responseFileDirectoryPath, "response-400.json");
                     responseMessage.StatusCode = HttpStatusCode.BadRequest;
                     break;
@@ -75,17 +85,11 @@ namespace UKHO.S100PermitService.StubService.Stubs
                     break;
             }
 
-            responseMessage.BodyData.BodyAsString = File.ReadAllText(filePath);
+            responseMessage.BodyData.BodyAsString = ResponseHelper.UpdateCorrelationIdInResponse(filePath, correlationId, (HttpStatusCode)responseMessage.StatusCode);
             responseMessage.AddHeader(HttpHeaderConstants.ContentType, HttpHeaderConstants.ApplicationType);
-            responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, Guid.NewGuid().ToString());
+            responseMessage.AddHeader(HttpHeaderConstants.CorrelationId, correlationId);
 
             return responseMessage;
-        }
-
-        private static int ExtractLicenceId(IRequestMessage request)
-        {
-            var value = request.AbsolutePath.Split('/')[2];
-            return int.TryParse(value, out var licenceId) ? licenceId : 0;
         }
     }
 }

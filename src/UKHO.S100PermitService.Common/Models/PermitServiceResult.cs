@@ -1,0 +1,27 @@
+﻿using System.Net;
+
+namespace UKHO.S100PermitService.Common.Models
+{
+    public class PermitServiceResult : Result<Stream>
+    {
+        public new ErrorResponse ErrorResponse { get; }
+        public new HttpStatusCode StatusCode { get; }
+
+        private PermitServiceResult(Stream value, HttpStatusCode statusCode, ErrorResponse errorResponse = null)
+            : base(value, statusCode, errorResponse)
+        {
+            StatusCode = statusCode;
+            ErrorResponse = errorResponse;
+        }
+
+        public static PermitServiceResult Success(Stream value) => new(value, HttpStatusCode.OK);
+
+        public static PermitServiceResult NoContent() => new(null, HttpStatusCode.NoContent);
+
+        public static PermitServiceResult NotFound(ErrorResponse errorResponse) => new(null, HttpStatusCode.NotFound, errorResponse);
+
+        public static PermitServiceResult BadRequest(ErrorResponse errorResponse) => new(null, HttpStatusCode.BadRequest, errorResponse);
+
+        public static PermitServiceResult InternalServerError() => new(null, HttpStatusCode.InternalServerError);
+    }
+}

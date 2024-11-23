@@ -1,8 +1,9 @@
 {
+  "correlationId": "",
   "errors": [
     {
-      "source": "GetHoldings",
-      "description": "Incorrect LicenceId"
+      "source": "licenceId",
+      "description": "Invalid licenceId"
     }
   ]
 }

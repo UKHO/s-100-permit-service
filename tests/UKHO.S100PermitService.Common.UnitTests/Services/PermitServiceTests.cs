@@ -2,12 +2,14 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Data;
 using System.Net;
 using System.Text;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
@@ -28,9 +30,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
         private IOptions<PermitFileConfiguration> _fakePermitFileConfiguration;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
-        const string NoContent = "noContent";
-        const string OkResponse = "okResponse";
-        const string NotFound = "notFound";
 
         private IPermitService _permitService;
 
@@ -83,17 +82,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetHoldingDetails(OkResponse));
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
                 .Returns(GetFilteredHoldingDetails());
 
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                                            .Returns([new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" }]);
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                                            .Returns(GetServiceResponse<List<ProductKeyServiceResponse>>(HttpStatusCode.OK));
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
@@ -107,10 +106,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            httpStatusCode.Should().Be(HttpStatusCode.OK);
-            stream.Length.Should().Be(expectedStream.Length);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Length.Should().Be(expectedStream.Length);
 
             A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustHaveHappened();
 
@@ -129,24 +128,48 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            ).MustHaveHappenedOnceExactly();
         }
 
-        [TestCase(NoContent)]
-        [TestCase("")]
-        public async Task WhenHoldingServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
+        [TestCase(HttpStatusCode.NoContent)]
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        public async Task WhenHoldingServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetHoldingDetails(responseType));
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(httpStatusCode));
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            httpStatusCode.Should().Be(HttpStatusCode.NoContent);
+            switch(response.StatusCode)
+            {
+                case HttpStatusCode.NoContent:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    break;
 
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
+                case HttpStatusCode.BadRequest:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
+                    }
+                    });
+                    break;
 
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustHaveHappened();
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
+                case HttpStatusCode.NotFound:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence not found", Source = "licenceId" }
+                    }
+                    });
+                    break;
+            }
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -154,213 +177,148 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
             ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.HoldingsServiceGetHoldingsRequestCompletedWithNoContent.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to HoldingsService responded with empty response."
-            ).MustHaveHappenedOnceExactly();
         }
 
-        [TestCase(NoContent)]
-        [TestCase("")]
-        public async Task WhenUserPermitServiceHasEmptyResponse_ThenPermitServiceReturnsNoContentResponse(string responseType)
+        [TestCase(HttpStatusCode.NoContent)]
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        public async Task WhenUserPermitServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(responseType));
+            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetServiceResponse<UserPermitServiceResponse>(httpStatusCode));
 
-            var result = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
+            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
 
-            result.httpStatusCode.Should().Be(HttpStatusCode.NoContent);
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored)).MustNotHaveHappened();
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithNoContent.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to UserPermitService responded with empty response."
-            ).MustHaveHappenedOnceExactly();
-        }
-
-        [TestCase(NotFound)]
-        public async Task WhenUserPermitServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(responseType));
-
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
-
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeUserPermitService.ValidateUpnsAndChecksum(A<UserPermitServiceResponse>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-                .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-            ).MustNotHaveHappened();
-        }
-
-        [TestCase(NotFound)]
-        public async Task WhenHoldingsServiceReturnsNotFoundResponse_ThenPermitServiceReturnsNotFoundResponse(string responseType)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetUserPermits(OkResponse));
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns(GetHoldingDetails(responseType));
-
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(1, CancellationToken.None, _fakeCorrelationId);
-
-            httpStatusCode.Should().Be(HttpStatusCode.NotFound);
-            stream.Length.Should().Be(0);
-
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-               call.Method.Name == "Log"
-               && call.GetArgument<LogLevel>(0) == LogLevel.Information
-               && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!
-               .ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
-           ).MustNotHaveHappened();
-        }
-
-        private static (HttpStatusCode, List<HoldingsServiceResponse>?) GetHoldingDetails(string responseType)
-        {
-            switch(responseType)
+            switch(response.StatusCode)
             {
-                case OkResponse:
-                    return (HttpStatusCode.OK,
-                    [
-                        new HoldingsServiceResponse
-                        {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(5),
-                            Cells =
-                            [
-                                new Cell
-                                {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
-                                },
-                                new Cell
-                                {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
-                                }
-                            ]
-                        },
-                        new HoldingsServiceResponse
-                        {
-                            ProductTitle = "ProductTitle1",
-                            ProductCode = "ProductCode1",
-                            ExpiryDate = DateTime.UtcNow.AddDays(4),
-                            Cells =
-                            [
-                                new Cell
-                                {
-                                    CellTitle = "CellTitle1",
-                                    CellCode = "CellCode1",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
-                                }
-                            ]
-                        },
-                        new HoldingsServiceResponse
-                        {
-                            ProductTitle = "ProductTitle",
-                            ProductCode = "ProductCode",
-                            ExpiryDate = DateTime.UtcNow.AddDays(3),
-                            Cells =
-                            [
-                                new Cell
-                                {
-                                    CellTitle = "CellTitle",
-                                    CellCode = "CellCode",
-                                    LatestEditionNumber = "1",
-                                    LatestUpdateNumber = "1"
-                                }
-                            ]
-                        }
-                    ]);
+                case HttpStatusCode.NoContent:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    break;
 
-                case NoContent:
-                    return (HttpStatusCode.NoContent, []);
-
-                case "":
-                    return (HttpStatusCode.NoContent, null);
-
-                case NotFound:
-                    return (HttpStatusCode.NotFound, null);
-
-                default:
-                    return (HttpStatusCode.NoContent, null);
-            }
-        }
-
-        private static (HttpStatusCode, UserPermitServiceResponse?) GetUserPermits(string responseType)
-        {
-            switch(responseType)
-            {
-                case OkResponse:
-                    return (HttpStatusCode.OK, new UserPermitServiceResponse
+                case HttpStatusCode.BadRequest:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
                     {
-                        LicenceId = 1,
-                        UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }]
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
+                    }
                     });
+                    break;
 
-                case NoContent:
-                    return (HttpStatusCode.NoContent, new UserPermitServiceResponse());
+                case HttpStatusCode.NotFound:
+                    response.StatusCode.Should().Be(httpStatusCode);
+                    response.ErrorResponse.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence not found", Source = "licenceId" }
+                    }
+                    });
+                    break;
+            }
 
-                case "":
-                    return (HttpStatusCode.NoContent, null);
+            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
 
-                case NotFound:
-                    return (HttpStatusCode.NotFound, null);
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
+            ).MustHaveHappenedOnceExactly();
+        }
 
-                default:
-                    return (HttpStatusCode.NoContent, null);
+        private static ServiceResponseResult<T> GetServiceResponse<T>(HttpStatusCode httpStatusCode) where T : class, new()
+        {
+            switch(httpStatusCode)
+            {
+                case HttpStatusCode.OK:
+
+                    var response = new T();
+
+                    if(response is UserPermitServiceResponse userPermitServiceResponse)
+                    {
+                        userPermitServiceResponse.LicenceId = 1;
+                        userPermitServiceResponse.UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }];
+                    }
+                    else if(response is List<ProductKeyServiceResponse> productKeyServiceResponse)
+                    {
+                        productKeyServiceResponse = [new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
+                            new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }];
+                    }
+
+                    else if(response is List<HoldingsServiceResponse> holdingsServiceResponse)
+                    {
+                        holdingsServiceResponse =
+                        [
+                            new()
+                            {
+                                UnitTitle = "ProductTitle",
+                                UnitName = "ProductCode",
+                                ExpiryDate = DateTime.UtcNow.AddDays(5),
+                                Datasets =
+                            [
+                                new Dataset
+                                {
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
+                                },
+                                new Dataset
+                                {
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
+                                }
+                            ]
+                            },
+                            new()
+                            {
+                                UnitTitle = "ProductTitle1",
+                                UnitName = "ProductCode1",
+                                ExpiryDate = DateTime.UtcNow.AddDays(4),
+                                Datasets =
+                            [
+                                new Dataset
+                                {
+                                    DatasetTitle = "CellTitle1",
+                                    DatasetName = "CellCode1",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
+                                }
+                            ]
+                            },
+                            new()
+                            {
+                                UnitTitle = "ProductTitle",
+                                UnitName = "ProductCode",
+                                ExpiryDate = DateTime.UtcNow.AddDays(3),
+                                Datasets =
+                            [
+                                new Dataset
+                                {
+                                    DatasetTitle = "CellTitle",
+                                    DatasetName = "CellCode",
+                                    LatestEditionNumber = 1,
+                                    LatestUpdateNumber = 1
+                                }
+                            ]
+                            }
+                        ];
+                    };
+
+                    return ServiceResponseResult<T>.Success(response);
+
+                case HttpStatusCode.NoContent:
+                    return ServiceResponseResult<T>.NoContent();
+
+                case HttpStatusCode.NotFound:
+                    return ServiceResponseResult<T>.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] });
+
+                default: //BadRequest
+                    return ServiceResponseResult<T>.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] });
             }
         }
 
@@ -410,33 +368,33 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             [
                 new HoldingsServiceResponse
                 {
-                    ProductTitle = "ProductTitle",
-                    ProductCode = "ProductCode",
+                    UnitTitle = "ProductTitle",
+                    UnitName = "ProductCode",
                     ExpiryDate = DateTime.UtcNow.AddDays(5),
-                    Cells =
+                    Datasets =
                     [
-                        new Cell
+                        new Dataset
                         {
-                            CellTitle = "CellTitle",
-                            CellCode = "CellCode",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                            DatasetTitle = "CellTitle",
+                            DatasetName = "CellCode",
+                            LatestEditionNumber = 1,
+                            LatestUpdateNumber = 1
                         }
                     ]
                 },
                 new HoldingsServiceResponse
                 {
-                    ProductTitle = "ProductTitle1",
-                    ProductCode = "ProductCode1",
+                    UnitTitle = "ProductTitle1",
+                    UnitName = "ProductCode1",
                     ExpiryDate = DateTime.UtcNow.AddDays(4),
-                    Cells =
+                    Datasets =
                     [
-                        new Cell
+                        new Dataset
                         {
-                            CellTitle = "CellTitle1",
-                            CellCode = "CellCode1",
-                            LatestEditionNumber = "1",
-                            LatestUpdateNumber = "1"
+                            DatasetTitle = "CellTitle1",
+                            DatasetName = "CellCode1",
+                            LatestEditionNumber = 1,
+                            LatestUpdateNumber = 1
                         }
                     ]
                 }

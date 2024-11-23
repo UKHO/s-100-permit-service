@@ -16,7 +16,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="permitHeadersValues"></param>
         /// <param name="userPermitNumbers"></param>
         /// <param name="permitFolderName"></param>
-        public static void VerifyPermitsZipStructureAndPermitXmlContents(string zipPath, List<string>? invalidChars, List<string> permitHeadersValues, IReadOnlyDictionary<string, string> userPermitNumbers, string permitFolderName = "Permits")
+        public static void VerifyPermitsZipStructureAndPermitXmlContents(string zipPath, IEnumerable<string>? invalidChars, List<string> permitHeadersValues, IReadOnlyDictionary<string, string> userPermitNumbers, string permitFolderName = "Permits")
         {
             var allFolders = Directory.GetDirectories(zipPath);
             foreach(var folder in allFolders)

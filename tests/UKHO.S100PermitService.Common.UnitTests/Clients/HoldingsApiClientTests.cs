@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", CancellationToken.None, _correlationId);
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 1, "asdfsa", _correlationId, CancellationToken.None);
 
             var deserializedResult = JsonSerializer.Deserialize<List<HoldingsServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
@@ -74,7 +74,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, "", CancellationToken.None, _correlationId);
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, "", _correlationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -102,7 +102,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Clients
 
             _holdingsApiClient = new HoldingsApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, null, CancellationToken.None, _correlationId);
+            var result = _holdingsApiClient.GetHoldingsAsync(FakeUri, 8, null, _correlationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

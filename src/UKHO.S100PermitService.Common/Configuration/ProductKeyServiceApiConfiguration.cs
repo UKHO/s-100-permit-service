@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-
-namespace UKHO.S100PermitService.Common.Configuration
+﻿namespace UKHO.S100PermitService.Common.Configuration
 {
-    [ExcludeFromCodeCoverage]
     public class ProductKeyServiceApiConfiguration
     {
         public string BaseUrl { get; set; }

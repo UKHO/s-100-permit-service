@@ -57,11 +57,18 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started.");
 
-            var (httpStatusCode, stream) = await _permitService.ProcessPermitRequestAsync(licenceId, GetRequestCancellationToken(), GetCorrelationId());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(licenceId, GetCorrelationId(), GetRequestCancellationToken());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
-            return httpStatusCode == HttpStatusCode.OK ? File(stream, PermitServiceConstants.ZipContentType, PermitZipFileName) : StatusCode((int)httpStatusCode, string.Empty);
+            return permitServiceResult.StatusCode switch
+            {
+                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
+                HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
+                HttpStatusCode.NotFound => NotFound(permitServiceResult.ErrorResponse),
+                HttpStatusCode.NoContent => NoContent(),
+                _ => StatusCode((int)permitServiceResult.StatusCode)
+            };
         }
     }
 }

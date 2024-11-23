@@ -1,0 +1,41 @@
+﻿using System.Net;
+using System.Text.Json;
+using WireMock;
+
+namespace UKHO.S100PermitService.StubService.Stubs
+{
+    public static class ResponseHelper
+    {
+        public static string UpdateCorrelationIdInResponse(string filePath, string correlationId, HttpStatusCode statusCode)
+        {
+            if(statusCode != HttpStatusCode.BadRequest && statusCode != HttpStatusCode.NotFound)
+            {
+                return File.ReadAllText(filePath);
+            }
+
+            var responseBody = File.ReadAllText(filePath);
+            var jsonResponse = JsonSerializer.Deserialize<Dictionary<string, object>>(responseBody);
+
+            jsonResponse!["correlationId"] = correlationId;
+
+            responseBody = JsonSerializer.Serialize(jsonResponse);
+
+            return responseBody;
+        }
+
+        public static int ExtractLicenceId(IRequestMessage requestMessage)
+        {
+            var value = requestMessage.AbsolutePath.Split('/')[2];
+            return int.TryParse(value, out var licenceId) ? licenceId : 0;
+        }
+
+        public static string ExtractCorrelationId(IRequestMessage request)
+        {
+            if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
+            {
+                return correlationId.First();
+            }
+            return Guid.NewGuid().ToString();
+        }
+    }
+}

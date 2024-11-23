@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
     <PackageReference Include="WireMock.Net" Version="1.6.0" />
     <PackageReference Include="WireMock.Net.Abstractions" Version="1.6.0" />
     <PackageReference Include="WireMock.Org.Abstractions" Version="1.6.0" />
@@ -40,7 +39,7 @@
     <None Update="StubData\Holdings\response-200-licenceid-7.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-6.json">
+    <None Update="StubData\Holdings\response-204-licenceid-6.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\request-200-11-DuplicateCell.json">
@@ -56,6 +55,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\request-200.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StubData\ProductKeyService\response-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\request-400.json">
@@ -100,7 +102,7 @@
     <None Update="StubData\Holdings\response-200-licenceid-4.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-5.json">
+    <None Update="StubData\Holdings\response-204-licenceid-5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 	  <None Update="StubData\Holdings\response-200-licenceid-22.json">
@@ -145,7 +147,7 @@
 	  <None Update="StubData\UserPermits\response-200-licenceid-50.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-7.json">
+    <None Update="StubData\UserPermits\response-204-licenceid-7.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-200-licenceid-6.json">
@@ -163,7 +165,7 @@
     <None Update="StubData\UserPermits\response-200-licenceid-4.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-5.json">
+    <None Update="StubData\UserPermits\response-204-licenceid-5.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\UserPermits\response-400.json">

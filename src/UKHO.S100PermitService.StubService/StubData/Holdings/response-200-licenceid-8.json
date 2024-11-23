@@ -1,34 +1,34 @@
 [
   {
-   "productCode": "P1231",
-   "productTitle": "P1231",
-   "expiryDate": "2026-01-31T23:58:00Z",
-   "cells": [
-     {
-       "cellCode": "101GB40079ABCDEFG.000",
-       "cellTitle": "101GB40079ABCDEFG",
-       "latestEditionNumber": "1",
-       "latestUpdateNumber": "11"
-     },
-	 {
-       "cellCode": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
-       "cellTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
-       "latestEditionNumber": "10",
-       "latestUpdateNumber": "15"
-     }
-   ]
- },
- {
-   "productCode": "P1232",
-   "productTitle": "P1232",
-   "expiryDate": "2026-01-31T23:59:00Z",
-   "cells": [
-     {
-       "cellCode": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
-       "cellTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
-       "latestEditionNumber": "12",
-       "latestUpdateNumber": "15"
-     }
-   ]
- }
+    "unitName": "P1231",
+    "unitTitle": "P1231",
+    "expiryDate": "2026-01-31T23:58:00Z",
+    "datasets": [
+      {
+        "datasetName": "101GB40079ABCDEFG.000",
+        "datasetTitle": "101GB40079ABCDEFG",
+        "latestEditionNumber": 1,
+        "latestUpdateNumber": 11
+      },
+      {
+        "datasetName": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
+        "datasetTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
+        "latestEditionNumber": 10,
+        "latestUpdateNumber": 15
+      }
+    ]
+  },
+  {
+    "unitName": "P1232",
+    "unitTitle": "P1232",
+    "expiryDate": "2026-01-31T23:59:00Z",
+    "datasets": [
+      {
+        "datasetName": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5",
+        "datasetTitle": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
+        "latestEditionNumber": 12,
+        "latestUpdateNumber": 15
+      }
+    ]
+  }
 ]

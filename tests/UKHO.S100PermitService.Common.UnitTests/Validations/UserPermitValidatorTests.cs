@@ -58,9 +58,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             return new UserPermitServiceResponse()
             {
                 LicenceId = 1,
-                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2" },
-                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
-                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
+                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2" },
+                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
+                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
                 ]
             };
         }
@@ -70,9 +70,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             return new UserPermitServiceResponse()
             {
                 LicenceId = 1,
-                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L" },
-                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O" },
-                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
+                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L" },
+                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O" },
+                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
                 ]
             };
         }
@@ -82,9 +82,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             return new UserPermitServiceResponse()
             {
                 LicenceId = 1,
-                UserPermits = [ new UserPermit{ Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF9J0K1L2" },
-                    new UserPermit{  Title= "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E02M3N4O5" },
-                    new UserPermit{ Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D959P6Q7R8" }
+                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF9J0K1L2" },
+                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E02M3N4O5" },
+                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D959P6Q7R8" }
                 ]
             };
         }

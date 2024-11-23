@@ -8,6 +8,7 @@ using System.Net;
 using System.Text;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
@@ -44,8 +45,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                            .Returns((HttpStatusCode.OK, expectedStream));
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                            .Returns(PermitServiceResult.Success(expectedStream));
 
             var result = await _permitController.GeneratePermits(007);
 
@@ -69,20 +70,56 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
-        public async Task WhenPermitGenerationFailed_ThenReturnsNoContentResponse()
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.NotFound)]
+        [TestCase(HttpStatusCode.NoContent)]
+        [TestCase(HttpStatusCode.InternalServerError)]
+        public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((HttpStatusCode.NoContent, new MemoryStream()));
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(GetPermitServiceResult(httpStatusCode));
 
-            var result = (ObjectResult)await _permitController.GeneratePermits(1);
+            var result = await _permitController.GeneratePermits(1);
 
-            result.StatusCode.Should().Be(StatusCodes.Status204NoContent);
+            switch(result)
+            {
+                case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode: // 500: InternalServerError
+                    statusCodeResult.StatusCode.Should().Be((int)httpStatusCode);
+                    break;
+
+                case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
+                    badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
+                    badRequestObjectResult.Value.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Invalid licenceId", Source = "licenceId" }
+                    }
+                    });
+                    break;
+
+                case NotFoundObjectResult notFoundObjectResult when notFoundObjectResult.StatusCode == (int)httpStatusCode: //404: NotFound
+                    notFoundObjectResult.StatusCode.Should().Be((int)httpStatusCode);
+                    notFoundObjectResult.Value.Should().BeEquivalentTo(new
+                    {
+                        Errors = new List<ErrorDetail>
+                    {
+                        new() { Description = "Licence not found", Source = "licenceId" }
+                    }
+                    });
+                    break;
+
+                case NoContentResult noContentResult when noContentResult.StatusCode == (int)httpStatusCode: // 204: NoContent
+                    noContentResult.StatusCode.Should().Be((int)httpStatusCode);
+                    break;
+
+            }
 
             A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
+                 call.Method.Name == "Log"
+                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -93,30 +130,15 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             ).MustHaveHappenedOnceExactly();
         }
 
-        [Test]
-        public async Task WhenPermitGenerationFailed_ThenReturnsNotFoundResponse()
+        private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
-                .Returns((HttpStatusCode.NotFound, null));
-
-            var result = (ObjectResult)await _permitController.GeneratePermits(1);
-
-            result.StatusCode.Should().Be(StatusCodes.Status404NotFound);
-            result.Value.Should().Be(string.Empty);
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
-            ).MustHaveHappenedOnceExactly();
+            return httpStatusCode switch
+            {
+                HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] }),
+                HttpStatusCode.NotFound => PermitServiceResult.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] }),
+                HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
+                _ => PermitServiceResult.InternalServerError()
+            };
         }
 
         private string GetExpectedXmlString()

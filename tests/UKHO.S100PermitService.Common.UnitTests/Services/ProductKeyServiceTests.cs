@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenRequestsValidData_ThenProductKeyServiceReturnsValidResponse()
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                             .Returns(new HttpResponseMessage()
                             {
                                 StatusCode = HttpStatusCode.OK,
@@ -86,9 +86,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                .Returns(AccessToken);
 
-            var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], CancellationToken.None, _fakeCorrelationId);
-            response.Count.Should().BeGreaterThanOrEqualTo(1);
-            response.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
+            var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -100,7 +101,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
             ).MustHaveHappenedOnceExactly();
         }
@@ -111,7 +112,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenRequestIsInvalidOrNonExistData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                             .Returns(new HttpResponseMessage()
                             {
                                 StatusCode = httpStatusCode,
@@ -123,15 +124,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                             });
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored)).Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
-            
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
-            ).MustHaveHappenedOnceExactly();
+            ).MustHaveHappenedOnceExactly();            
         }
 
         [Test]
@@ -142,7 +142,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenProductKeyServiceResponseOtherThanOk_ThenThrowException(HttpStatusCode httpStatusCode, string content)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
                                 {
                                     StatusCode = httpStatusCode,
@@ -153,7 +153,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(content)))
                                 });
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode}");
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>().WithMessage("Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -168,7 +168,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenProductKeyServiceResponseTooManyRequests_ThenThrowException(HttpStatusCode httpStatusCode, string content)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored, A<string>.Ignored))
+                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
                                 {
                                     StatusCode = httpStatusCode,
@@ -182,7 +182,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
-            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], CancellationToken.None, _fakeCorrelationId)).Should().ThrowAsync<PermitServiceException>();
+            await FluentActions.Invoking(async () => await _productKeyService.GetProductKeysAsync([], _fakeCorrelationId, CancellationToken.None)).Should().ThrowAsync<PermitServiceException>();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
