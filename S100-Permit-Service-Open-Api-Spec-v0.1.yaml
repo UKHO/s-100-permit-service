@@ -18,19 +18,64 @@ security:
   - jwtBearerAuth: []
   
 paths:
-  /permits/{licenceId}:
-    get:
+  /v1/permits/s100:
+    post:
       description: |
-        It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.
+        It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the requested user permits (UPNs) and products, returns a compressed zip file containing all these PERMIT.XML files.
       operationId: getS100Permits
-      parameters:
-      - name: licenceId
-        in: path
-        description: Licence Id. It must be an integer value and greater than zero.
+      requestBody:
+        description: |
+          The JSON body containing UPNs and Products.
         required: true
-        schema:
-          type: integer
-          example: 12345678
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userPermits:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      upn:
+                        type: string
+                products:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      productName:
+                        type: string
+                      editionNumber:
+                        type: integer
+                      permitExpiryDate:
+                        type: string
+                        format: date
+            example: {"userPermits": [
+                                        {
+                                            "title": "IHO Test System",
+                                            "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
+                                        },
+                                        {
+                                            "title": "OeM Test 1",
+                                            "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
+                                        }
+                                    ],
+                      "products": [
+                                    {
+                                        "productName": "101GB40304A",
+                                        "editionNumber": 3,
+                                        "permitExpiryDate": "2025-01-31"
+                                    },
+                                    {
+                                        "productName": "102GB40304B",
+                                        "editionNumber": 3,
+                                        "permitExpiryDate": "2025-01-31"
+                                    }
+                                ],
+                    }
       responses:
         "200":
           description: OK - Returns permit files.
