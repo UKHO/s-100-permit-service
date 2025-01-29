@@ -32,15 +32,6 @@ paths:
             schema:
               type: object
               properties:
-                userPermits:
-                  type: array
-                  items:
-                    type: object
-                    properties:
-                      title:
-                        type: string
-                      upn:
-                        type: string
                 products:
                   type: array
                   items:
@@ -53,17 +44,16 @@ paths:
                       permitExpiryDate:
                         type: string
                         format: date
-            example: {"userPermits": [
-                                        {
-                                            "title": "IHO Test System",
-                                            "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
-                                        },
-                                        {
-                                            "title": "OeM Test 1",
-                                            "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
-                                        }
-                                    ],
-                      "products": [
+                userPermits:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      title:
+                        type: string
+                      upn:
+                        type: string
+            example: { "products": [
                                     {
                                         "productName": "101GB40304A",
                                         "editionNumber": 3,
@@ -75,6 +65,16 @@ paths:
                                         "permitExpiryDate": "2025-01-31"
                                     }
                                 ],
+                        "userPermits": [
+                                    {
+                                        "title": "IHO Test System",
+                                        "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
+                                    },
+                                    {
+                                        "title": "OeM Test 1",
+                                        "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
+                                    }
+                         ],
                     }
       responses:
         "200":
