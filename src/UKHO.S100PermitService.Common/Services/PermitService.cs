@@ -78,6 +78,8 @@ namespace UKHO.S100PermitService.Common.Services
 
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult.Value);
 
+
+
             var holdingsServiceResponseResult = await _holdingsService.GetHoldingsAsync(licenceId, correlationId, cancellationToken);
 
             permitServiceResult = HandleServiceResponse(holdingsServiceResponseResult);
