@@ -95,7 +95,6 @@ namespace UKHO.S100PermitService.Common.Services
             return filteredHoldings;
         }
 
-        //comment 
         private async Task<ServiceResponseResult<List<HoldingsServiceResponse>>> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
         {
             if(httpResponseMessage.IsSuccessStatusCode)
