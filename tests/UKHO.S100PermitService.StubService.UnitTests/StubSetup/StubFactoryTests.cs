@@ -24,7 +24,6 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
 
         [Test]
         [TestCase(null, "*productKeyServiceConfiguration*")]
-        [TestCase(typeof(ProductKeyServiceConfiguration), "*productKeyServiceConfiguration*")]
         public void WhenConstructorCalledWithNullParameter_ThenThrowsArgumentNullException(Type? productKeyServiceConfigType, string expectedMessage)
         {
             var productKeyServiceConfiguration = productKeyServiceConfigType == null ? null : _productKeyServiceConfiguration;
