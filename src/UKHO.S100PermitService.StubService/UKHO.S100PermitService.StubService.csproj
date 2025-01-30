@@ -18,30 +18,6 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-11.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-10.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-12.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-9.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-8.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-	  <None Update="StubData\Holdings\response-200-licenceid-50.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-    <None Update="StubData\Holdings\response-200-licenceid-7.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-204-licenceid-6.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="StubData\ProductKeyService\request-200-11-DuplicateCell.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -90,93 +66,12 @@
     <None Update="StubData\ProductKeyService\response-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\Holdings\response-200-licenceid-1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-3.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-200-licenceid-4.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-204-licenceid-5.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-	  <None Update="StubData\Holdings\response-200-licenceid-22.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-    <None Update="StubData\Holdings\response-400.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-401.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\Holdings\response-404.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="StubData\ProductKeyService\response-datanotfound-404.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-10.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-11.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-13.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-12.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-999.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-9.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-8.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 	  <None Update="StubData\ProductKeyService\response-200-50.json">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 	  </None>
-	  <None Update="StubData\UserPermits\response-200-licenceid-50.json">
-		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
-    <None Update="StubData\UserPermits\response-204-licenceid-7.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-6.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-1.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-2.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-3.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-200-licenceid-4.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-204-licenceid-5.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-400.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-401.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\UserPermits\response-404.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="web.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
