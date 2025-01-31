@@ -37,6 +37,19 @@ paths:
         Generates signed PERMIT.XML files for requested products and user permits (UPNs),
         returning them in a compressed ZIP file.
       operationId: getS100Permits
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+          description: Bearer <token> - Authorisation header
+        - name: X-Correlation-ID
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Request tracing identifier      
       requestBody:
         description: |
           The JSON body containing products and user permits, for which the permits are to be generated.
