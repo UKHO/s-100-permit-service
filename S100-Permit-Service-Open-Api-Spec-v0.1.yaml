@@ -43,7 +43,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Bearer <token> - Authorisation header
+          description: "Bearer token, where token is a valid JWT token"
         - name: X-Correlation-ID
           in: header
           required: false
