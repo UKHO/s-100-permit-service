@@ -38,7 +38,7 @@ paths:
         returning them in a compressed ZIP file.
       operationId: getS100Permits
       parameters:
-        - name: Authorization
+        - name: Authorisation
           in: header
           required: true
           schema:
