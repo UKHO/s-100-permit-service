@@ -2,7 +2,9 @@ openapi: 3.0.1
 info:
   title: UKHO S100 Permit Service API
   description: |
-    The UKHO S100 Permit Service API.
+    This API provides functionality to generate signed PERMIT.XML files 
+    using the S-100 Part 15 data protection scheme. It enables users to request permits 
+    for specific products and retrieve them as a compressed ZIP file.
   contact:
     name: UKHO
     email: abzudeliveryteam@ukho.gov.uk
@@ -10,9 +12,20 @@ info:
   
 externalDocs:
   url: https://github.com/UKHO/s-100-permit-service
+  
 servers:
-  - url: https://permit-service-url
-    description: Proposed URL
+  - url: https://{environment}.s100.permit-service.com
+    description: UKHO Permit Service API Environment
+    variables:
+      environment:
+        default: prod
+        enum:
+          - dev
+          - vnextiat
+          - vnexte2e
+          - iat
+          - preProd
+          - live
 
 security:
   - jwtBearerAuth: []
@@ -21,11 +34,12 @@ paths:
   /v1/permits/s100:
     post:
       description: |
-        It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the requested user permits (UPNs) and products, returns a compressed zip file containing all these PERMIT.XML files.
+        Generates signed PERMIT.XML files for requested products and user permits (UPNs),
+        returning them in a compressed ZIP file.
       operationId: getS100Permits
       requestBody:
         description: |
-          The JSON body containing UPNs and Products.
+          The JSON body containing products and user permits, for which the permits are to be generated.
         required: true
         content:
           application/json:
@@ -35,50 +49,40 @@ paths:
                 products:
                   type: array
                   items:
-                    type: object
-                    properties:
-                      productName:
-                        type: string
-                      editionNumber:
-                        type: integer
-                      permitExpiryDate:
-                        type: string
-                        format: date
+                    $ref: '#/components/schemas/product'
                 userPermits:
                   type: array
                   items:
-                    type: object
-                    properties:
-                      title:
-                        type: string
-                      upn:
-                        type: string
-            example: { "products": [
-                                    {
-                                        "productName": "101GB40304A",
-                                        "editionNumber": 3,
-                                        "permitExpiryDate": "2025-01-31"
-                                    },
-                                    {
-                                        "productName": "102GB40304B",
-                                        "editionNumber": 3,
-                                        "permitExpiryDate": "2025-01-31"
-                                    }
-                                ],
-                        "userPermits": [
-                                    {
-                                        "title": "IHO Test System",
-                                        "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
-                                    },
-                                    {
-                                        "title": "OeM Test 1",
-                                        "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
-                                    }
+                    $ref: '#/components/schemas/userPermit'
+            example: { 
+                        "products": 
+                        [
+                            {
+                                "productName": "101GB40304A",
+                                "editionNumber": 3,
+                                "permitExpiryDate": "2025-01-31"
+                            },
+                            {
+                                "productName": "102GB40304B",
+                                "editionNumber": 3,
+                                "permitExpiryDate": "2025-01-31"
+                            }
+                        ],
+                        "userPermits": 
+                        [
+                            {
+                                "title": "IHO Test System",
+                                "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
+                            },
+                            {
+                                "title": "OeM Test 1",
+                                "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
+                            }
                          ],
                     }
       responses:
         "200":
-          description: OK - Returns permit files.
+          description: OK - Returns permit files in a compressed ZIP file.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -95,14 +99,14 @@ paths:
                 type: string
                 format: binary
         "204":
-          description: No Content - There are no S100 permits for the licence.
+          description: No Content - There are no S100 permits for the given products and user permits.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
               schema:
                 type: string
         "400":
-          description: Bad request - could be missing or invalid licenceId, it must be an integer and greater than zero.
+          description: Bad Request - The request is invalid.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -115,13 +119,10 @@ paths:
               example:
                 correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
                 errors:
-                - source: licenceId
-                  description: Invalid licenceId
-            application/zip:
-              schema:
-                $ref: '#/components/schemas/errorDescription'
+                - source: "userPermits[0].upn"
+                  description: Invalid user permit
         "401":
-          description: Unauthorised - either you have not provided valid token, or your token is not recognised.
+          description: Unauthorised - Either you have not provided a valid token, or your token is not recognised.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -129,40 +130,21 @@ paths:
                 type: string
           content: {}
         "403":
-          description: Forbidden - you have no permission to use this API.
+          description: Forbidden - You are not authorised to access this resource.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
               schema:
                 type: string
-        "404":
-          description: Licence not found (licence not found in response received from Shop Facade UPN Service or Shop Facade Holding Service).
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorDescription'
-              example:
-                correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
-                errors:
-                - source: licenceId
-                  description: Licence not found
-            application/zip:
-              schema:
-                $ref: '#/components/schemas/errorDescription'
         "429":
-          description: Too Many Requests.
+          description: Too Many Requests - You have sent too many requests in a given amount of time. Please try again after some time.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
               schema:
                 type: string
         "500":
-          description: Internal Server Error.
+          description: Internal Server Error - An error occurred on the server.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
@@ -177,6 +159,23 @@ paths:
                 $ref: '#/components/schemas/exceptionDescription'
 components:
   schemas:
+    product:
+      type: object
+      properties:
+        productName:
+          type: string
+        editionNumber:
+          type: integer
+        permitExpiryDate:
+          type: string
+          format: date
+    userPermit:
+      type: object
+      properties:
+        title:
+          type: string
+        upn:
+          type: string
     exceptionDescription:
       type: object
       properties:
