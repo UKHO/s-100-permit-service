@@ -1,16 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
-using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
-using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
-using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -19,7 +15,6 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private readonly ILogger<UserPermitService> _logger;
         private readonly IOptions<UserPermitServiceApiConfiguration> _userPermitServiceApiConfiguration;
-        private readonly IUserPermitServiceAuthTokenProvider _userPermitServiceAuthTokenProvider;
         private readonly IUserPermitApiClient _userPermitApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private readonly IUserPermitValidator _userPermitValidator;
@@ -29,106 +24,14 @@ namespace UKHO.S100PermitService.Common.Services
 
         public UserPermitService(ILogger<UserPermitService> logger,
             IOptions<UserPermitServiceApiConfiguration> userPermitServiceApiConfiguration,
-            IUserPermitServiceAuthTokenProvider userPermitServiceAuthTokenProvider,
-            IUserPermitApiClient userPermitApiClient,
-            IWaitAndRetryPolicy waitAndRetryPolicy,
-            IUserPermitValidator userPermitValidator,
-            IUriFactory uriFactory)
+            IUserPermitApiClient userPermitApiClient)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _userPermitServiceApiConfiguration = userPermitServiceApiConfiguration ??
                                                  throw new ArgumentNullException(
                                                      nameof(userPermitServiceApiConfiguration));
-            _userPermitServiceAuthTokenProvider = userPermitServiceAuthTokenProvider ??
-                                                  throw new ArgumentNullException(
-                                                      nameof(userPermitServiceAuthTokenProvider));
+
             _userPermitApiClient = userPermitApiClient ?? throw new ArgumentNullException(nameof(userPermitApiClient));
-            _waitAndRetryPolicy = waitAndRetryPolicy ?? throw new ArgumentNullException(nameof(waitAndRetryPolicy));
-            _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
-            _uriFactory = uriFactory ?? throw new ArgumentNullException(nameof(uriFactory));
-        }
-
-        /// <summary>
-        /// Get User Permit Number (UPN) details from Shop Facade - User Permit Service for requested licence id.
-        /// </summary>
-        /// <remarks>
-        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
-        /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
-        /// If service responded with other than 200 Ok or 404 NotFound StatusCodes, Then PermitServiceException exception will be thrown.
-        /// </remarks>
-        /// <param name="licenceId">Requested licence id.</param>
-        /// <param name="correlationId">Guid based id to track request.</param>
-        /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
-        /// <response code="200">User Permit Number (UPN) details.</response>
-        /// <response code="204">NoContent - when service returned with empty response.</response>
-        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
-        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred or status code other than 200 OK and 404 NotFound returned.</exception>
-        public async Task<ServiceResponseResult<UserPermitServiceResponse>> GetUserPermitAsync(int licenceId, string correlationId, CancellationToken cancellationToken)
-        {
-            var uri = _uriFactory.CreateUri(_userPermitServiceApiConfiguration.Value.BaseUrl, UserPermitUrl, licenceId);
-
-            _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestStarted.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} started.", uri.AbsolutePath);
-
-            var accessToken = await _userPermitServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_userPermitServiceApiConfiguration.Value.ClientId);
-
-            var httpResponseMessage = await _waitAndRetryPolicy
-                .GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientUserPermitRequest).ExecuteAsync(async () =>
-                {
-                    return await _userPermitApiClient.GetUserPermitsAsync(uri.AbsoluteUri, licenceId, accessToken,
-                        correlationId, cancellationToken);
-                });
-
-            return await HandleResponseAsync(httpResponseMessage, uri, cancellationToken);
-        }
-
-        private async Task<ServiceResponseResult<UserPermitServiceResponse>> HandleResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
-        {
-            if(httpResponseMessage.IsSuccessStatusCode)
-            {
-                var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
-
-                if(httpResponseMessage.StatusCode == HttpStatusCode.OK)
-                {
-                    _logger.LogInformation(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus200Ok.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
-
-                    var response = JsonSerializer.Deserialize<UserPermitServiceResponse>(bodyJson);
-                    return ServiceResponseResult<UserPermitServiceResponse>.Success(response);
-                }
-
-                if(httpResponseMessage.StatusCode == HttpStatusCode.NoContent)
-                {
-                    _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus204NoContent.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} completed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
-
-                    return ServiceResponseResult<UserPermitServiceResponse>.NoContent();
-                }
-            }
-
-            return await HandleNonSuccessResponseAsync(httpResponseMessage, uri, cancellationToken);
-        }
-
-        private async Task<ServiceResponseResult<UserPermitServiceResponse>>
-            HandleNonSuccessResponseAsync(HttpResponseMessage httpResponseMessage, Uri uri, CancellationToken cancellationToken)
-        {
-            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
-
-            if(httpResponseMessage.StatusCode == HttpStatusCode.BadRequest)
-            {
-                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus400BadRequest.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
-
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
-                return ServiceResponseResult<UserPermitServiceResponse>.BadRequest(errorResponse);
-            }
-
-            if(httpResponseMessage.StatusCode == HttpStatusCode.NotFound)
-            {
-                _logger.LogWarning(EventIds.UserPermitServiceGetUserPermitsRequestCompletedWithStatus404NotFound.ToEventId(), "Request to UserPermitService GET Uri : {RequestUri} failed. | StatusCode: {StatusCode} | ResponseMessage: {ResponseMessage}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
-
-                var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson);
-                return ServiceResponseResult<UserPermitServiceResponse>.NotFound(errorResponse);
-            }
-
-            throw new PermitServiceException(EventIds.UserPermitServiceGetUserPermitsRequestFailed.ToEventId(), "Request to UserPermitService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}",
-                   uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
         }
 
         /// <summary>

@@ -21,7 +21,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IHoldingsService _holdingsService;
         private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
@@ -30,7 +29,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
-                             IHoldingsService holdingsService,
                              IUserPermitService userPermitService,
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
@@ -39,7 +37,6 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _holdingsService = holdingsService ?? throw new ArgumentNullException(nameof(holdingsService));
             _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
@@ -68,25 +65,11 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
 
-            var userPermitServiceResponseResult = await _userPermitService.GetUserPermitAsync(licenceId, correlationId, cancellationToken);
+            var userPermitServiceResponseResult = new UserPermitServiceResponse(); // temporary code to remove compilation error
+           
+            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult);
 
-            var permitServiceResult = HandleServiceResponse(userPermitServiceResponseResult);
-            if(permitServiceResult != null)
-            {
-                return permitServiceResult;
-            }
-
-            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult.Value);
-
-            var holdingsServiceResponseResult = await _holdingsService.GetHoldingsAsync(licenceId, correlationId, cancellationToken);
-
-            permitServiceResult = HandleServiceResponse(holdingsServiceResponseResult);
-            if(permitServiceResult != null)
-            {
-                return permitServiceResult;
-            }
-
-            var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponseResult.Value);
+            var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
 
             var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
 
@@ -94,7 +77,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult.Value);
+            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult);
 
             var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
