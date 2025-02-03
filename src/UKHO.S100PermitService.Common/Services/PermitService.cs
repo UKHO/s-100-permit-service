@@ -195,21 +195,5 @@ namespace UKHO.S100PermitService.Common.Services
 
             return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }
-
-        private PermitServiceResult HandleServiceResponse<T>(ServiceResponseResult<T> serviceResponseResult)
-        {
-            if(!serviceResponseResult.IsSuccess)
-            {
-                return serviceResponseResult.StatusCode switch
-                {
-                    HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(serviceResponseResult.ErrorResponse),
-                    HttpStatusCode.NotFound => PermitServiceResult.NotFound(serviceResponseResult.ErrorResponse),
-                    HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
-                    _ => PermitServiceResult.InternalServerError()
-                };
-            }
-
-            return null;
-        }
     }
 }

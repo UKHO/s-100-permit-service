@@ -23,7 +23,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
-        private IHoldingsService _fakeHoldingsService;
         private IUserPermitService _fakeUserPermitService;
         private IProductKeyService _fakeProductKeyService;
         private IS100Crypt _fakeIs100Crypt;
@@ -38,42 +37,38 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
-            _fakeHoldingsService = A.Fake<IHoldingsService>();
             _fakeUserPermitService = A.Fake<IUserPermitService>();
             _fakeProductKeyService = A.Fake<IProductKeyService>();
             _fakeIs100Crypt = A.Fake<IS100Crypt>();
             _fakeProductKeyServiceApiConfiguration = Options.Create(new ProductKeyServiceApiConfiguration() { HardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD" });
             _fakePermitFileConfiguration = A.Fake<IOptions<PermitFileConfiguration>>();
 
-            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService,
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService,
                                                 _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullHoldingsService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
-            nullHoldingsService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("holdingsService");
-
-            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, null, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullUserPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitService");
 
-            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, null, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, null, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullProductKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyService");
 
-            Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullIs100Crypt.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("s100Crypt");
 
-            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, null, _fakePermitFileConfiguration);
+            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, null, _fakePermitFileConfiguration);
             nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
 
-            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeHoldingsService, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, null);
+            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, null);
             nullPermitFileConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitFileConfiguration");
         }
 
@@ -81,15 +76,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
-
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(HttpStatusCode.OK));
-
-            A.CallTo(() => _fakeHoldingsService.FilterHoldingsByLatestExpiry(A<List<HoldingsServiceResponse>>.Ignored))
-                .Returns(GetFilteredHoldingDetails());
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                             .Returns(GetServiceResponse<List<ProductKeyServiceResponse>>(HttpStatusCode.OK));
@@ -126,106 +112,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
            ).MustHaveHappenedOnceExactly();
-        }
-
-        [TestCase(HttpStatusCode.NoContent)]
-        [TestCase(HttpStatusCode.BadRequest)]
-        [TestCase(HttpStatusCode.NotFound)]
-        public async Task WhenHoldingServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetServiceResponse<UserPermitServiceResponse>(HttpStatusCode.OK));
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetServiceResponse<List<HoldingsServiceResponse>>(httpStatusCode));
-
-            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            switch(response.StatusCode)
-            {
-                case HttpStatusCode.NoContent:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    break;
-
-                case HttpStatusCode.BadRequest:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    response.ErrorResponse.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Invalid licenceId", Source = "licenceId" }
-                    }
-                    });
-                    break;
-
-                case HttpStatusCode.NotFound:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    response.ErrorResponse.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Licence not found", Source = "licenceId" }
-                    }
-                    });
-                    break;
-            }
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
-        }
-
-        [TestCase(HttpStatusCode.NoContent)]
-        [TestCase(HttpStatusCode.BadRequest)]
-        [TestCase(HttpStatusCode.NotFound)]
-        public async Task WhenUserPermitServiceReturnsNotOkResponse_ThenPermitServiceReturnsNotOkResponse(HttpStatusCode httpStatusCode)
-        {
-            A.CallTo(() => _fakeUserPermitService.GetUserPermitAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetServiceResponse<UserPermitServiceResponse>(httpStatusCode));
-
-            var response = await _permitService.ProcessPermitRequestAsync(1, _fakeCorrelationId, CancellationToken.None);
-
-            switch(response.StatusCode)
-            {
-                case HttpStatusCode.NoContent:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    break;
-
-                case HttpStatusCode.BadRequest:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    response.ErrorResponse.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Invalid licenceId", Source = "licenceId" }
-                    }
-                    });
-                    break;
-
-                case HttpStatusCode.NotFound:
-                    response.StatusCode.Should().Be(httpStatusCode);
-                    response.ErrorResponse.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Licence not found", Source = "licenceId" }
-                    }
-                    });
-                    break;
-            }
-
-            A.CallTo(() => _fakeHoldingsService.GetHoldingsAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started."
-            ).MustHaveHappenedOnceExactly();
         }
 
         private static ServiceResponseResult<T> GetServiceResponse<T>(HttpStatusCode httpStatusCode) where T : class, new()
@@ -358,45 +244,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     Edition = "86C520323CEA3056B5ED7000F98814CB",
                     Key = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
                     DecryptedKey = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
-                }
-            ];
-        }
-
-        private static List<HoldingsServiceResponse> GetFilteredHoldingDetails()
-        {
-            return
-            [
-                new HoldingsServiceResponse
-                {
-                    UnitTitle = "ProductTitle",
-                    UnitName = "ProductCode",
-                    ExpiryDate = DateTime.UtcNow.AddDays(5),
-                    Datasets =
-                    [
-                        new Dataset
-                        {
-                            DatasetTitle = "CellTitle",
-                            DatasetName = "CellCode",
-                            LatestEditionNumber = 1,
-                            LatestUpdateNumber = 1
-                        }
-                    ]
-                },
-                new HoldingsServiceResponse
-                {
-                    UnitTitle = "ProductTitle1",
-                    UnitName = "ProductCode1",
-                    ExpiryDate = DateTime.UtcNow.AddDays(4),
-                    Datasets =
-                    [
-                        new Dataset
-                        {
-                            DatasetTitle = "CellTitle1",
-                            DatasetName = "CellCode1",
-                            LatestEditionNumber = 1,
-                            LatestUpdateNumber = 1
-                        }
-                    ]
                 }
             ];
         }
