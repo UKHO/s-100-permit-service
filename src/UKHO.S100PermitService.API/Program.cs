@@ -29,8 +29,6 @@ namespace UKHO.S100PermitService.API
     [ExcludeFromCodeCoverage]
     internal static class Program
     {
-        private const string HoldingsServiceApiConfiguration = "HoldingsServiceApiConfiguration";
-        private const string UserPermitServiceApiConfiguration = "UserPermitServiceApiConfiguration";
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
         private const string ManufacturerKeyVaultConfiguration = "ManufacturerKeyVault";
@@ -127,8 +125,6 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddDistributedMemoryCache();
 
             builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
-            builder.Services.Configure<HoldingsServiceApiConfiguration>(configuration.GetSection(HoldingsServiceApiConfiguration));
-            builder.Services.Configure<UserPermitServiceApiConfiguration>(configuration.GetSection(UserPermitServiceApiConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
             builder.Services.Configure<ManufacturerKeyVaultConfiguration>(configuration.GetSection(ManufacturerKeyVaultConfiguration));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
@@ -148,20 +144,6 @@ namespace UKHO.S100PermitService.API
                 .AddAuthenticationSchemes(AzureAdScheme)
                 .Build())
                 .AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
-
-            var holdingsServiceApiConfiguration = builder.Configuration.GetSection(HoldingsServiceApiConfiguration).Get<HoldingsServiceApiConfiguration>();
-            builder.Services.AddHttpClient<IHoldingsApiClient, HoldingsApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(holdingsServiceApiConfiguration.BaseUrl);
-                client.Timeout = TimeSpan.FromMinutes(holdingsServiceApiConfiguration.RequestTimeoutInMinutes);
-            });
-
-            var userPermitServiceApiConfiguration = builder.Configuration.GetSection(UserPermitServiceApiConfiguration).Get<UserPermitServiceApiConfiguration>();
-            builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
-            {
-                client.BaseAddress = new Uri(userPermitServiceApiConfiguration.BaseUrl);
-                client.Timeout = TimeSpan.FromMinutes(userPermitServiceApiConfiguration.RequestTimeoutInMinutes);
-            });
 
             var productKeyServiceApiConfiguration = builder.Configuration.GetSection(ProductKeyServiceApiConfiguration).Get<ProductKeyServiceApiConfiguration>();
             builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
