@@ -2,6 +2,7 @@
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.Request;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.Encryption
@@ -57,14 +58,14 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// <remarks>
         /// Decrypt User Permit(EncryptedHardwareId part of User Permit) and MKey with AES algorithm.
         /// </remarks>
-        /// <param name="userPermits">User Permits details.</param>
+        /// <param name="userPermitServiceResponse">User Permit Service response details.</param>
         /// <returns>Decrypted HardwareIds (HW_ID).</returns>
-        public async Task<IEnumerable<UpnInfo>> GetDecryptedHardwareIdFromUserPermitAsync(IEnumerable<UserPermit> userPermits)
+        public async Task<IEnumerable<UpnInfo>> GetDecryptedHardwareIdFromUserPermitAsync(UserPermitServiceResponse userPermitServiceResponse)
         {
             _logger.LogInformation(EventIds.ExtractDecryptedHardwareIdFromUserPermitStarted.ToEventId(), "Extraction of decrypted HW_ID from user permits started.");
 
             var listOfUpnInfo = new List<UpnInfo>();
-            foreach(var userPermit in userPermits)
+            foreach(var userPermit in userPermitServiceResponse.UserPermits)
             {
                 var upnInfo = new UpnInfo
                 {
