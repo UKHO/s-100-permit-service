@@ -146,7 +146,7 @@ namespace UKHO.S100PermitService.API
                 .AddPolicy(PermitServiceConstants.PermitServicePolicy, policy => policy.RequireRole(PermitServiceConstants.PermitServicePolicy));
 
             var productKeyServiceApiConfiguration = builder.Configuration.GetSection(ProductKeyServiceApiConfiguration).Get<ProductKeyServiceApiConfiguration>();
-            builder.Services.AddHttpClient<IUserPermitApiClient, UserPermitApiClient>(client =>
+            builder.Services.AddHttpClient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>(client =>
             {
                 client.BaseAddress = new Uri(productKeyServiceApiConfiguration.BaseUrl);
                 client.Timeout = TimeSpan.FromMinutes(productKeyServiceApiConfiguration.RequestTimeoutInMinutes);
@@ -169,8 +169,6 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<ISchemaValidator, SchemaValidator>();
             builder.Services.AddScoped<IUriFactory, UriFactory>();
 
-            builder.Services.AddTransient<IHoldingsApiClient, HoldingsApiClient>();
-            builder.Services.AddTransient<IUserPermitApiClient, UserPermitApiClient>();
             builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
         }
 
