@@ -10,6 +10,7 @@ using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Models.Request;
 
 namespace UKHO.S100PermitService.Common.Services
@@ -67,45 +68,45 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<PermitServiceResult> ProcessPermitRequestAsync(string productType, PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started.");
+            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
 
-            var userPermitServiceResponseResult = await _userPermitService.GetUserPermitAsync(1, correlationId, cancellationToken);
+            //var userPermitServiceResponseResult = await _userPermitService.GetUserPermitAsync(1, correlationId, cancellationToken);
 
-            var permitServiceResult = HandleServiceResponse(userPermitServiceResponseResult);
-            if(permitServiceResult != null)
-            {
-                return permitServiceResult;
-            }
+            //var permitServiceResult = HandleServiceResponse(userPermitServiceResponseResult);
+            //if(permitServiceResult != null)
+            //{
+            //    return permitServiceResult;
+            //}
 
-            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult.Value);
+            //_userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult.Value);
 
-            var holdingsServiceResponseResult = await _holdingsService.GetHoldingsAsync(1, correlationId, cancellationToken);
+            //var holdingsServiceResponseResult = await _holdingsService.GetHoldingsAsync(1, correlationId, cancellationToken);
 
-            permitServiceResult = HandleServiceResponse(holdingsServiceResponseResult);
-            if(permitServiceResult != null)
-            {
-                return permitServiceResult;
-            }
+            //permitServiceResult = HandleServiceResponse(holdingsServiceResponseResult);
+            //if(permitServiceResult != null)
+            //{
+            //    return permitServiceResult;
+            //}
 
-            var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponseResult.Value);
+            //var holdingsWithLatestExpiry = _holdingsService.FilterHoldingsByLatestExpiry(holdingsServiceResponseResult.Value);
 
-            //extract productType s100 and validate
-            //validate and filter permitRequest model
-            //changes in BuildPermitsAsync method
+            ////extract productType s100 and validate
+            ////validate and filter permitRequest model
+            ////changes in BuildPermitsAsync method
 
-            var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
+            //var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
 
-            var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
+            //var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
 
-            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
+            //var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult.Value);
+            //var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult.Value);
 
-            var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
+            //var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
-            _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed.");
+            _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
 
-            return PermitServiceResult.Success(permitDetails);
+            return PermitServiceResult.Success(new MemoryStream());
         }
 
         /// <summary>

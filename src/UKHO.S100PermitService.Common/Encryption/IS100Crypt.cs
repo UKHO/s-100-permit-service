@@ -1,5 +1,4 @@
 ﻿using UKHO.S100PermitService.Common.Models.ProductKeyService;
-using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 
 namespace UKHO.S100PermitService.Common.Encryption

@@ -1,4 +1,4 @@
-﻿namespace UKHO.S100PermitService.Common.Models.Request
+﻿namespace UKHO.S100PermitService.Common.Models.UserPermitService
 {
     public class UpnInfo
     {

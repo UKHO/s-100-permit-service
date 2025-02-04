@@ -57,11 +57,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error.</p>")]
         public virtual async Task<IActionResult> GeneratePermits(string productType, [FromBody] PermitRequest permitRequest)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started.");
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", productType);
 
             var permitServiceResult = await _permitService.ProcessPermitRequestAsync(productType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
-            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", productType);
 
             return permitServiceResult.StatusCode switch
             {
