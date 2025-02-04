@@ -4,6 +4,7 @@ using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
@@ -31,7 +32,8 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <remarks>
         /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) for a given licence and provides the zip stream containing PERMIT.XML.
         /// </remarks>
-        /// <param name="licenceId" example="12345678">Requested licence id.</param>
+        /// <param name="productType" example="s100">Requested Product type.</param>
+        /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="204">NoContent - when dependent services responded with empty response.</response>
         /// <response code="400">Bad Request.</response>
@@ -40,8 +42,8 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="429">You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        [HttpGet]
-        [Route("/permits/{licenceId}")]
+        [HttpPost]
+        [Route("/v1/permits/{productType}")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
@@ -53,11 +55,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.NotFound, type: typeof(IDictionary<string, string>), description: "<p>Licence not found (licence not found in response received from Shop Facade UPN Service or Shop Facade Holding Service).</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.TooManyRequests, description: "<p>Too Many Requests.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error.</p>")]
-        public virtual async Task<IActionResult> GeneratePermits([SwaggerParameter(Description = "Licence Id. It must be an integer value and greater than zero.", Required = true)] int licenceId)
+        public virtual async Task<IActionResult> GeneratePermits(string productType, [FromBody] PermitRequest permitRequest)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started.");
 
-            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(licenceId, GetCorrelationId(), GetRequestCancellationToken());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(productType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed.");
 
