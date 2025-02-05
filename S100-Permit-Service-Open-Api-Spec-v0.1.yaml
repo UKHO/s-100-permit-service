@@ -18,8 +18,9 @@ servers:
     description: UKHO Permit Service API Environment
     variables:
       environment:
-        default: prod
+        default: local
         enum:
+          - local
           - dev
           - vnextiat
           - vnexte2e
@@ -149,13 +150,6 @@ paths:
               description: GUID for the request for logging/tracing
               schema:
                 type: string
-        "429":
-          description: Too Many Requests - You have sent too many requests in a given amount of time. Please try again after some time.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
         "500":
           description: Internal Server Error - An error occurred on the server.
           headers:
@@ -174,8 +168,10 @@ components:
       properties:
         productName:
           type: string
+          maxLength: 255
         editionNumber:
           type: integer
+          minimum: 1
         permitExpiryDate:
           type: string
           format: date
