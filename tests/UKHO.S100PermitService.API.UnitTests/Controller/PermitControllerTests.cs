@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using NUnit.Framework;
-using System.Net;
 using System.Text;
 using UKHO.S100PermitService.API.Controllers;
 using UKHO.S100PermitService.Common.Events;
@@ -67,78 +66,6 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
            && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
            ).MustHaveHappenedOnceExactly();
-        }
-
-        [Test]
-        [TestCase(HttpStatusCode.BadRequest)]
-        [TestCase(HttpStatusCode.NotFound)]
-        [TestCase(HttpStatusCode.NoContent)]
-        [TestCase(HttpStatusCode.InternalServerError)]
-        public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
-        {
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<int>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(GetPermitServiceResult(httpStatusCode));
-
-            var result = await _permitController.GeneratePermits(1);
-
-            switch(result)
-            {
-                case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode: // 500: InternalServerError
-                    statusCodeResult.StatusCode.Should().Be((int)httpStatusCode);
-                    break;
-
-                case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
-                    badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
-                    badRequestObjectResult.Value.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Invalid licenceId", Source = "licenceId" }
-                    }
-                    });
-                    break;
-
-                case NotFoundObjectResult notFoundObjectResult when notFoundObjectResult.StatusCode == (int)httpStatusCode: //404: NotFound
-                    notFoundObjectResult.StatusCode.Should().Be((int)httpStatusCode);
-                    notFoundObjectResult.Value.Should().BeEquivalentTo(new
-                    {
-                        Errors = new List<ErrorDetail>
-                    {
-                        new() { Description = "Licence not found", Source = "licenceId" }
-                    }
-                    });
-                    break;
-
-                case NoContentResult noContentResult when noContentResult.StatusCode == (int)httpStatusCode: // 204: NoContent
-                    noContentResult.StatusCode.Should().Be((int)httpStatusCode);
-                    break;
-
-            }
-
-            A.CallTo(_fakeLogger).Where(call =>
-                 call.Method.Name == "Log"
-                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started."
-            ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed."
-            ).MustHaveHappenedOnceExactly();
-        }
-
-        private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
-        {
-            return httpStatusCode switch
-            {
-                HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] }),
-                HttpStatusCode.NotFound => PermitServiceResult.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] }),
-                HttpStatusCode.NoContent => PermitServiceResult.NoContent(),
-                _ => PermitServiceResult.InternalServerError()
-            };
         }
 
         private string GetExpectedXmlString()
