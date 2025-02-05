@@ -10,7 +10,6 @@ using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
-using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
@@ -78,7 +77,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                                            .Returns(GetServiceResponse<List<ProductKeyServiceResponse>>(HttpStatusCode.OK));
+                                            .Returns(ServiceResponseResult<List<ProductKeyServiceResponse>>.Success([
+                                                        new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
+                                                        new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }]));
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
@@ -112,100 +113,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed."
            ).MustHaveHappenedOnceExactly();
-        }
-
-        private static ServiceResponseResult<T> GetServiceResponse<T>(HttpStatusCode httpStatusCode) where T : class, new()
-        {
-            switch(httpStatusCode)
-            {
-                case HttpStatusCode.OK:
-
-                    var response = new T();
-
-                    if(response is UserPermitServiceResponse userPermitServiceResponse)
-                    {
-                        userPermitServiceResponse.LicenceId = 1;
-                        userPermitServiceResponse.UserPermits = [new UserPermit { Title = "Title", Upn = "Upn" }];
-                    }
-                    else if(response is List<ProductKeyServiceResponse> productKeyServiceResponse)
-                    {
-                        productKeyServiceResponse = [new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
-                            new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }];
-                    }
-
-                    else if(response is List<HoldingsServiceResponse> holdingsServiceResponse)
-                    {
-                        holdingsServiceResponse =
-                        [
-                            new()
-                            {
-                                UnitTitle = "ProductTitle",
-                                UnitName = "ProductCode",
-                                ExpiryDate = DateTime.UtcNow.AddDays(5),
-                                Datasets =
-                            [
-                                new Dataset
-                                {
-                                    DatasetTitle = "CellTitle",
-                                    DatasetName = "CellCode",
-                                    LatestEditionNumber = 1,
-                                    LatestUpdateNumber = 1
-                                },
-                                new Dataset
-                                {
-                                    DatasetTitle = "CellTitle",
-                                    DatasetName = "CellCode",
-                                    LatestEditionNumber = 1,
-                                    LatestUpdateNumber = 1
-                                }
-                            ]
-                            },
-                            new()
-                            {
-                                UnitTitle = "ProductTitle1",
-                                UnitName = "ProductCode1",
-                                ExpiryDate = DateTime.UtcNow.AddDays(4),
-                                Datasets =
-                            [
-                                new Dataset
-                                {
-                                    DatasetTitle = "CellTitle1",
-                                    DatasetName = "CellCode1",
-                                    LatestEditionNumber = 1,
-                                    LatestUpdateNumber = 1
-                                }
-                            ]
-                            },
-                            new()
-                            {
-                                UnitTitle = "ProductTitle",
-                                UnitName = "ProductCode",
-                                ExpiryDate = DateTime.UtcNow.AddDays(3),
-                                Datasets =
-                            [
-                                new Dataset
-                                {
-                                    DatasetTitle = "CellTitle",
-                                    DatasetName = "CellCode",
-                                    LatestEditionNumber = 1,
-                                    LatestUpdateNumber = 1
-                                }
-                            ]
-                            }
-                        ];
-                    };
-
-                    return ServiceResponseResult<T>.Success(response);
-
-                case HttpStatusCode.NoContent:
-                    return ServiceResponseResult<T>.NoContent();
-
-                case HttpStatusCode.NotFound:
-                    return ServiceResponseResult<T>.NotFound(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Licence not found", Source = "licenceId" }] });
-
-                default: //BadRequest
-                    return ServiceResponseResult<T>.BadRequest(new ErrorResponse() { CorrelationId = Guid.NewGuid().ToString(), Errors = [new ErrorDetail() { Description = "Invalid licenceId", Source = "licenceId" }] });
-            }
         }
 
         private static List<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
