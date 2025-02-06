@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _authToken = await _authTokenProvider!.AsyncGetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
-        [Ignore("ignoring to make the pipeine working till all the changes for S100 permit service are in place")]
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
@@ -36,7 +36,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
-        [Ignore("ignoring to make the pipeine working till all the changes for S100 permit service are in place")]
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
@@ -46,7 +46,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }
 
-        [Ignore("ignoring to make the pipeine working till all the changes for S100 permit service are in place")]
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
@@ -55,7 +55,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)401);
         }
 
-        [Ignore("ignoring to make the pipeine working till all the changes for S100 permit service are in place")]
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172917: Build ZipStream as Response
         // PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
         [Test]
