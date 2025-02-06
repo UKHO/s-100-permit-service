@@ -37,7 +37,7 @@ paths:
       description: |
         Generates signed PERMIT.XML files for requested products and user permits (UPNs),
         returning them in a compressed ZIP file.
-      operationId: getS100Permits
+      operationId: generateS100Permits
       parameters:
         - name: Authorisation
           in: header
@@ -64,10 +64,12 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/product'
+                  minItems: 1
                 userPermits:
                   type: array
                   items:
                     $ref: '#/components/schemas/userPermit'
+                  minItems: 1
             example: { 
                         "products": 
                         [
@@ -120,7 +122,7 @@ paths:
               schema:
                 type: string
         "400":
-          description: Bad Request - The request is invalid.
+          description: Bad Request - The request is invalid or one or more of the supplied UPNs are invalid.
           headers:
             X-Correlation-ID:
               description: GUID for the request for logging/tracing
