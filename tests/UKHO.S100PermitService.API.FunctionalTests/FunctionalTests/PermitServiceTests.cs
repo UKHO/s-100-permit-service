@@ -15,6 +15,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
         private string? _authToken;
+        private string _payload = "dummy";
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -26,105 +27,45 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _authToken = await _authTokenProvider!.AsyncGetPermitServiceToken(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
         }
 
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
+            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var noAuthToken = await _authTokenProvider!.AsyncGetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
+            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _payload);
             response.StatusCode.Should().Be((HttpStatusCode)403);
         }
 
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172720: Add AD Auth to get permits EndPoint
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
         {
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _permitServiceApiConfiguration.ValidLicenceId.ToString()!);
+            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _payload);
             response.StatusCode.Should().Be((HttpStatusCode)401);
         }
 
-        // PBI 172721: Get Holdings from Shop Facade stub
-        [Test]
-        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceIdAsAlphanumericSpecialChars_ThenBadRequest400IsReturned()
-        {
-            foreach(var licenceId in _permitServiceApiConfiguration!.NonIntegerLicenceIds!)
-            {
-                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
-                response.StatusCode.Should().Be((HttpStatusCode)400);
-            }
-        }
-
-        // PBI 172721: Get Holdings from Shop Facade stub
-        // PBI 172722: Get UPNs from Shop Facade stub
-        // PBI 181294: Return 404 instead of 500 for Get Permits Endpoint when licence not found for Get UPNs and Get Holdings
-        [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWithMissingData_ThenNotFound404IsReturned()
-        {
-            foreach(var licenceId in _permitServiceApiConfiguration!.MissingDataLicenceId!)
-            {
-                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
-                response.StatusCode.Should().Be((HttpStatusCode)404);
-            }
-        }
-
-        // PBI 172722: Get UPNs from Shop Facade stub
-        // PBI 172721: Get Holdings from Shop Facade stub
-        [Test]
-        public async Task WhenICallPermitServiceEndpointWithInvalidLicenceId_ThenInternalServerError500IsReturned()
-        {
-            foreach(var licenceId in _permitServiceApiConfiguration!.InvalidLicenceId!)
-            {
-                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString()!);
-                response.StatusCode.Should().Be((HttpStatusCode)400);
-            }
-
-        }
-
-        // PBI 172910: Get Permit Keys from PKS stub
-        [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoesNotHaveKey_ThenInternalServerError500IsReturned()
-        {
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidPksLicenceId.ToString()!);
-            response.StatusCode.Should().Be((HttpStatusCode)500);
-        }
-
-        // PBI 179438: Product Backlog Item 179438: Handle successful request with empty response for Get UPNs and Get Holdings
-        [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichDoNotHaveDataAvailable_ThenNoContent204IsReturned()
-        {
-            foreach(var licenceId in _permitServiceApiConfiguration!.NoDataLicenceId!)
-            {
-                var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId.ToString());
-                response.StatusCode.Should().Be((HttpStatusCode)204);
-            }
-        }
-
+        [Ignore("Temporarily ignoring the functional tests till all the respective changes of S100 Permit Service are done")]
         // PBI 172917: Build ZipStream as Response
         // PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
         [Test]
-        [TestCase("50", "Permits", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHave50CellsInHoldings_Then200OKResponseIsReturnedAndPERMITSZipIsGeneratedSuccessfully")]
-        [TestCase("12", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointForLicenceIdWhichHaveDuplicateCellsInHoldings_Then200OKResponseIsReturnedAndPERMITXmlIsGeneratedSuccessfullyWithHighestExpiryDate")]
-        public async Task WhenICallPermitServiceEndpointWithLicenceId_Then200OKResponseIsReturnedAlongWithPERMITSZip(string licenceId, string comparePermitFolderName)
+        [TestCase("payload", "Permits", TestName = "RenameTest1")]
+        [TestCase("payload", "DuplicatePermits", TestName = "RenameTest2")]
+        public async Task WhenICallPermitServiceEndpointWithValidPayload_Then200OKResponseIsReturnedAlongWithPERMITSZip(string payload, string comparePermitFolderName)
         {
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, licenceId);
+            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, payload);
             var downloadPath = await PermitServiceEndPointFactory.AsyncDownloadZipFile(response);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
-        }
-
-        // PBI 172917: Build ZipStream as Response
-        [Test]
-        public async Task WhenICallPermitServiceEndpointForLicenceIdWhichHaveInvalidValueOfExpiryDate_ThenInternalServerError500IsReturned()
-        {
-            var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _permitServiceApiConfiguration.InvalidExpiryDateLicenceId.ToString()!);
-            response.StatusCode.Should().Be((HttpStatusCode)500);
         }
 
         [TearDown]

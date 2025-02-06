@@ -1,8 +1,0 @@
-{
-  "errors": [
-    {
-      "source": "GetUserPermits",
-      "description": "Auth token is missing"
-    }
-  ]
-}
