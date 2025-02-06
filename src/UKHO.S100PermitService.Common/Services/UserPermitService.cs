@@ -11,8 +11,6 @@ namespace UKHO.S100PermitService.Common.Services
     {
         private readonly IUserPermitValidator _userPermitValidator;
 
-        private const string UserPermitUrl = "/userpermits/{0}/s100";
-
         public UserPermitService(IUserPermitValidator userPermitValidator)
         {
             _userPermitValidator = userPermitValidator ?? throw new ArgumentNullException(nameof(userPermitValidator));
