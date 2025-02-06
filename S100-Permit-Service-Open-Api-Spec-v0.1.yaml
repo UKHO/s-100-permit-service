@@ -114,13 +114,6 @@ paths:
                 title: S100 Permits ZIP File
                 type: string
                 format: binary
-        "204":
-          description: No Content - There are no S100 permits for the given products and user permits.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
         "400":
           description: Bad Request - The request is invalid or one or more of the supplied UPNs are invalid.
           headers:
