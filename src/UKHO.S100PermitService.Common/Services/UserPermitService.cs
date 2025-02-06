@@ -1,10 +1,12 @@
-﻿using UKHO.S100PermitService.Common.Events;
+﻿using System.Diagnostics.CodeAnalysis;
+using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
+    [ExcludeFromCodeCoverage]
     public class UserPermitService : IUserPermitService
     {
         private readonly IUserPermitValidator _userPermitValidator;
