@@ -27,9 +27,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests
             _services = new ServiceCollection();
             _services.AddLogging(configure => configure.AddConsole());
             _services.Configure<WireMockServerSettings>(_configuration.GetSection("WireMockServerSettings"));
-            _services.Configure<HoldingsServiceConfiguration>(_configuration.GetSection("HoldingsServiceConfiguration"));
             _services.Configure<ProductKeyServiceConfiguration>(_configuration.GetSection("ProductKeyServiceConfiguration"));
-            _services.Configure<UserPermitsServiceConfiguration>(_configuration.GetSection("UserPermitsServiceConfiguration"));
 
             _serviceProvider = _services.BuildServiceProvider();
         }
@@ -63,14 +61,10 @@ namespace UKHO.S100PermitService.StubService.UnitTests
         public void WhenConfigurationsAreLoaded_ThenConfigurationsAreNotMissing()
         {
             var stubConfiguration = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
-            var holdingsServiceConfiguration = _serviceProvider.GetService<IOptions<HoldingsServiceConfiguration>>()?.Value;
             var productKeyServiceConfiguration = _serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
-            var userPermitsServiceConfiguration = _serviceProvider.GetService<IOptions<UserPermitsServiceConfiguration>>()?.Value;
 
             stubConfiguration.Should().NotBeNull();
-            holdingsServiceConfiguration.Should().NotBeNull();
             productKeyServiceConfiguration.Should().NotBeNull();
-            userPermitsServiceConfiguration.Should().NotBeNull();
         }
     }
 }

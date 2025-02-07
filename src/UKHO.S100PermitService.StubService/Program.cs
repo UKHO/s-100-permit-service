@@ -21,9 +21,7 @@ namespace UKHO.S100PermitService.StubService
         private static void ConfigureServices(IServiceCollection services, IConfiguration configuration)
         {
             services.Configure<WireMockServerSettings>(configuration.GetSection("WireMockServerSettings"));
-            services.Configure<HoldingsServiceConfiguration>(configuration.GetSection("HoldingsServiceConfiguration"));
             services.Configure<ProductKeyServiceConfiguration>(configuration.GetSection("ProductKeyServiceConfiguration"));
-            services.Configure<UserPermitsServiceConfiguration>(configuration.GetSection("UserPermitsServiceConfiguration"));
 
             services.AddSingleton<StubFactory>();
             services.AddHostedService<StubManagerHostedService>();

@@ -1,9 +1,0 @@
-{
-  "correlationId": "",
-  "errors": [
-    {
-      "source": "licenceId",
-      "description": "Invalid licenceId"
-    }
-  ]
-}
