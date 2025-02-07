@@ -48,8 +48,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// Get required data from dependent services and build zip stream containing PERMIT.XML.
         /// </summary>
         /// <remarks>
-        /// If dependent services responded with empty response, Then status code 204 NoContent will be returned.
-        /// If invalid or non exists licence id requested, Then status code 404 NotFound will be returned.
         /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
         /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception will be thrown.
         /// If any required validation failed, Then PermitServiceException exception will be thrown.
@@ -59,8 +57,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
-        /// <response code="204">NoContent - when dependent services responded with empty response.</response>
-        /// <response code="404">NotFound - when invalid or non exists licence Id requested.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<PermitServiceResult> ProcessPermitRequestAsync(string productType, PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {
