@@ -1,8 +1,0 @@
-{
-  "errors": [
-    {
-      "source": "GetHoldings",
-      "description": "Auth token is missing"
-    }
-  ]
-}

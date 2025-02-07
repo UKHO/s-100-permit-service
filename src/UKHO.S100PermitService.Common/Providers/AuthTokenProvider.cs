@@ -12,7 +12,7 @@ using UKHO.S100PermitService.Common.Events;
 namespace UKHO.S100PermitService.Common.Providers
 {
     [ExcludeFromCodeCoverage]
-    public class AuthTokenProvider : IHoldingsServiceAuthTokenProvider, IUserPermitServiceAuthTokenProvider, IProductKeyServiceAuthTokenProvider
+    public class AuthTokenProvider : IProductKeyServiceAuthTokenProvider
     {
         private static readonly object _lock = new();
         private readonly IOptions<PermitServiceManagedIdentityConfiguration> _permitServiceManagedIdentityConfiguration;

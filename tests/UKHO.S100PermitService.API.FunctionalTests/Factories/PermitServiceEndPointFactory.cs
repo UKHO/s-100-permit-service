@@ -1,4 +1,5 @@
 ﻿using System.IO.Compression;
+using System.Text;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
@@ -13,12 +14,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </summary>
         /// <param name="baseUrl">Sets the baseUrl</param>
         /// <param name="accessToken">Sets the access Token</param>
-        /// <param name="licenceId">Sets the licence ID</param>
+        /// <param name="payload">Provides the payload</param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, string licenceId)
+        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, string payload)
         {
-            _uri = $"{baseUrl}/permits/{licenceId}";
-            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, _uri);
+            _uri = $"{baseUrl}/permits";
+            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
+            httpRequestMessage.Content = new StringContent(payload, Encoding.UTF8, "application/json");
             if(!string.IsNullOrEmpty(accessToken))
             {
                 httpRequestMessage.Headers.Add("Authorization", "Bearer " + accessToken);
