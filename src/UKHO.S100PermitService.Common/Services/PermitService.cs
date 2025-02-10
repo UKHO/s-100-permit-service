@@ -66,15 +66,15 @@ namespace UKHO.S100PermitService.Common.Services
            
             _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult);
 
-            var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
+            //var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
 
-            var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
+            //var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
 
             //var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
 
             //var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult);
+            //var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult);
 
             //var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
