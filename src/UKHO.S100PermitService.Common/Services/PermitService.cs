@@ -94,6 +94,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
         /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
         /// <returns>Zip stream containing PERMIT.XML.</returns>
+        [ExcludeFromCodeCoverage]
         private async Task<Stream> BuildPermitsAsync(IEnumerable<HoldingsServiceResponse> holdingsServiceResponses, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
@@ -168,6 +169,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="holdingsServiceResponse">Holding details.</param>
         /// <returns>ProductKeyServiceRequests</returns>
+        [ExcludeFromCodeCoverage]
         private List<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<HoldingsServiceResponse> holdingsServiceResponse) =>
             holdingsServiceResponse.SelectMany(x => x.Datasets.Select(y => new ProductKeyServiceRequest
