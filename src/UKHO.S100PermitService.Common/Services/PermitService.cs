@@ -6,7 +6,6 @@ using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models;
-using UKHO.S100PermitService.Common.Models.Holdings;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.Request;
@@ -64,22 +63,6 @@ namespace UKHO.S100PermitService.Common.Services
             //var userPermitServiceResponseResult = new UserPermitServiceResponse(); // temporary code to remove compilation error
 
             //_userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult);
-
-            ////var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
-
-            ////var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);
-
-            ////var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
-
-            ////var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
-
-            ////var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(userPermitServiceResponseResult);
-
-            ////var permitDetails = await BuildPermitsAsync(holdingsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
-
-            //_logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
-
-            //return PermitServiceResult.Success(new MemoryStream());
 
             var productKeyServiceRequest = CreateProductKeyServiceRequest(permitRequest.Products);
 
