@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 

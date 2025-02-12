@@ -11,6 +11,6 @@ namespace UKHO.S100PermitService.Common.Models.Request
         public int EditionNumber { get; set; }
 
         [JsonPropertyName("permitExpiryDate")]
-        public DateTime PermitExpiryDate { get; set; }
+        public string PermitExpiryDate { get; set; }
     }
 }

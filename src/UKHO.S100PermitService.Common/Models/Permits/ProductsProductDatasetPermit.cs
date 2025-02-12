@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.Common.Models.Permits
     {
         private string _fileNameField;
         private byte _editionNumberField;
-        private DateTime _expiryField;
+        private string _expiryField;
         private string _encryptedKeyField;
 
         [System.Xml.Serialization.XmlElement("S100SE:filename")]
@@ -38,8 +38,8 @@ namespace UKHO.S100PermitService.Common.Models.Permits
             }
         }
 
-        [System.Xml.Serialization.XmlElement("S100SE:expiry", DataType = "date")]
-        public DateTime Expiry
+        [System.Xml.Serialization.XmlElement("S100SE:expiry")]
+        public string Expiry
         {
             get
             {
