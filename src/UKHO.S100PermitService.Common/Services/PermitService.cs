@@ -161,7 +161,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="products">Products details.</param>
         /// <returns>ProductKeyServiceRequests</returns>
-        private static List<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
+        private static IEnumerable<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<Product> products) =>
             products.Select(p => new ProductKeyServiceRequest
             {

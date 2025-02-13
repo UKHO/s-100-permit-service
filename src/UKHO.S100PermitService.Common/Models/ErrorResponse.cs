@@ -7,6 +7,6 @@ namespace UKHO.S100PermitService.Common.Models
         [JsonPropertyName("correlationId")]
         public string CorrelationId { get; set; }
         [JsonPropertyName("errors")]
-        public List<ErrorDetail> Errors { get; set; }
+        public IEnumerable<ErrorDetail> Errors { get; set; }
     }
 }

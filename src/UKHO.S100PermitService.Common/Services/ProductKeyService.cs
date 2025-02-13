@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <returns>Product key details.</returns>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
-        public async Task<ServiceResponseResult<List<ProductKeyServiceResponse>>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
+        public async Task<ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>> GetProductKeysAsync(IEnumerable<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
         {
             var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
 
@@ -66,8 +66,8 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
-                var productKeyServiceResponse = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(bodyJson)!;
-                return ServiceResponseResult<List<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
+                var productKeyServiceResponse = JsonSerializer.Deserialize<IEnumerable<ProductKeyServiceResponse>>(bodyJson)!;
+                return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
             }
             if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
             {
