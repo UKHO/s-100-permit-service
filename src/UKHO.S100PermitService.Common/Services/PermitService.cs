@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -19,7 +18,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
@@ -27,7 +25,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
-                             IUserPermitService userPermitService,
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
                              IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
@@ -35,7 +32,6 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
@@ -59,10 +55,6 @@ namespace UKHO.S100PermitService.Common.Services
         public async Task<PermitServiceResult> ProcessPermitRequestAsync(string productType, PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
-
-            //var userPermitServiceResponseResult = new UserPermitServiceResponse(); // temporary code to remove compilation error
-
-            //_userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult);
 
             var productKeyServiceRequest = CreateProductKeyServiceRequest(permitRequest.Products);
 
@@ -90,7 +82,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
         /// <param name="upnInfos">User Permit Numbers (UPN) and DecryptedHardwareIds(HW_ID) from EncryptedHardwareIds(Part of UPN) with MKeys.</param>
         /// <returns>Zip stream containing PERMIT.XML.</returns>
-        [ExcludeFromCodeCoverage]
         private async Task<Stream> BuildPermitsAsync(IEnumerable<Product> productsDetails, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
             var permitDictionary = new Dictionary<string, Permit>();
@@ -119,7 +110,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Get product details from HoldingServiceResponse and ProductKeyService
+        /// Get product details from Products and ProductKeyService
         /// </summary>
         /// <param name="productsDetails">Products details.</param>
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
@@ -157,7 +148,7 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Create ProductKeyServiceRequest from HoldingsServiceResponse
+        /// Create ProductKeyServiceRequest from Products
         /// </summary>
         /// <param name="products">Products details.</param>
         /// <returns>ProductKeyServiceRequests</returns>
@@ -167,7 +158,7 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 ProductName = p.ProductName,
                 Edition = p.EditionNumber.ToString()
-            }).ToList();
+            });
 
         /// <summary>
         /// Get EncryptedKey from decrypted productkey and HW_ID
