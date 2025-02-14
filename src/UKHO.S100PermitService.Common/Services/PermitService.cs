@@ -62,10 +62,12 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
 
-            foreach (var userPermit in permitRequest.UserPermits)
+            foreach(var userPermit in permitRequest.UserPermits)
             {
                 _userPermitService.ValidateUpnsAndChecksum(userPermit);
             }
+
+            var productsWithLatestExpiry = FilterProductsByLatestExpiry(permitRequest.Products);
 
             var userPermitServiceResponseResult = new UserPermitServiceResponse(); // temporary code to remove compilation error
             var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
@@ -192,6 +194,22 @@ namespace UKHO.S100PermitService.Common.Services
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
             return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
+        }
+
+        /// <summary>
+        /// Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
+        /// </summary>
+        /// <param name="products"></param>
+        /// <returns>Products</returns>
+        private IEnumerable<Product> FilterProductsByLatestExpiry(IEnumerable<Product> products)
+        {
+            var latestExpiryProducts = products
+                .GroupBy(product => product.ProductName)
+                .Select(group => group.OrderByDescending(product => product.PermitExpiryDate).First());
+            
+            _logger.LogInformation(EventIds.ProductsFilteredCellCount.ToEventId(), "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", products.Count(), latestExpiryProducts.Count());
+
+            return latestExpiryProducts;
         }
     }
 }

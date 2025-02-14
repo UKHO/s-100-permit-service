@@ -178,6 +178,12 @@
         /// <summary>
         /// 840035 - Request to ProductKeyService GetProductKeys responded with status bad request
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840035
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840035,
+
+        /// <summary>
+        /// 840036 - Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
+        /// </summary>
+        ProductsFilteredCellCount = 840036
+
     }
 }
