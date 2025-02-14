@@ -62,10 +62,12 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
 
+            foreach (var userPermit in permitRequest.UserPermits)
+            {
+                _userPermitService.ValidateUpnsAndChecksum(userPermit);
+            }
+
             var userPermitServiceResponseResult = new UserPermitServiceResponse(); // temporary code to remove compilation error
-
-            _userPermitService.ValidateUpnsAndChecksum(userPermitServiceResponseResult);
-
             var holdingsWithLatestExpiry = new List<HoldingsServiceResponse>(); // temporary code to remove compilation error
 
             var productKeyServiceRequest = CreateProductKeyServiceRequest(holdingsWithLatestExpiry);

@@ -168,6 +168,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IUserPermitValidator, UserPermitValidator>();
             builder.Services.AddScoped<ISchemaValidator, SchemaValidator>();
             builder.Services.AddScoped<IUriFactory, UriFactory>();
+            builder.Services.AddScoped<IPermitRequestValidator, PermitRequestValidator>();
+            builder.Services.AddScoped<IProductValidator, ProductValidator>();
 
             builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
         }

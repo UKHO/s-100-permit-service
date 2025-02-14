@@ -3,8 +3,8 @@ using UKHO.S100PermitService.Common.Models.Request;
 
 namespace UKHO.S100PermitService.Common.Validations
 {
-    public interface IUserPermitValidator
+    public interface IProductValidator
     {
-        ValidationResult Validate(UserPermit userPermit);
+        ValidationResult Validate(Product product);
     }
 }
