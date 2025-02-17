@@ -5,7 +5,6 @@ using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.Request;
-using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Encryption
@@ -155,16 +154,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             ];
         }
 
-        private static UserPermitServiceResponse GetUserPermitServiceResponse()
+        private static IEnumerable<UserPermit> GetUserPermitServiceResponse()
         {
-            return new UserPermitServiceResponse()
-            {
-                LicenceId = 1,
-                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
-                    new UserPermit { Title = "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
-                    new UserPermit { Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
-                ]
-            };
+            return
+            [
+                    new() { Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },
+                    new() { Title = "SeaRadar X", Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6" },
+                    new() { Title = "Navi Radar", Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9" }
+            ];
         }
     }
 }

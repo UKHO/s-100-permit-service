@@ -19,8 +19,8 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
         private readonly IProductKeyService _productKeyService;
-        private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
+        private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,

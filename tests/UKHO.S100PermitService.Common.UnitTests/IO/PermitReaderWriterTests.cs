@@ -108,7 +108,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                          {
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
-                             Expiry = DateTime.Parse("2024-09-02"),
+                             Expiry = DateTime.UtcNow.AddDays(10).ToString("yyyy-mm-dd"),
                              Filename = "fakefilename"
                          }
                      ]
@@ -122,7 +122,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                          {
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
-                             Expiry = DateTime.Parse("2024-09-02"),
+                             Expiry = DateTime.UtcNow.AddDays(10).ToString("yyyy-mm-dd"),
                              Filename = "fakefilename"
                          }
                      ]
@@ -175,7 +175,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                          {
                              EditionNumber = 1,
                              EncryptedKey = "fakeencryptedkey",
-                             Expiry = DateTime.Parse("2024-09-02"),
+                             Expiry = DateTime.UtcNow.AddDays(10).ToString("yyyy-mm-dd"),
                              Filename = "fakefilename"
                          }
                      ]
@@ -215,8 +215,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             var expectedResult = "<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.2\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.2\">";
             expectedResult += "<S100SE:header><S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>";
             expectedResult += "<S100SE:userpermit>fakeUserPermit1</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID1\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>";
-            expectedResult += "<S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product><S100SE:productid=\"fakeID2\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename>";
-            expectedResult += "<S100SE:editionNumber>1</S100SE:editionNumber><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>";
+            expectedResult += $"<S100SE:expiry>{DateTime.UtcNow.AddDays(10):yyyy-mm-dd}</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product><S100SE:productid=\"fakeID2\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename>";
+            expectedResult += $"<S100SE:editionNumber>1</S100SE:editionNumber><S100SE:expiry>{DateTime.UtcNow.AddDays(10):yyyy-mm-dd}</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>";
 
             return expectedResult;
         }

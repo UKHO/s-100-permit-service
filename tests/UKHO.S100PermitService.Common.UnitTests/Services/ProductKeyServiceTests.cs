@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenRequestsValidData_ThenProductKeyServiceReturnsValidResponse()
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                    (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                             .Returns(new HttpResponseMessage()
                             {
                                 StatusCode = HttpStatusCode.OK,
@@ -112,7 +112,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenRequestIsInvalidOrNonExistData_ThenThrowException(HttpStatusCode httpStatusCode)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                    (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                             .Returns(new HttpResponseMessage()
                             {
                                 StatusCode = httpStatusCode,
@@ -142,7 +142,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenProductKeyServiceResponseOtherThanOk_ThenThrowException(HttpStatusCode httpStatusCode, string content)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                    (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
                                 {
                                     StatusCode = httpStatusCode,
@@ -168,7 +168,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenProductKeyServiceResponseTooManyRequests_ThenThrowException(HttpStatusCode httpStatusCode, string content)
         {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
-                    (A<string>.Ignored, A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                    (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
                                 {
                                     StatusCode = httpStatusCode,
