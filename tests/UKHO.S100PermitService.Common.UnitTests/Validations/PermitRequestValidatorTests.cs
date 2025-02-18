@@ -40,7 +40,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         public void WhenValidProductsAndUserPermitInPermitRequest_ThenNoValidationErrorIsReturned()
         {
             var permitRequest = GetPermitRequests();
-            var expectedValidationResult = new ValidationResult();
             A.CallTo(() => productValidator.Validate(A<Product>._)).Returns(new ValidationResult());
             A.CallTo(() => userPermitValidator.Validate(A<UserPermit>._)).Returns(new ValidationResult());
 
@@ -53,8 +52,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         {
             return new PermitRequest()
             {
-                Products = new List<Product>
-                {
+                Products =
+                [
                     new Product()
                     {
                         ProductName = "CellCode",
@@ -67,9 +66,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
                         EditionNumber = 2,
                         PermitExpiryDate = DateTime.UtcNow.AddMonths(2).ToString("yyyy-MM-dd")
                     }
-                },
-                UserPermits = new List<UserPermit>
-                {
+                ],
+                UserPermits =
+                [
                     new UserPermit()
                     {
                         Title = "FakeTitle1",
@@ -80,7 +79,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
                         Title = "FakeTitle2",
                         Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                     }
-                }
+                ]
             };
         }
     }

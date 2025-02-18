@@ -47,30 +47,31 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                            .Returns(PermitServiceResult.Success(expectedStream));
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(PermitServiceResult.Success(expectedStream));
 
-            var result = await _permitController.GeneratePermits(PRODUCT_TYPE, permitRequest);
+            var result = await _permitController.GeneratePermits(permitRequest);
 
             result.Should().BeOfType<FileStreamResult>();
-            ((FileStreamResult)result).FileDownloadName.Should().Be("Permits.zip");
-            ((FileStreamResult)result).FileStream.Length.Should().Be(expectedStream.Length);
+            var fileStreamResult = (FileStreamResult)result;
+            fileStreamResult.FileDownloadName.Should().Be("Permits.zip");
+            fileStreamResult.FileStream.Length.Should().Be(expectedStream.Length);
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started for ProductType {productType}."
-            ).MustHaveHappenedOnceExactly();
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started for ProductType {productType}.")
+                .MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
-           call.Method.Name == "Log"
-           && call.GetArgument<LogLevel>(0) == LogLevel.Information
-           && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
-           && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed for ProductType {productType}."
-           ).MustHaveHappenedOnceExactly();
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed for ProductType {productType}.")
+                .MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -79,10 +80,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetPermitServiceResult(httpStatusCode));
 
-            var result = await _permitController.GeneratePermits(PRODUCT_TYPE, permitRequest);
+            var result = await _permitController.GeneratePermits(permitRequest);
 
             switch(result)
             {
@@ -92,37 +93,46 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
                 case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
                     badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
-                    badRequestObjectResult.Value.Should().BeEquivalentTo(new { Errors = new List<ErrorDetail> { new() { Description = "Invalid user permit", Source = "userPermits[0].upn" } } });
+                    badRequestObjectResult.Value.Should()
+                        .BeEquivalentTo(new
+                        {
+                            Errors = new List<ErrorDetail> {
+                                new(){
+                                    Description = "Invalid UPN found for: FakeTitle1. UPN must be 46 characters long",
+                                    Source = "userPermits[0].upn"
+                                }
+                            }
+                        });
                     break;
             }
 
             A.CallTo(_fakeLogger).Where(call =>
-                 call.Method.Name == "Log"
-                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
-                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started for ProductType {productType}."
-            ).MustHaveHappenedOnceExactly();
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GeneratePermitStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call started for ProductType {productType}.")
+                .MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
                 && call.GetArgument<EventId>(1) == EventIds.GeneratePermitCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed for ProductType {productType}."
-            ).MustHaveHappenedOnceExactly();
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "GeneratePermit API call completed for ProductType {productType}.")
+                .MustHaveHappenedOnceExactly();
         }
 
-        private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
+        private static PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
         {
             var errorDetail = new ErrorDetail
             {
-                Description = "Invalid user permit",
+                Description = "Invalid UPN found for: FakeTitle1. UPN must be 46 characters long",
                 Source = "userPermits[0].upn"
             };
 
             var errorResponse = new ErrorResponse
             {
                 CorrelationId = Guid.NewGuid().ToString(),
-                Errors = [errorDetail]
+                Errors = new List<ErrorDetail> { errorDetail }
             };
 
             return httpStatusCode switch
@@ -132,14 +142,14 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             };
         }
 
-        private string GetExpectedXmlString()
+        private static string GetExpectedXmlString()
         {
             var sb = new StringBuilder();
             sb.Append("<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.2\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.2\"><S100SE:header>");
             sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>");
             sb.Append("<S100SE:userpermit>fakeUserPermit</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>");
             sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>");
-            
+
             return sb.ToString();
         }
     }
