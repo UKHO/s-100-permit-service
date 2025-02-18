@@ -59,7 +59,7 @@ namespace UKHO.S100PermitService.API.Middleware
                     ["correlationId"] = correlationId
                 }
             };
-
+            httpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, origin);
             await httpContext.Response.WriteAsJsonAsync(problemDetails);
         }
     }
