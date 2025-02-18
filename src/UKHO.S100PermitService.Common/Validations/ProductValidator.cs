@@ -19,8 +19,13 @@ namespace UKHO.S100PermitService.Common.Validations
             RuleFor(x => x.PermitExpiryDate)
                 .NotEmpty().WithMessage("PermitExpiryDate cannot be empty.")
                 .Matches(@"^\d{4}-\d{2}-\d{2}$").WithMessage("Must be in UTC format YYYY-MM-DD.")
-                .Must(BeAValidDate).WithMessage("Must be a valid date.")
-                .Must(BeTodayOrLater).WithMessage("PermitExpiryDate must be today or a future date.");
+                .DependentRules(() =>
+                    RuleFor(x => x.PermitExpiryDate)
+                        .Must(BeAValidDate).WithMessage("Must be a valid date.")
+                        .DependentRules(() => RuleFor(x => x.PermitExpiryDate)
+                            .Must(BeTodayOrLater).WithMessage("Must be today or a future date.")
+                        )
+                );
         }
 
         ValidationResult IProductValidator.Validate(Product product)

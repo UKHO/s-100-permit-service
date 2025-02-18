@@ -66,19 +66,17 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
 
-            var validationResult =_permitRequestValidator.Validate(permitRequest);
+            var validationResult = _permitRequestValidator.Validate(permitRequest);
 
             if(!validationResult.IsValid)
             {
-                var errorMessage = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
-                
                 var errorResponse = new ErrorResponse
                 {
                     CorrelationId = correlationId,
                     Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList()
                 };
 
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, errorMessage);
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
                 return PermitServiceResult.BadRequest(errorResponse);
             }
 
@@ -221,7 +219,7 @@ namespace UKHO.S100PermitService.Common.Services
             var latestExpiryProducts = products
                 .GroupBy(product => product.ProductName)
                 .Select(group => group.OrderByDescending(product => product.PermitExpiryDate).First());
-            
+
             _logger.LogInformation(EventIds.ProductsFilteredCellCount.ToEventId(), "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", products.Count(), latestExpiryProducts.Count());
 
             return latestExpiryProducts;

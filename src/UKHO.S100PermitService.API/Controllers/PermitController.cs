@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.Forbidden, description: "<p>Forbidden - you have no permission to use this API.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.TooManyRequests, description: "<p>Too Many Requests.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error.</p>")]
-        public virtual async Task<IActionResult> GeneratePermits([FromBody] PermitRequest permitRequest)
+        public virtual async Task<IActionResult> GenerateS100Permits([FromBody] PermitRequest permitRequest)
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", ProductType);
 
