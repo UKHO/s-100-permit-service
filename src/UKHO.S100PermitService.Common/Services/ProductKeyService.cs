@@ -61,22 +61,43 @@ namespace UKHO.S100PermitService.Common.Services
             });
 
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
+            var origin = httpResponseMessage.Headers.Contains(PermitServiceConstants.OriginHeaderKey) ? httpResponseMessage.Headers.GetValues(PermitServiceConstants.OriginHeaderKey).FirstOrDefault() : PermitServiceConstants.PermitKeyService;
 
-            if(httpResponseMessage.IsSuccessStatusCode)
+            switch (httpResponseMessage.StatusCode)
             {
-                _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
+                case HttpStatusCode.OK:
+                    {
+                        _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
-                var productKeyServiceResponse = JsonSerializer.Deserialize<IEnumerable<ProductKeyServiceResponse>>(bodyJson)!;
-                return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
+                        var productKeyServiceResponse = JsonSerializer.Deserialize<IEnumerable<ProductKeyServiceResponse>>(bodyJson)!;
+                        return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
+                    }
+                case HttpStatusCode.BadRequest:
+                case HttpStatusCode.NotFound:
+                    var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest ? EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest.ToEventId() : EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound.ToEventId();
+                    var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson)!;
+
+                    _logger.LogInformation(eventId, "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+
+                    return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.HandleResponse(httpResponseMessage.StatusCode,new ErrorResponse()
+                    {
+                        Errors = errorResponse.Errors,
+                        CorrelationId = errorResponse.CorrelationId,
+                        Origin = origin!
+                    });
+
+                case HttpStatusCode _ when (int)httpResponseMessage.StatusCode >= 400 && (int)httpResponseMessage.StatusCode <= 499:
+                    return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.HandleResponse(httpResponseMessage.StatusCode,new ErrorResponse()
+                    {
+                        CorrelationId = correlationId,
+                        Origin = origin!
+                    });
+
+                default:
+                    {
+                        throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+                    }
             }
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
-            {
-                var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest ? EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest.ToEventId() : EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound.ToEventId();
-
-                throw new PermitServiceException(eventId, "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
-            }
-
-            throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
         }
     }
 }

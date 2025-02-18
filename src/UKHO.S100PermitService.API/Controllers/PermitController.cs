@@ -18,12 +18,14 @@ namespace UKHO.S100PermitService.API.Controllers
 
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public PermitController(IHttpContextAccessor httpContextAccessor, ILogger<PermitController> logger, IPermitService permitService)
             : base(httpContextAccessor)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _permitService = permitService ?? throw new ArgumentNullException(nameof(permitService));
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         }
 
         /// <summary>
@@ -58,12 +60,17 @@ namespace UKHO.S100PermitService.API.Controllers
             var permitServiceResult = await _permitService.ProcessPermitRequestAsync(productType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", productType);
+            
+            if(permitServiceResult.ErrorResponse != null)
+            {
+                _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, permitServiceResult.ErrorResponse.Origin);
+            }
 
             return permitServiceResult.StatusCode switch
             {
                 HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
                 HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
-                _ => StatusCode((int)permitServiceResult.StatusCode)
+                _ => StatusCode((int)permitServiceResult.StatusCode, permitServiceResult.ErrorResponse)
             };
         }
     }

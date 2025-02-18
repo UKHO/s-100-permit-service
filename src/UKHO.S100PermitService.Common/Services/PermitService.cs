@@ -59,16 +59,19 @@ namespace UKHO.S100PermitService.Common.Services
             var productKeyServiceRequest = CreateProductKeyServiceRequest(permitRequest.Products);
 
             var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
+            if(productKeyServiceResponseResult.IsSuccess)
+            {
+                var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
 
-            var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
+                var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(permitRequest.UserPermits);
 
-            var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(permitRequest.UserPermits);
+                var permitDetails = await BuildPermitsAsync(permitRequest.Products, decryptedProductKeys, listOfUpnInfo);
 
-            var permitDetails = await BuildPermitsAsync(permitRequest.Products, decryptedProductKeys, listOfUpnInfo);
+                _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
 
-            _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
-
-            return PermitServiceResult.Success(permitDetails);
+                return PermitServiceResult.Success(permitDetails);
+            }
+            return PermitServiceResult.HandleResponse(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.ErrorResponse);
         }
 
         /// <summary>
