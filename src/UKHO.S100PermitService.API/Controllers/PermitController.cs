@@ -60,18 +60,18 @@ namespace UKHO.S100PermitService.API.Controllers
             var permitServiceResult = await _permitService.ProcessPermitRequestAsync(productType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", productType);
-            
+
             if(permitServiceResult.ErrorResponse != null)
             {
                 _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, permitServiceResult.ErrorResponse.Origin);
             }
 
-            return permitServiceResult.StatusCode switch
+            if(permitServiceResult.IsSuccess)
             {
-                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
-                HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
-                _ => StatusCode((int)permitServiceResult.StatusCode, permitServiceResult.ErrorResponse)
-            };
+                return File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName);
+            }
+
+            return StatusCode((int)permitServiceResult.StatusCode, permitServiceResult.ErrorResponse);
         }
     }
 }

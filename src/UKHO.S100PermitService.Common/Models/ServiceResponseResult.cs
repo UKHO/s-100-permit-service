@@ -11,9 +11,11 @@ namespace UKHO.S100PermitService.Common.Models
 
         public static ServiceResponseResult<T> Success(T value) => new(value, HttpStatusCode.OK);
 
-        public static ServiceResponseResult<T> BadRequest(ErrorResponse errorResponse) => new(default, HttpStatusCode.BadRequest, errorResponse);
+        public static ServiceResponseResult<T> Failure(HttpStatusCode httpStatusCode, ErrorResponse? errorResponse = null) => new(default, httpStatusCode, errorResponse);
 
-        public static ServiceResponseResult<T> HandleResponse(HttpStatusCode httpStatusCode, ErrorResponse errorResponse) => new(default, httpStatusCode, errorResponse);
+        //public static ServiceResponseResult<T> BadRequest(ErrorResponse errorResponse) => new(default, HttpStatusCode.BadRequest, errorResponse);
+
+        //public static ServiceResponseResult<T> HandleResponse(HttpStatusCode httpStatusCode, ErrorResponse errorResponse) => new(default, httpStatusCode, errorResponse);
 
     }
 }

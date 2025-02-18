@@ -18,6 +18,8 @@ namespace UKHO.S100PermitService.Common.Models
 
         public static PermitServiceResult Success(Stream value) => new(value, HttpStatusCode.OK);
 
+        public static PermitServiceResult Failure(HttpStatusCode httpStatusCode, ErrorResponse? errorResponse = null) => new(null, httpStatusCode, errorResponse);
+
         public static PermitServiceResult BadRequest(ErrorResponse errorResponse) => new(null, HttpStatusCode.BadRequest, errorResponse);
 
         public static PermitServiceResult InternalServerError() => new(null, HttpStatusCode.InternalServerError);

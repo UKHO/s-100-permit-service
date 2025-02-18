@@ -171,13 +171,8 @@
         ManufacturerKeyFoundInCache = 840033,
 
         /// <summary>
-        /// 840034 - Request to ProductKeyService GetProductKeys responded with status not found
+        /// 840034 - Request to ProductKeyService failed.
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840034,
-
-        /// <summary>
-        /// 840035 - Request to ProductKeyService GetProductKeys responded with status bad request
-        /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840035
+        ProductKeyServiceGetProductKeysRequestFailed = 840034
     }
 }

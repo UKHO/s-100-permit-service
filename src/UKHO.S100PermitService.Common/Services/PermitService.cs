@@ -59,6 +59,7 @@ namespace UKHO.S100PermitService.Common.Services
             var productKeyServiceRequest = CreateProductKeyServiceRequest(permitRequest.Products);
 
             var productKeyServiceResponseResult = await _productKeyService.GetProductKeysAsync(productKeyServiceRequest, correlationId, cancellationToken);
+
             if(productKeyServiceResponseResult.IsSuccess)
             {
                 var decryptedProductKeys = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(productKeyServiceResponseResult.Value, _productKeyServiceApiConfiguration.Value.HardwareId);
@@ -71,7 +72,8 @@ namespace UKHO.S100PermitService.Common.Services
 
                 return PermitServiceResult.Success(permitDetails);
             }
-            return PermitServiceResult.HandleResponse(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.ErrorResponse);
+
+            return PermitServiceResult.Failure(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.ErrorResponse);
         }
 
         /// <summary>
