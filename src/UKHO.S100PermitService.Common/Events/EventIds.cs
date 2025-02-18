@@ -183,7 +183,11 @@
         /// <summary>
         /// 840036 - Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
         /// </summary>
-        ProductsFilteredCellCount = 840036
+        ProductsFilteredCellCount = 840036,
 
+        /// <summary>
+        /// 840037 - Permit request validation failed.
+        /// </summary>
+        PermitRequestValidationFailed = 840037
     }
 }

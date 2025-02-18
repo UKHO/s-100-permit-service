@@ -17,12 +17,10 @@ namespace UKHO.S100PermitService.Common.Validations
                 .GreaterThan(0).WithMessage("Must be a natural number i.e. positive number greater than 0.");
 
             RuleFor(x => x.PermitExpiryDate)
-                .NotEmpty().WithMessage("Must be in UTC format YYYY-MM-DD.");
-
-            RuleFor(x => x.PermitExpiryDate)
                 .NotEmpty().WithMessage("PermitExpiryDate cannot be empty.")
                 .Matches(@"^\d{4}-\d{2}-\d{2}$").WithMessage("Must be in UTC format YYYY-MM-DD.")
-                .Must(BeAValidDate).WithMessage("Must be a valid date.");
+                .Must(BeAValidDate).WithMessage("Must be a valid date.")
+                .Must(BeTodayOrLater).WithMessage("PermitExpiryDate must be today or a future date.");
         }
 
         ValidationResult IProductValidator.Validate(Product product)
@@ -30,9 +28,14 @@ namespace UKHO.S100PermitService.Common.Validations
             return Validate(product);
         }
 
-        private bool BeAValidDate(string date)
+        private static bool BeAValidDate(string date)
         {
             return DateTime.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _);
+        }
+
+        private static bool BeTodayOrLater(string date)
+        {
+            return DateTime.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate) && parsedDate >= DateTime.UtcNow.Date;
         }
     }
 }

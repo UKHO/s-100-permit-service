@@ -11,6 +11,7 @@ using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Models.Request;
+using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -26,6 +27,7 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
         private readonly IOptions<ProductKeyServiceApiConfiguration> _productKeyServiceApiConfiguration;
+        private readonly IPermitRequestValidator _permitRequestValidator;
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
@@ -33,7 +35,8 @@ namespace UKHO.S100PermitService.Common.Services
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
                              IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
-                             IOptions<PermitFileConfiguration> permitFileConfiguration)
+                             IOptions<PermitFileConfiguration> permitFileConfiguration,
+                             IPermitRequestValidator permitRequestValidator)
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -42,6 +45,7 @@ namespace UKHO.S100PermitService.Common.Services
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));
             _permitFileConfiguration = permitFileConfiguration ?? throw new ArgumentNullException(nameof(permitFileConfiguration));
+            _permitRequestValidator = permitRequestValidator ?? throw new ArgumentNullException(nameof(permitRequestValidator));
         }
 
         /// <summary>
@@ -62,9 +66,20 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
 
-            foreach(var userPermit in permitRequest.UserPermits)
+            var validationResult =_permitRequestValidator.Validate(permitRequest);
+
+            if(!validationResult.IsValid)
             {
-                _userPermitService.ValidateUpnsAndChecksum(userPermit);
+                var errorMessage = string.Join("; ", validationResult.Errors.Select(e => e.ErrorMessage));
+                
+                var errorResponse = new ErrorResponse
+                {
+                    CorrelationId = correlationId,
+                    Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList()
+                };
+
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, errorMessage);
+                return PermitServiceResult.BadRequest(errorResponse);
             }
 
             var productsWithLatestExpiry = FilterProductsByLatestExpiry(permitRequest.Products);
