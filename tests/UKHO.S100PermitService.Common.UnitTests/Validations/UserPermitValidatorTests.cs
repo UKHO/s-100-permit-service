@@ -52,6 +52,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
                 .WithErrorMessage("Invalid title found : SeaRadar X*");
         }
 
+        [Test]
+        public void WhenEmptyUpn_ThenUpnValidationErrorFound()
+        {
+            var result = _userPermitValidator.TestValidate(GeUserPermitWithEmptyUpn());
+            
+            result.ShouldHaveValidationErrorFor(x => x.Upn)
+               .WithErrorMessage("UPN cannot be empty.");
+        }
+
         private static UserPermit GetValidUserPermit()
         {
             return new UserPermit
@@ -85,6 +94,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             {
                 Title = "SeaRadar X*",
                 Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5"
+            };
+        }
+        private static UserPermit GeUserPermitWithEmptyUpn()
+        {
+            return new UserPermit
+            {
+                Title = "Aqua Radar",
+                Upn = string.Empty,
             };
         }
     }
