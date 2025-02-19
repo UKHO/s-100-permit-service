@@ -168,11 +168,6 @@
         /// <summary>
         /// 840033 - Manufacturer Key found in Cache.
         /// </summary>
-        ManufacturerKeyFoundInCache = 840033,
-
-        /// <summary>
-        /// 840034 - Request to ProductKeyService failed.
-        /// </summary>
-        ProductKeyServiceGetProductKeysRequestFailed = 840034
+        ManufacturerKeyFoundInCache = 840033
     }
 }

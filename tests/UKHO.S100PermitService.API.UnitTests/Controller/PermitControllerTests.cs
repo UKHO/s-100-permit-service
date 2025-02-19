@@ -113,22 +113,18 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
         private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
         {
-            var errorDetail = new ErrorDetail
-            {
-                Description = "Invalid user permit",
-                Source = "userPermits[0].upn"
-            };
-
-            var errorResponse = new ErrorResponse
-            {
-                CorrelationId = Guid.NewGuid().ToString(),
-                Errors = [errorDetail]
-            };
-
             return httpStatusCode switch
             {
-                HttpStatusCode.BadRequest => PermitServiceResult.BadRequest(errorResponse),
-                _ => PermitServiceResult.InternalServerError()
+                HttpStatusCode.BadRequest => PermitServiceResult.Failure(httpStatusCode, new ErrorResponse
+                {
+                    CorrelationId = Guid.NewGuid().ToString(),
+                    Errors = [new ErrorDetail
+                                {
+                                    Description = "Invalid user permit",
+                                    Source = "userPermits[0].upn"
+                                }]
+                }),
+                _ => PermitServiceResult.Failure(httpStatusCode, new ErrorResponse { CorrelationId = Guid.NewGuid().ToString() })
             };
         }
 
@@ -139,7 +135,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>");
             sb.Append("<S100SE:userpermit>fakeUserPermit</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>");
             sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>");
-            
+
             return sb.ToString();
         }
     }

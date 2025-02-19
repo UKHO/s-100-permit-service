@@ -50,7 +50,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <returns>Permit file when success</returns>
         protected IActionResult ToActionResult(PermitServiceResult permitServiceResult)
         {
-            if(!string.IsNullOrEmpty(permitServiceResult.ErrorResponse.Origin))
+            if(!string.IsNullOrEmpty(permitServiceResult.ErrorResponse?.Origin))
             {
                 _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, permitServiceResult.ErrorResponse.Origin);
             }

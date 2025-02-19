@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.API.Middleware
 
             if(exception is PermitServiceException)
             {
-                origin = httpContext.Request.Headers.ContainsKey(PermitServiceConstants.OriginHeaderKey) ? httpContext.Request.Headers[PermitServiceConstants.OriginHeaderKey].FirstOrDefault() : PermitServiceConstants.PermitKeyService;
+                origin = httpContext.Request.Headers.TryGetValue(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.PermitKeyService;
             }
 
             var problemDetails = new ProblemDetails

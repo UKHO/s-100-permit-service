@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
@@ -38,7 +39,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <remarks>
         /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
-        /// If service responded with other than 200 Ok StatusCode, Then PermitServiceException exception will be thrown.
+        /// If service responded with other than 200 Ok StatusCode, Then errorResponse will be return with origin PKS.
         /// </remarks>
         /// <param name="productKeyServiceRequest">Product Key Service request body.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
@@ -66,10 +67,10 @@ namespace UKHO.S100PermitService.Common.Services
                 return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
             }
 
-            var origin = httpResponseMessage.Headers.GetValues(PermitServiceConstants.OriginHeaderKey).FirstOrDefault() ?? PermitServiceConstants.PermitKeyService;
+            var origin = httpResponseMessage.Headers.TryGetValues(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.PermitKeyService;
             var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson) ?? new ErrorResponse();
 
-            _logger.LogInformation(EventIds.ProductKeyServiceGetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+            _logger.LogInformation(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
             return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
             {
