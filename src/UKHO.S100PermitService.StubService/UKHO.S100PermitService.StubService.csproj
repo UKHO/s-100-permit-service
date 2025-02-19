@@ -33,6 +33,15 @@
     <None Update="StubData\ProductKeyService\request-200.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\ProductKeyService\request-401.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StubData\ProductKeyService\request-403.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StubData\ProductKeyService\request-500.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\ProductKeyService\response-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -63,7 +72,13 @@
     <None Update="StubData\ProductKeyService\response-401.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\ProductKeyService\response-403.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\ProductKeyService\response-404.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="StubData\ProductKeyService\response-500.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\response-datanotfound-404.json">
