@@ -29,8 +29,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
               .UsingPost()
               .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-403.json"))))
               .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-              .RespondWith(Response.Create()
-              .WithBody(GetJsonData(Path.Combine(ResponseFileDirectory, "response-403.json")))
+              .RespondWith(Response.Create()              
               .WithStatusCode(HttpStatusCode.Forbidden));
 
             server //500 when 
@@ -49,7 +48,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                  .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-401.json"))))
                  .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                  .RespondWith(Response.Create()
-                 .WithCallback(request => CreateResponse(request, "response-401.json", HttpStatusCode.Unauthorized)));
+                 .WithStatusCode(HttpStatusCode.Unauthorized));
 
             server //200
                 .Given(Request.Create()
@@ -112,7 +111,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-400.json"))))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));           
+                .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));
+
+            server //400 when invalid or non-existent cell passed
+                .Given(Request.Create()
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                .UsingPost()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithCallback(request => CreateResponse(request, "response-datanotfound-404.json", HttpStatusCode.BadRequest)));
         }
 
         private static string GetJsonData(string filePath)
