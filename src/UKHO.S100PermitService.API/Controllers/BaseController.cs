@@ -44,13 +44,13 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         /// <summary>
-        /// Convert PermitServiceResult to IActionResult based on status code.
+        /// Converts a PermitServiceResult to an appropriate IActionResult based on the status code.
         /// </summary>
-        /// <param name="permitServiceResult"></param>
-        /// <returns>Permit file when success</returns>
+        /// <param name="permitServiceResult">The result of the permit service operation, containing the status code, error response, and value.</param>
+        /// <returns>An IActionResult representing the HTTP response, including a permit file if the operation was successful.</returns>
         protected IActionResult ToActionResult(PermitServiceResult permitServiceResult)
         {
-            if(!string.IsNullOrEmpty(permitServiceResult.ErrorResponse?.Origin))
+            if (!string.IsNullOrEmpty(permitServiceResult.ErrorResponse?.Origin))
             {
                 _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, permitServiceResult.ErrorResponse.Origin);
             }
@@ -60,10 +60,9 @@ namespace UKHO.S100PermitService.API.Controllers
                 HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
                 HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
                 HttpStatusCode.Unauthorized => Unauthorized(permitServiceResult.ErrorResponse),
-                HttpStatusCode.Forbidden => Forbid(),
-                HttpStatusCode.NotFound => NotFound(permitServiceResult.ErrorResponse),
-                HttpStatusCode.InternalServerError => StatusCode((int)HttpStatusCode.InternalServerError, permitServiceResult.ErrorResponse),
-                _ => StatusCode((int)HttpStatusCode.InternalServerError, permitServiceResult.ErrorResponse)
+                HttpStatusCode.Forbidden => StatusCode(StatusCodes.Status403Forbidden),
+                HttpStatusCode.InternalServerError => StatusCode(StatusCodes.Status500InternalServerError, permitServiceResult.ErrorResponse),
+                _ => StatusCode((int)permitServiceResult.StatusCode, permitServiceResult.ErrorResponse)
             };
         }
     }

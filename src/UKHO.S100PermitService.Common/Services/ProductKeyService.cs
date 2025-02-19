@@ -68,7 +68,7 @@ namespace UKHO.S100PermitService.Common.Services
             }
 
             var origin = httpResponseMessage.Headers.TryGetValues(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.PermitKeyService;
-            var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson) ?? new ErrorResponse();
+            var errorResponse = !string.IsNullOrEmpty(bodyJson) ? JsonSerializer.Deserialize<ErrorResponse>(bodyJson) : new ErrorResponse();
 
             _logger.LogInformation(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
