@@ -89,8 +89,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(GetDecryptedKeysFromProductKeys());
             A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>._)).Returns(new ValidationResult());
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
-                .Returns(GetUpnInfoWithDecryptedHardwareId());
+            //A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
+            //    .Returns(GetUpnInfoWithDecryptedHardwareId()); // this need to be uncommented once the method is modified
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
