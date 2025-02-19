@@ -31,6 +31,15 @@ namespace UKHO.S100PermitService.StubService.Stubs
                  .RespondWith(Response.Create()
                  .WithCallback(request => CreateResponse(request, "response-401.json", HttpStatusCode.Unauthorized)));
 
+            server //401
+                 .Given(Request.Create()
+                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                 .UsingPost()
+                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-401.json"))))
+                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                 .RespondWith(Response.Create()
+                 .WithCallback(request => CreateResponse(request, "response-401.json", HttpStatusCode.Unauthorized)));
+
             server //404 when invalid or non-existent cell passed
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
@@ -110,6 +119,24 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));
+
+            server //403 when 
+               .Given(Request.Create()
+               .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+               .UsingPost()
+               .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-403.json"))))
+               .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+               .RespondWith(Response.Create()
+               .WithCallback(request => CreateResponse(request, "response-403.json", HttpStatusCode.Forbidden)));
+
+            server //500 when 
+              .Given(Request.Create()
+              .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+              .UsingPost()
+              .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-500.json"))))
+              .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+              .RespondWith(Response.Create()
+              .WithCallback(request => CreateResponse(request, "response-500.json", HttpStatusCode.InternalServerError)));
         }
 
         private static string GetJsonData(string filePath)
