@@ -22,7 +22,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
-        private readonly IUserPermitService _userPermitService;
         private readonly IProductKeyService _productKeyService;
         private readonly IOptions<PermitFileConfiguration> _permitFileConfiguration;
         private readonly IS100Crypt _s100Crypt;
@@ -31,7 +30,6 @@ namespace UKHO.S100PermitService.Common.Services
 
         public PermitService(IPermitReaderWriter permitReaderWriter,
                              ILogger<PermitService> logger,
-                             IUserPermitService userPermitService,
                              IProductKeyService productKeyService,
                              IS100Crypt s100Crypt,
                              IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration,
@@ -40,7 +38,6 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _permitReaderWriter = permitReaderWriter ?? throw new ArgumentNullException(nameof(permitReaderWriter));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _userPermitService = userPermitService ?? throw new ArgumentNullException(nameof(userPermitService));
             _productKeyService = productKeyService ?? throw new ArgumentNullException(nameof(productKeyService));
             _s100Crypt = s100Crypt ?? throw new ArgumentNullException(nameof(s100Crypt));
             _productKeyServiceApiConfiguration = productKeyServiceApiConfiguration ?? throw new ArgumentNullException(nameof(productKeyServiceApiConfiguration));

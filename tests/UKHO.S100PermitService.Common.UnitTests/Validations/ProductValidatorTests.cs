@@ -94,7 +94,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             var result = _validator.TestValidate(product);
 
             result.ShouldHaveValidationErrorFor(p => p.PermitExpiryDate)
-                .WithErrorMessage("PermitExpiryDate must be today or a future date.");
+                .WithErrorMessage("Must be today or a future date.");
         }
 
         [Test]

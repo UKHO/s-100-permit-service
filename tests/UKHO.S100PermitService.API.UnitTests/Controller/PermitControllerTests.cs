@@ -21,7 +21,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;
         private PermitController _permitController;
-        private const string PRODUCT_TYPE = "s100";
+        private const string ProductType = "s100";
 
         [SetUp]
         public void Setup()
@@ -47,16 +47,16 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(ProductType, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(PermitServiceResult.Success(expectedStream));
 
-            var result = await _permitController.GeneratePermits(permitRequest);
+            var result = await _permitController.GenerateS100Permits(permitRequest);
 
             result.Should().BeOfType<FileStreamResult>();
             var fileStreamResult = (FileStreamResult)result;
             fileStreamResult.FileDownloadName.Should().Be("Permits.zip");
             fileStreamResult.FileStream.Length.Should().Be(expectedStream.Length);
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(ProductType, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -80,10 +80,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(ProductType, permitRequest, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetPermitServiceResult(httpStatusCode));
 
-            var result = await _permitController.GeneratePermits(permitRequest);
+            var result = await _permitController.GenerateS100Permits(permitRequest);
 
             switch(result)
             {

@@ -160,7 +160,6 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
-            builder.Services.AddScoped<IUserPermitService, UserPermitService>();
             builder.Services.AddScoped<IProductKeyService, ProductKeyService>();
             builder.Services.AddScoped<IWaitAndRetryPolicy, WaitAndRetryPolicy>();
             builder.Services.AddScoped<IS100Crypt, S100Crypt>();

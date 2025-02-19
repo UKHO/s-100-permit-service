@@ -24,7 +24,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     {
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
-        private IUserPermitService _fakeUserPermitService;
         private IProductKeyService _fakeProductKeyService;
         private IS100Crypt _fakeIs100Crypt;
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
@@ -39,41 +38,37 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
-            _fakeUserPermitService = A.Fake<IUserPermitService>();
             _fakeProductKeyService = A.Fake<IProductKeyService>();
             _fakeIs100Crypt = A.Fake<IS100Crypt>();
             _fakeProductKeyServiceApiConfiguration = Options.Create(new ProductKeyServiceApiConfiguration() { HardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD" });
             _fakePermitFileConfiguration = A.Fake<IOptions<PermitFileConfiguration>>();
             _fakePermitRequestValidator = A.Fake<IPermitRequestValidator>();
-            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService,
+            _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService,
                                                 _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullUserPermitService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullUserPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("userPermitService");
-
-            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, null, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
+            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
             nullProductKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyService");
 
-            Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
+            Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
             nullIs100Crypt.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("s100Crypt");
 
-            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, null, _fakePermitFileConfiguration, _fakePermitRequestValidator);
+            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, null, _fakePermitFileConfiguration, _fakePermitRequestValidator);
             nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
 
-            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, null, _fakePermitRequestValidator);
+            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, null, _fakePermitRequestValidator);
             nullPermitFileConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitFileConfiguration");
 
-            Action nullPermitRequestValidator = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeUserPermitService, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, null);
+            Action nullPermitRequestValidator = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, null);
             nullPermitRequestValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitRequestValidator");
         }
 
