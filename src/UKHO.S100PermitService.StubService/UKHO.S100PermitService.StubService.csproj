@@ -48,9 +48,6 @@
     <None Update="StubData\ProductKeyService\request-400.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\ProductKeyService\request-404.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="StubData\ProductKeyService\response-200-12-DuplicateCell.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -75,13 +72,7 @@
     <None Update="StubData\ProductKeyService\response-403.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\ProductKeyService\response-404.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="StubData\ProductKeyService\response-500.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\response-datanotfound-404.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 	  <None Update="StubData\ProductKeyService\response-200-50.json">
