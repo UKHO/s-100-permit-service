@@ -88,74 +88,28 @@ paths:
                         [
                             {
                                 "title": "IHO Test System",
-                                "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
+                                "upn": "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                             },
                             {
                                 "title": "OeM Test 1",
-                                "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0E859868"
+                                "upn": "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9"
                             }
                          ],
                     }
       responses:
         "200":
-          description: OK - Returns permit files in a compressed ZIP file.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
-            Content-Disposition:
-              schema:
-                type: string
-                format: filename=permits.zip; filename*=UTF-8''Permits.zip
-          content:
-            application/zip:
-              schema:
-                title: S100 Permits ZIP File
-                type: string
-                format: binary
+          $ref: '#/components/responses/OkResponse'
         "400":
-          description: Bad Request - The request is invalid or one or more of the supplied UPNs are invalid.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/errorDescription'
-              example:
-                correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
-                errors:
-                - source: "userPermits[0].upn"
-                  description: Invalid user permit
+          $ref: '#/components/responses/BadRequestResponse'
         "401":
-          description: Unauthorised - Either you have not provided a valid token, or your token is not recognised.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
-          content: {}
+          $ref: '#/components/responses/UnauthorizedResponse'
         "403":
-          description: Forbidden - You are not authorised to access this resource.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
+          $ref: '#/components/responses/ForbiddenResponse'
+        "429":
+          $ref: '#/components/responses/TooManyRequestsResponse'
         "500":
-          description: Internal Server Error - An error occurred on the server.
-          headers:
-            X-Correlation-ID:
-              description: GUID for the request for logging/tracing
-              schema:
-                type: string
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/exceptionDescription'
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
 components:
   schemas:
     product:
@@ -203,3 +157,98 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+  headers:
+    X-Correlation-ID:
+      description: GUID for the request for logging/tracing
+      schema:
+        type: string
+    Origin:
+      description: The original API or service which has returned the response
+      schema:
+        type: string
+  responses:
+    OkResponse:
+      description: OK - Returns permit files in a compressed ZIP file.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Content-Disposition:
+          schema:
+            type: string
+            format: filename=permits.zip; filename*=UTF-8''Permits.zip
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/zip:
+          schema:
+            title: S100 Permits ZIP File
+            type: string
+            format: binary
+    BadRequestResponse:
+      description: Bad Request - The request is invalid or one or more of the supplied UPNs are invalid.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorDescription'
+          example:
+            correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
+            errors:
+            - source: "productType"
+              description: Must be a valid product type.
+            - source: "products[0].productName"
+              description: Must be a maximum of 255 characters.
+            - source: "products[2].editionNumber"
+              description: Must be a natural number i.e. positive number greater than 0
+            - source: "products[7].permitExpiryDate"
+              description: Must be in UTC format YYYY-MM-DD.
+            - source: "userPermits[0].title"
+              description: "Must not contain the characters \\ / : * ? \" < > |."
+            - source: "userPermits[0].upn"
+              description: Must be exactly 46 characters long with a verified checksum.
+    UnauthorizedResponse:
+      description: Unauthorised - Either you have not provided a valid token, or your token is not recognised.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content: {}
+    ForbiddenResponse:
+      description: Forbidden - You are not authorised to access this resource.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+    TooManyRequestsResponse:
+      description: Too Many Requests - You have sent too many requests in a given amount of time.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorDescription'
+          example:
+            correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
+            errors:
+            - source: "request"
+              description: Too many requests
+    InternalServerErrorResponse:
+      description: Internal Server Error - An error occurred on the server.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/exceptionDescription'
