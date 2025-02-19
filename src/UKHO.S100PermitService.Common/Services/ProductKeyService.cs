@@ -1,11 +1,9 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models;
@@ -46,14 +44,13 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <returns>Product key details.</returns>
-        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
         public async Task<ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>> GetProductKeysAsync(IEnumerable<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
         {
             var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
 
             _logger.LogInformation(EventIds.GetProductKeysRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsolutePath);
 
-            var accessToken = ""; //await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
+            var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).ExecuteAsync(() =>
                 _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, correlationId, cancellationToken)
@@ -66,21 +63,15 @@ namespace UKHO.S100PermitService.Common.Services
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200OK.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
                 var productKeyServiceResponse = JsonSerializer.Deserialize<IEnumerable<ProductKeyServiceResponse>>(bodyJson)!;
-
                 return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
             }
 
-            var origin = httpResponseMessage.Headers.Contains(PermitServiceConstants.OriginHeaderKey) ? httpResponseMessage.Headers.GetValues(PermitServiceConstants.OriginHeaderKey).FirstOrDefault() : PermitServiceConstants.PermitKeyService;
-            var errorResponse = default(ErrorResponse);
-
-            if(!string.IsNullOrEmpty(bodyJson))
-            {
-                errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson)!;
-            }
+            var origin = httpResponseMessage.Headers.GetValues(PermitServiceConstants.OriginHeaderKey).FirstOrDefault() ?? PermitServiceConstants.PermitKeyService;
+            var errorResponse = JsonSerializer.Deserialize<ErrorResponse>(bodyJson) ?? new ErrorResponse();
 
             _logger.LogInformation(EventIds.ProductKeyServiceGetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
-            return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse()
+            return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
             {
                 Errors = errorResponse?.Errors!,
                 CorrelationId = correlationId,
