@@ -51,7 +51,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
             var result = _userPermitValidator.TestValidate(GetUserPermitWithInvalidCharactersInTitle());
 
             result.ShouldHaveValidationErrorFor(x => x.Title)
-                .WithErrorMessage("Invalid title found : SeaRadar X*");
+                .WithErrorMessage("Invalid title found : SeaRadar X*. Must not contain the characters \\/:*?\"<>|");
         }
 
         [Test]
