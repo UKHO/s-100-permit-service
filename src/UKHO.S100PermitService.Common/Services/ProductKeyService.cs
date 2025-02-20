@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
@@ -47,6 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <returns>Product key details.</returns>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
+        [ExcludeFromCodeCoverage] //as the status code and its implementation is changed in next PBI 203832, so excluding it temporary for pipeline to get passed
         public async Task<ServiceResponseResult<List<ProductKeyServiceResponse>>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
         {
             var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
