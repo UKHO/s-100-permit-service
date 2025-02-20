@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         }
 
         [Test]
-        public void WhenProductsAndUserPermitAreEmpty_ThenValidationErrorIsReturned()
+        public void WhenProductsAndUserPermitsAreEmpty_ThenValidationErrorIsReturned()
         {
             var permitRequest = new PermitRequest
             {
