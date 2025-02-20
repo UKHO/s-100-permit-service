@@ -25,10 +25,12 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         /// <summary>
-        /// Provide Permits for requested licence Id.
+        /// Provide Permits for requested JSON body containing products and UPNs.
         /// </summary>
         /// <remarks>
         /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) and products and provides the zip stream containing PERMIT.XML.
+        /// If service responded with other than 200 Ok StatusCode, Then errorResponse will be return with origin PKS as header.
+        /// If exception occurred on S100PermitService, Then InternalServerError will be return with origin S100PermitService as header.
         /// </remarks>
         /// <param name="productType" example="s100">Requested Product type.</param>
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>

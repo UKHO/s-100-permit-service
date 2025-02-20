@@ -43,14 +43,13 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <remarks>
         /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
-        /// If any exception occurred, Then PermitServiceException/AesEncryptionException exception will be thrown.
-        /// If any required validation failed, Then PermitServiceException exception will be thrown.
         /// </remarks>
         /// <param name="productType">Requested product type.</param>
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
+        /// <response code="400,401,403,500">If service responded with other than 200 Ok StatusCode, Then errorResponse will be return with origin PKS</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<PermitServiceResult> ProcessPermitRequestAsync(string productType, PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {

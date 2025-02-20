@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ILogger<PermitService> _fakeLogger;
         private IPermitReaderWriter _fakePermitReaderWriter;
         private IProductKeyService _fakeProductKeyService;
-        private IS100Crypt _fakeIs100Crypt;
+        private IS100Crypt _fakeS100Crypt;
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
         private IOptions<PermitFileConfiguration> _fakePermitFileConfiguration;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
@@ -36,33 +36,33 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakePermitReaderWriter = A.Fake<IPermitReaderWriter>();
             _fakeLogger = A.Fake<ILogger<PermitService>>();
             _fakeProductKeyService = A.Fake<IProductKeyService>();
-            _fakeIs100Crypt = A.Fake<IS100Crypt>();
+            _fakeS100Crypt = A.Fake<IS100Crypt>();
             _fakeProductKeyServiceApiConfiguration = Options.Create(new ProductKeyServiceApiConfiguration() { HardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD" });
             _fakePermitFileConfiguration = A.Fake<IOptions<PermitFileConfiguration>>();
 
             _permitService = new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService,
-                                                _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+                                                _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
 
-            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
+            Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullProductKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyService");
 
             Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration);
             nullIs100Crypt.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("s100Crypt");
 
-            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, null, _fakePermitFileConfiguration);
+            Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, null, _fakePermitFileConfiguration);
             nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
 
-            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeIs100Crypt, _fakeProductKeyServiceApiConfiguration, null);
+            Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, null);
             nullPermitFileConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitFileConfiguration");
         }
 
@@ -76,15 +76,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                                             new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
                                                         new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }]));
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeS100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
 
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
+            A.CallTo(() => _fakeS100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId());
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
-            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
+            A.CallTo(() => _fakeS100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
