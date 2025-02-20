@@ -185,7 +185,7 @@ components:
             type: string
             format: binary
     BadRequestResponse:
-      description: Bad Request - The request is invalid or one or more of the supplied UPNs are invalid.
+      description: Bad Request - The request is invalid or one or more of the supplied products or UPNs are invalid.
       headers:
         X-Correlation-ID:
           $ref: '#/components/headers/X-Correlation-ID'
