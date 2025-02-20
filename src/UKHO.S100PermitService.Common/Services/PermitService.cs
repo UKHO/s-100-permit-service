@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -120,6 +121,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="decryptedProductKeys">Decrypted keys from product Key with well known hardware id.</param>
         /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
         /// <returns>Products</returns>
+        [ExcludeFromCodeCoverage]
         private async Task<IEnumerable<Products>> GetProductsListAsync(IEnumerable<Product> productsDetails, IEnumerable<ProductKey> decryptedProductKeys, string hardwareId)
         {
             var productsList = new List<Products>();
