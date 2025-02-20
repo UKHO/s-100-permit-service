@@ -1,4 +1,5 @@
-﻿using FluentValidation.TestHelper;
+﻿using FluentAssertions;
+using FluentValidation.TestHelper;
 using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Validations;
 
@@ -100,8 +101,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         private static UserPermit GeUserPermitWithEmptyUpn()
         {
             return new UserPermit
-            {
-                Title = "Aqua Radar",
+            {                
+                Title= "Aqua Radar",
                 Upn = string.Empty,
             };
         }

@@ -23,20 +23,22 @@ namespace UKHO.S100PermitService.Common.Validations
         {
             RuleFor(userPermit => userPermit.Title)
                 .NotEmpty().WithMessage("Title cannot be empty.")
-                .Must(title => !IsTitleContainsInValidCharacters().IsMatch(title)).WithMessage(userPermit => $"Invalid title found : {userPermit.Title}");
-
-            RuleFor(userPermit => userPermit.Upn)
-                   .NotEmpty().WithMessage("UPN cannot be empty.")
-            .DependentRules(() =>
-            {
-                RuleFor(userPermit => userPermit.Upn)
-                    .Length(46).WithMessage(userPermit =>
-                        $"Invalid UPN found for: {userPermit.Title}. UPN must be 46 characters long")
+                .Must(title => !IsTitleContainsInValidCharacters().IsMatch(title)).WithMessage(userPermit => $"Invalid title found : {userPermit.Title}. Must not contain the characters \\/:*?\"<>|")
+                .DependentRules(() =>
+                {
+                    RuleFor(userPermit => userPermit.Upn)
+                    .NotEmpty().WithMessage("UPN cannot be empty.")
                     .DependentRules(() =>
+                    {
                         RuleFor(userPermit => userPermit.Upn)
-                            .Must(ChecksumValidation.IsValid).WithMessage(userPermit => $"Invalid checksum found for: {userPermit.Title}")
-                    );
-            });
+                            .Length(46).WithMessage(userPermit =>
+                                $"Invalid UPN found for: {userPermit.Title}. UPN must be 46 characters long")
+                            .DependentRules(() =>
+                                RuleFor(userPermit => userPermit.Upn)
+                                    .Must(ChecksumValidation.IsValid).WithMessage(userPermit => $"Invalid checksum found for: {userPermit.Title}")
+                            );
+                    });
+                });
         }
 
         ValidationResult IUserPermitValidator.Validate(UserPermit userPermit)
