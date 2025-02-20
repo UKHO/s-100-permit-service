@@ -70,7 +70,77 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public async Task WhenPermitXmlHasValue_ThenFileIsCreated()
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
-            var permitRequest = new PermitRequest()
+
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                                                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success([
+                                                            new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
+                                                        new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }]));
+
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
+                .Returns(GetDecryptedKeysFromProductKeys());
+
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
+                .Returns(GetUpnInfoWithDecryptedHardwareId());
+
+            A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
+
+            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
+
+            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
+
+            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            response.Value.Length.Should().Be(expectedStream.Length);
+
+            A.CallTo(_fakeLogger).Where(call =>
+             call.Method.Name == "Log"
+             && call.GetArgument<LogLevel>(0) == LogLevel.Information
+             && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
+             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started for ProductType {productType}."
+             ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.Unauthorized)]
+        [TestCase(HttpStatusCode.Forbidden)]
+        [TestCase(HttpStatusCode.InternalServerError)]
+        [TestCase(HttpStatusCode.ServiceUnavailable)]
+        public async Task WhenProductKeyServiceReturnsOtherThanOk_ThenPermitFileNoCreated(HttpStatusCode httpStatusCode)
+        {
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                                                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpStatusCode));
+
+            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(httpStatusCode);
+
+            A.CallTo(_fakeLogger).Where(call =>
+             call.Method.Name == "Log"
+             && call.GetArgument<LogLevel>(0) == LogLevel.Information
+             && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
+             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started for ProductType {productType}."
+             ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+            call.Method.Name == "Log"
+            && call.GetArgument<LogLevel>(0) == LogLevel.Information
+            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
+            ).MustNotHaveHappened();
+        }
+
+        private static PermitRequest GetPermitRequestDetails()
+        {
+            return new PermitRequest()
             {
                 Products = new List<Product>
                 {
@@ -97,42 +167,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     }
                 }
             };
-
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                                                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success([
-                                                            new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
-                                                        new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }]));
-
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
-                .Returns(GetDecryptedKeysFromProductKeys());
-
-            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
-                .Returns(GetUpnInfoWithDecryptedHardwareId());
-
-            A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
-
-            A.CallTo(() => _fakeIs100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
-
-            A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
-
-            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, _fakeCorrelationId, CancellationToken.None);
-
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Value.Length.Should().Be(expectedStream.Length);
-
-            A.CallTo(_fakeLogger).Where(call =>
-             call.Method.Name == "Log"
-             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-             && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestStarted.ToEventId()
-             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request started for ProductType {productType}."
-             ).MustHaveHappenedOnceExactly();
-
-            A.CallTo(_fakeLogger).Where(call =>
-            call.Method.Name == "Log"
-            && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
-            ).MustHaveHappenedOnceExactly();
         }
 
         private static List<UpnInfo> GetUpnInfoWithDecryptedHardwareId()

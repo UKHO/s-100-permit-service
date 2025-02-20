@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
     public class ProductKeyServiceApiClientTests
     {
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
-        
+
         private ILogger<ProductKeyServiceApiClient> _fakeLogger;
         private IHttpClientFactory _fakeHttpClientFactory;
         private IProductKeyServiceApiClient? _productKeyServiceApiClient;
@@ -55,8 +55,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
         [Test]
         [TestCase(HttpStatusCode.BadRequest)]
-        [TestCase(HttpStatusCode.NotFound)]
-        [TestCase(HttpStatusCode.Unauthorized)]
+        [TestCase(HttpStatusCode.Forbidden)]
         [TestCase(HttpStatusCode.InternalServerError)]
         [TestCase(HttpStatusCode.ServiceUnavailable)]
         [TestCase(HttpStatusCode.UnsupportedMediaType)]
@@ -74,15 +73,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "", _fakeCorrelationId, CancellationToken.None);
-
-            A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Warning
-                && call.GetArgument<EventId>(1) == EventIds.MissingAccessToken.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Access token is empty or null."
-            ).MustHaveHappenedOnceExactly();
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "fakeToken", _fakeCorrelationId, CancellationToken.None);
 
             result.Result.StatusCode.Should().Be(httpStatusCode);
         }

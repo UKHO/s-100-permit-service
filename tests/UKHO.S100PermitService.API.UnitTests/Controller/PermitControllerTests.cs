@@ -46,9 +46,40 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGeneratedSuccessfully_ThenReturnsZipStreamResponse()
         {
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
-            var permitRequest = new PermitRequest();
+            var permitRequest = new PermitRequest
+            {
+                Products = new List<Product>
+                {
+                    new Product
+                    {
+                        ProductName = "Product1",
+                        EditionNumber = 1,
+                        PermitExpiryDate = DateTime.UtcNow.AddDays(1).ToString("YYYY-MM-DD")
+                    },
+                    new Product
+                    {
+                        ProductName = "Product2",
+                        EditionNumber = 2,
+                        PermitExpiryDate = DateTime.UtcNow.AddDays(1).ToString("YYYY-MM-DD")
+                    }
+                },
+                UserPermits = new List<UserPermit>
+                {
+                    new UserPermit
+                    {
+                        Title = "IHO Test System",
+                        Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                    },
+                    new UserPermit
+                    {
+                        Title = "OeM Test 1",
+                        Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9"
+                    }
+                }
+            };
+
             A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                            .Returns(PermitServiceResult.Success(expectedStream));
+                                .Returns(PermitServiceResult.Success(expectedStream));
 
             var result = await _permitController.GeneratePermits(PRODUCT_TYPE, permitRequest);
 
@@ -74,7 +105,11 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         }
 
         [Test]
+        [TestCase(HttpStatusCode.Unauthorized)]
         [TestCase(HttpStatusCode.BadRequest)]
+        [TestCase(HttpStatusCode.Forbidden)]
+        [TestCase(HttpStatusCode.ServiceUnavailable)]
+        [TestCase(HttpStatusCode.UnsupportedMediaType)]
         [TestCase(HttpStatusCode.InternalServerError)]
         public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
         {
@@ -86,13 +121,13 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
             switch(result)
             {
-                case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode: // 500: InternalServerError
+                case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode:
                     statusCodeResult.StatusCode.Should().Be((int)httpStatusCode);
                     break;
 
                 case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
                     badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
-                    badRequestObjectResult.Value.Should().BeEquivalentTo(new { Errors = new List<ErrorDetail> { new() { Description = "Invalid user permit", Source = "userPermits[0].upn" } } });
+                    badRequestObjectResult.Value.Should().BeEquivalentTo(new { Errors = new List<ErrorDetail> { new() { Description = "Key not found for ProductName: Product1 and Edition: 1.", Source = "GetProductKey" } } });
                     break;
             }
 
@@ -120,8 +155,8 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                     CorrelationId = Guid.NewGuid().ToString(),
                     Errors = [new ErrorDetail
                                 {
-                                    Description = "Invalid user permit",
-                                    Source = "userPermits[0].upn"
+                                    Description = "Key not found for ProductName: Product1 and Edition: 1.",
+                                    Source = "GetProductKey"
                                 }]
                 }),
                 _ => PermitServiceResult.Failure(httpStatusCode, new ErrorResponse { CorrelationId = Guid.NewGuid().ToString() })
