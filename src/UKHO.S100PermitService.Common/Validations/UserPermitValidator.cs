@@ -21,18 +21,22 @@ namespace UKHO.S100PermitService.Common.Validations
         /// </remarks>
         public UserPermitValidator()
         {
+            RuleFor(userPermit => userPermit.Title)
+                .NotEmpty().WithMessage("Title cannot be empty.")
+                .Must(title => !IsTitleContainsInValidCharacters().IsMatch(title)).WithMessage(userPermit => $"Invalid title found : {userPermit.Title}");
+
             RuleFor(userPermit => userPermit.Upn)
                    .NotEmpty().WithMessage("UPN cannot be empty.")
-                   .Length(46).WithMessage(userPermit => $"Invalid UPN found for: {userPermit.Title}. UPN must be 46 characters long")
             .DependentRules(() =>
             {
-                       RuleFor(userPermit => userPermit.Upn)
-                           .Must(ChecksumValidation.IsValid).WithMessage(userPermit => $"Invalid checksum found for: {userPermit.Title}");
-
-                       RuleFor(userPermit => userPermit.Title)
-                           .NotEmpty().WithMessage("Title cannot be empty.")
-                           .Must(title => !IsTitleContainsInValidCharacters().IsMatch(title)).WithMessage(userPermit => $"Invalid title found : {userPermit.Title}");
-                   });
+                RuleFor(userPermit => userPermit.Upn)
+                    .Length(46).WithMessage(userPermit =>
+                        $"Invalid UPN found for: {userPermit.Title}. UPN must be 46 characters long")
+                    .DependentRules(() =>
+                        RuleFor(userPermit => userPermit.Upn)
+                            .Must(ChecksumValidation.IsValid).WithMessage(userPermit => $"Invalid checksum found for: {userPermit.Title}")
+                    );
+            });
         }
 
         ValidationResult IUserPermitValidator.Validate(UserPermit userPermit)
