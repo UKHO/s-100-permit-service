@@ -1,4 +1,5 @@
 ﻿using FakeItEasy;
+using FluentAssertions;
 using FluentValidation.Results;
 using FluentValidation.TestHelper;
 using UKHO.S100PermitService.Common.Models.Request;
@@ -37,7 +38,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         }
 
         [Test]
-        public void WhenValidProductsAndUserPermitInPermitRequest_ThenNoValidationErrorIsReturned()
+        public void WhenValidProductsAndUserPermitsPassedInPermitRequest_ThenNoValidationErrorIsReturned()
         {
             var permitRequest = GetPermitRequests();
             A.CallTo(() => productValidator.Validate(A<Product>._)).Returns(new ValidationResult());
@@ -45,7 +46,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var validationResult = permitRequestValidator.TestValidate(permitRequest);
 
-            validationResult.ShouldNotHaveAnyValidationErrors();
+            validationResult.IsValid.Should().BeTrue();
+            validationResult.Errors.Should().BeEmpty();
         }
 
         private static PermitRequest GetPermitRequests()

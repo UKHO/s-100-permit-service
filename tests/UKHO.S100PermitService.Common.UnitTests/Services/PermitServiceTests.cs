@@ -79,14 +79,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var permitRequest = GetPermitRequests();
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(ServiceResponseResult<List<ProductKeyServiceResponse>>.Success(new List<ProductKeyServiceResponse>
-                {
+                .Returns(ServiceResponseResult<List<ProductKeyServiceResponse>>.Success(
+                [
                     new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" },
                     new ProductKeyServiceResponse { ProductName = "CellCode1", Edition = "2", Key = "7891011" }
-                }));
+                ]));
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedKeysFromProductKeysAsync(A<List<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
                 .Returns(GetDecryptedKeysFromProductKeys());
+
             A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>._)).Returns(new ValidationResult());
 
             A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<UserPermitServiceResponse>.Ignored))

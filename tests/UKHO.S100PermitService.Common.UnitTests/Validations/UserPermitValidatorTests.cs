@@ -22,7 +22,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var result = _userPermitValidator.TestValidate(userPermits);
 
-            result.ShouldNotHaveAnyValidationErrors();
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().BeEmpty();
         }
 
         [Test]
