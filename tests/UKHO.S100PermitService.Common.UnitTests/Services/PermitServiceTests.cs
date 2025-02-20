@@ -89,8 +89,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(GetDecryptedKeysFromProductKeys());
             A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>._)).Returns(new ValidationResult());
 
-            //A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
-            //    .Returns(GetUpnInfoWithDecryptedHardwareId()); // this need to be uncommented once the method is modified in PBI -203832
+            A.CallTo(() => _fakeIs100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<UserPermitServiceResponse>.Ignored))
+                .Returns(GetUpnInfoWithDecryptedHardwareId()); 
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
@@ -163,25 +163,24 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustNotHaveHappened();
         }
 
-        //this method need to be uncommented in PBI -203832
-        //private static IEnumerable<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
-        //{
-        //    return
-        //    [
-        //        new UpnInfo()
-        //        {
-        //            Title = "FakeTitle1",
-        //            DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
-        //            Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
-        //        },
-        //        new UpnInfo()
-        //        {
-        //            Title = "FakeTitle2",
-        //            DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
-        //            Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
-        //        }
-        //    ];
-        //}
+        private static IEnumerable<UpnInfo> GetUpnInfoWithDecryptedHardwareId()
+        {
+            return
+            [
+                new UpnInfo()
+                {
+                    Title = "FakeTitle1",
+                    DecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB",
+                    Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
+                },
+                new UpnInfo()
+                {
+                    Title = "FakeTitle2",
+                    DecryptedHardwareId = "B2C0F91ADAAEA51CC5FCCA05C47499E4",
+                    Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                }
+            ];
+        }
 
         private static IEnumerable<ProductKey> GetDecryptedKeysFromProductKeys()
         {
