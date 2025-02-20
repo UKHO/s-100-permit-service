@@ -84,7 +84,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
-            A.CallTo(() => _fakeS100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456");
+            A.CallTo(() => _fakeS100Crypt.CreateEncryptedKeyAsync(A<string>.Ignored, A<string>.Ignored)).Returns("123456").Twice().Then.Returns("7891011");
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
@@ -158,12 +158,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 UserPermits = new List<UserPermit>
                 {
                     new() {
-                        Title = "IHO Test System",
-                        Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                        Title = "FakeTitle1",
+                        Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
                     },
                     new() {
-                        Title = "OeM Test 1",
-                        Upn = "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9"
+                        Title = "FakeTitle2",
+                        Upn = "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
                     }
                 }
             };
@@ -202,8 +202,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 new ProductKey()
                 {
                     ProductName = "CellCode1",
-                    Edition = "86C520323CEA3056B5ED7000F98814CB",
-                    Key = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3",
+                    Edition = "2",
+                    Key = "7891011",
                     DecryptedKey = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3"
                 }
             ];

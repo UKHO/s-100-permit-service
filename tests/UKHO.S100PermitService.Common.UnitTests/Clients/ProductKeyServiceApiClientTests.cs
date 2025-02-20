@@ -93,7 +93,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], null, _fakeCorrelationId, CancellationToken.None);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "", _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

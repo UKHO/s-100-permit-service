@@ -37,6 +37,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             var memoryStream = new MemoryStream();
             _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
             _fakeHttpContext.Response.Body = memoryStream;
+
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new Exception("fake exception"));
 
             await _middleware.InvokeAsync(_fakeHttpContext);
@@ -52,6 +53,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -65,6 +67,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             var memoryStream = new MemoryStream();
             _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
             _fakeHttpContext.Response.Body = memoryStream;
+
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new PermitServiceException(EventIds.PermitServiceException.ToEventId(), "fakemessage"));
 
             await _middleware.InvokeAsync(_fakeHttpContext);
@@ -79,6 +82,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -92,6 +96,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             var memoryStream = new MemoryStream();
             _fakeHttpContext.Request.Headers.Append(PermitServiceConstants.XCorrelationIdHeaderKey, "fakeCorrelationId");
             _fakeHttpContext.Response.Body = memoryStream;
+
             A.CallTo(() => _fakeNextMiddleware(_fakeHttpContext)).Throws(new AesEncryptionException(EventIds.AesEncryptionException.ToEventId(), "fakemessage"));
 
             await _middleware.InvokeAsync(_fakeHttpContext);
@@ -106,6 +111,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error

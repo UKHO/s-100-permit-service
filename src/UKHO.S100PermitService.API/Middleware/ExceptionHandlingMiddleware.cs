@@ -45,12 +45,7 @@ namespace UKHO.S100PermitService.API.Middleware
             _logger.LogError(eventId, exception, message, messageArgs);
 
             var correlationId = httpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
-            var origin = "S100PermitService";
-
-            if(exception is PermitServiceException)
-            {
-                origin = httpContext.Request.Headers.TryGetValue(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.PermitKeyService;
-            }
+            var origin = httpContext.Request.Headers.TryGetValue(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : "S100PermitService";
 
             var problemDetails = new ProblemDetails
             {
