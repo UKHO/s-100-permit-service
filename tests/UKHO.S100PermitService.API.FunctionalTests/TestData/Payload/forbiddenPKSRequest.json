@@ -1,0 +1,19 @@
+{
+  "products": [
+    {
+      "productName": "Forbidden",
+      "editionNumber": 1,
+      "permitExpiryDate": "2026-01-31"
+    }
+  ],
+  "userPermits": [
+    {
+      "title": "IHO Test System",
+      "upn": "AD1DAD797C966EC9F6A55B66ED98281599B3C7B1859868"
+    },
+    {
+      "title": "OeM Test 1",
+      "upn": "BD1DAD797C966EC9F6A55B66ED98281550ACCF0ED4E5F6"
+    }
+  ]
+}

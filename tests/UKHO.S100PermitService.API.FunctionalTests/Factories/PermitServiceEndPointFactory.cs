@@ -1,5 +1,7 @@
-﻿using System.IO.Compression;
+﻿using Newtonsoft.Json;
+using System.IO.Compression;
 using System.Text;
+using static UKHO.S100PermitService.API.FunctionalTests.Models.S100PermitServiceRequestModel;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
@@ -15,12 +17,19 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="baseUrl">Sets the baseUrl</param>
         /// <param name="accessToken">Sets the access Token</param>
         /// <param name="payload">Provides the payload</param>
+        /// <param name="isUrlValid">Sets the validity of url</param>
         /// <returns></returns>
-        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, string payload)
+        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
         {
-            _uri = $"{baseUrl}/permits";
+            _uri = $"{baseUrl}/v1/permits/s100";
+            if(!isUrlValid)
+            {
+                _uri = $"{baseUrl}/permits/s100";
+            }
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
-            httpRequestMessage.Content = new StringContent(payload, Encoding.UTF8, "application/json");
+            var payloadJson = JsonConvert.SerializeObject(payload);
+            Console.WriteLine($"Payload: {payload}");
+            httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             if(!string.IsNullOrEmpty(accessToken))
             {
                 httpRequestMessage.Headers.Add("Authorization", "Bearer " + accessToken);
@@ -71,6 +80,20 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 fileName = fileName.Replace(".zip", "");
             }
             return fileName;
+        }
+
+        /// <summary>
+        /// This method is used to load the payload from the file
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static async Task<RequestBodyModel> LoadPayload(string filePath)
+        {
+            using(var reader = new StreamReader(filePath))
+            {
+                var payload = await reader.ReadToEndAsync();
+                return JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
+            }
         }
     }
 }

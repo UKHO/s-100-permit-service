@@ -1,0 +1,48 @@
+{
+  "products": [
+    {
+      "productName": "101GB40079ABCDEFG",
+      "editionNumber": 2,
+      "permitExpiryDate": "2026-01-31"
+    },
+    {
+      "productName": "101GB40079ABCDEFG",
+      "editionNumber": 1,
+      "permitExpiryDate": "2026-01-01"
+    },
+    {
+      "productName": "101GB40080ABCDEFG",
+      "editionNumber": 2,
+      "permitExpiryDate": "2026-01-31"
+    },
+    {
+      "productName": "104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z",
+      "editionNumber": 10,
+      "permitExpiryDate": "2026-01-31"
+    },
+    {
+      "productName": "102US40079ABCDEF",
+      "editionNumber": 1,
+      "permitExpiryDate": "2026-01-31"
+    },
+    {
+      "productName": "111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z",
+      "editionNumber": 7,
+      "permitExpiryDate": "2026-01-31"
+    }
+  ],
+  "userPermits": [
+    {
+      "title": "Aqua Radar",
+      "upn": "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2"
+    },
+    {
+      "title": "Navi Radar",
+      "upn": "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8"
+    },
+    {
+      "title": "SeaRadar X",
+      "upn": "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5"
+    }
+  ]
+}

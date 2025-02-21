@@ -41,6 +41,24 @@
     <None Update="TestData\DuplicatePermits\SeaRadar X\PERMIT.XML">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="TestData\Payload\50ProductsPayload.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Payload\duplicateProductsPayload.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Payload\forbiddenPKSRequest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Payload\notFoundPKSRequest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Payload\unauthroizedPKSRequest.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\Payload\validPayload.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="TestData\Permits\Aqua Radar\PERMIT.XML">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
