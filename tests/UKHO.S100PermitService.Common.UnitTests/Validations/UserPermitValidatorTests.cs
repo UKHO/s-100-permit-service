@@ -1,6 +1,6 @@
 ﻿using FluentAssertions;
 using FluentValidation.TestHelper;
-using UKHO.S100PermitService.Common.Models.UserPermitService;
+using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Validations
@@ -19,85 +19,91 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
         [Test]
         public void WhenUserPermitsWithValidUpns_ThenNoValidationErrorsAreFound()
         {
-            var userPermitServiceResponse = GetValidUserPermitServiceResponse();
+            var userPermits = GetValidUserPermit();
 
-            var result = _userPermitValidator.TestValidate(userPermitServiceResponse);
+            var result = _userPermitValidator.TestValidate(userPermits);
 
-            result.Errors.Count.Should().Be(0);
+            result.IsValid.Should().BeTrue();
+            result.Errors.Should().BeEmpty();
         }
 
         [Test]
         public void WhenInvalidUpnLength_ThenUpnLengthValidationErrorFound()
         {
-            var result = _userPermitValidator.TestValidate(GeUserPermitServiceResponseWithInvalidUpnLength());
+            var result = _userPermitValidator.TestValidate(GeUserPermitWithInvalidUpnLength());
 
-            result.Errors.Count.Should().Be(2);
-            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid UPN found for: Aqua Radar. UPN must be 46 characters long");
+            result.ShouldHaveValidationErrorFor(x => x.Upn)
+                .WithErrorMessage("Invalid UPN found for: Aqua Radar. UPN must be 46 characters long");
         }
 
         [Test]
         public void WhenInvalidChecksum_ThenChecksumValidationErrorFound()
         {
-            var result = _userPermitValidator.TestValidate(GeUserPermitServiceResponseWithInvalidChecksum());
+            var result = _userPermitValidator.TestValidate(GeUserPermitWithInvalidChecksum());
 
-            result.Errors.Count.Should().Be(3);
-            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid checksum found for: Aqua Radar");
+            result.ShouldHaveValidationErrorFor(x => x.Upn)
+                .WithErrorMessage("Invalid checksum found for: Aqua Radar");
         }
 
         [Test]
-        public void WhenInvalidCharactersFoundInTitle_ThenValidationFailedWithErrorMessage()
+        public void WhenInvalidCharactersFoundInTitle_ThenTitleValidationErrorFound()
         {
-            var result = _userPermitValidator.TestValidate(GetUserPermitServiceResponseWithInvalidCharactersInTitle());
+            var result = _userPermitValidator.TestValidate(GetUserPermitWithInvalidCharactersInTitle());
 
-            result.Errors.Count.Should().Be(2);
-            result.ShouldHaveAnyValidationError().WithErrorMessage("Invalid title found : SeaRadar X*");
+            result.ShouldHaveValidationErrorFor(x => x.Title)
+                .WithErrorMessage("Invalid title found : SeaRadar X*. Must not contain the characters \\/:*?\"<>|");
         }
 
-        private static UserPermitServiceResponse GetValidUserPermitServiceResponse()
+        [Test]
+        public void WhenEmptyUpn_ThenUpnValidationErrorFound()
         {
-            return new UserPermitServiceResponse()
+            var result = _userPermitValidator.TestValidate(GeUserPermitWithEmptyUpn());
+            
+            result.ShouldHaveValidationErrorFor(x => x.Upn)
+               .WithErrorMessage("UPN cannot be empty.");
+        }
+
+        private static UserPermit GetValidUserPermit()
+        {
+            return new UserPermit
             {
-                LicenceId = 1,
-                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2" },
-                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
-                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
-                ]
+                Title = "Aqua Radar",
+                Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2"
             };
         }
 
-        private static UserPermitServiceResponse GeUserPermitServiceResponseWithInvalidUpnLength()
+        private static UserPermit GeUserPermitWithInvalidUpnLength()
         {
-            return new UserPermitServiceResponse()
+            return new UserPermit
             {
-                LicenceId = 1,
-                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L" },
-                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O" },
-                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
-                ]
+                Title = "Aqua Radar",
+                Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L"
             };
         }
 
-        private static UserPermitServiceResponse GeUserPermitServiceResponseWithInvalidChecksum()
+        private static UserPermit GeUserPermitWithInvalidChecksum()
         {
-            return new UserPermitServiceResponse()
+            return new UserPermit
             {
-                LicenceId = 1,
-                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF9J0K1L2" },
-                    new UserPermit { Title = "SeaRadar X", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E02M3N4O5" },
-                    new UserPermit { Title = "Navi Radar", Upn = "F1EB202BDC150506E21E3E44FD1829424462D959P6Q7R8" }
-                ]
+                Title = "Aqua Radar",
+                Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF9J0K1L2"
             };
         }
 
-        private static UserPermitServiceResponse GetUserPermitServiceResponseWithInvalidCharactersInTitle()
+        private static UserPermit GetUserPermitWithInvalidCharactersInTitle()
         {
-            return new UserPermitServiceResponse()
+            return new UserPermit
             {
-                LicenceId = 1,
-                UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2" },
-                    new UserPermit { Title = "SeaRadar X*", Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5" },
-                    new UserPermit { Title = "Navi/ Radar?", Upn = "F1EB202BDC150506E21E3E44FD1829424462D958P6Q7R8" }
-                ]
+                Title = "SeaRadar X*",
+                Upn = "E9FAE304D230E4C729288349DA29776EE9B57E01M3N4O5"
+            };
+        }
+        private static UserPermit GeUserPermitWithEmptyUpn()
+        {
+            return new UserPermit
+            {                
+                Title= "Aqua Radar",
+                Upn = string.Empty,
             };
         }
     }

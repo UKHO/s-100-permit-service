@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
+using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Models.UserPermitService;
 using UKHO.S100PermitService.Common.Services;
 
@@ -156,7 +157,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
         private static UserPermitServiceResponse GetUserPermitServiceResponse()
         {
-            return new UserPermitServiceResponse()
+            return new UserPermitServiceResponse
             {
                 LicenceId = 1,
                 UserPermits = [new UserPermit { Title = "Aqua Radar", Upn = "FE5A853DEF9E83C9FFEF5AA001478103DB74C038A1B2C3" },

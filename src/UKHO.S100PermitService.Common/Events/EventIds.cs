@@ -83,7 +83,7 @@
         /// <summary>
         /// 840016 - Get product key from Product Key Service completed with Ok response.
         /// </summary>
-        GetProductKeysRequestCompletedWithStatus200OK = 840016,
+        GetProductKeysRequestCompletedWithStatus200Ok = 840016,
 
         /// <summary>
         /// 840017 - Get product key from Product Key Service started.
@@ -151,33 +151,38 @@
         ExtractDecryptedHardwareIdFromUserPermitCompleted = 840029,
 
         /// <summary>
-        /// 840030 - Upn length or checksum validation failed.
+        /// 840030 - Invalid Permit Xml Schema is received.
         /// </summary>
-        UpnLengthOrChecksumValidationFailed = 840030,
+        InvalidPermitXmlSchema = 840030,
 
         /// <summary>
-        /// 840031 - Invalid Permit Xml Schema is received.
+        /// 840031 - Permit zip file creation completed.
         /// </summary>
-        InvalidPermitXmlSchema = 840031,
+        PermitZipCreationCompleted = 840031,
 
         /// <summary>
-        /// 840032 - Permit zip file creation completed.
+        /// 840032 - Manufacturer Key found in Cache.
         /// </summary>
-        PermitZipCreationCompleted = 840032,
+        ManufacturerKeyFoundInCache = 840032,
 
         /// <summary>
-        /// 840033 - Manufacturer Key found in Cache.
+        /// 840033 - Request to ProductKeyService GetProductKeys responded with status not found
         /// </summary>
-        ManufacturerKeyFoundInCache = 840033,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840033,
 
         /// <summary>
-        /// 840034 - Request to ProductKeyService GetProductKeys responded with status not found
+        /// 840034 - Request to ProductKeyService GetProductKeys responded with status bad request
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound = 840034,
+        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840034,
 
         /// <summary>
-        /// 840035 - Request to ProductKeyService GetProductKeys responded with status bad request
+        /// 840035 - Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
         /// </summary>
-        ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest = 840035
+        ProductsFilteredCellCount = 840035,
+
+        /// <summary>
+        /// 840036 - Permit request validation failed.
+        /// </summary>
+        PermitRequestValidationFailed = 840036
     }
 }
