@@ -226,21 +226,12 @@ components:
         Origin:
           $ref: '#/components/headers/Origin'
     TooManyRequestsResponse:
-      description: Too Many Requests - You have sent too many requests in a given amount of time.
+      description: Too Many Requests - Too many requests are being sent in a given amount of time.
       headers:
         X-Correlation-ID:
           $ref: '#/components/headers/X-Correlation-ID'
         Origin:
           $ref: '#/components/headers/Origin'
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/errorDescription'
-          example:
-            correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
-            errors:
-            - source: "request"
-              description: Too many requests
     InternalServerErrorResponse:
       description: Internal Server Error - An error occurred on the server.
       headers:
