@@ -166,6 +166,7 @@ components:
       description: The original API or service which has returned the response
       schema:
         type: string
+        example: PKS
   responses:
     OkResponse:
       description: OK - Returns permit files in a compressed ZIP file.
@@ -210,6 +211,7 @@ components:
               description: "Must not contain the characters \\ / : * ? \" < > |."
             - source: "userPermits[0].upn"
               description: Must be exactly 46 characters long with a verified checksum.
+
     UnauthorizedResponse:
       description: Unauthorised - Either you have not provided a valid token, or your token is not recognised.
       headers:
