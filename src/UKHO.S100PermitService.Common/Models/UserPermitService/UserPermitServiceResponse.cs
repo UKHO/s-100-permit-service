@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using UKHO.S100PermitService.Common.Models.Request;
 
 namespace UKHO.S100PermitService.Common.Models.UserPermitService
 {

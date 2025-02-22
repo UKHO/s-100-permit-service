@@ -14,6 +14,9 @@ namespace UKHO.S100PermitService.API.Controllers
     [Authorize]
     public class PermitController : BaseController<PermitController>
     {
+        private const string PermitZipFileName = "Permits.zip";
+        private const string ProductType = "s100";
+
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
 
@@ -25,7 +28,7 @@ namespace UKHO.S100PermitService.API.Controllers
         }
 
         /// <summary>
-        /// Provide Permits for requested JSON body containing products and UPNs.
+        /// Generates signed PERMIT.XML files for requested products and user permits (UPNs), returning them in a compressed ZIP file.
         /// </summary>
         /// <remarks>
         /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) and products and provides the zip stream containing PERMIT.XML.
@@ -41,23 +44,23 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <response code="429">You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
         [HttpPost]
-        [Route("/v1/permits/{productType}")]
+        [Route($"/v1/permits/{ProductType}")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.OK, type: typeof(string), description: "<p>OK - Returns permit files.</p>")]
-        [SwaggerResponse(statusCode: (int)HttpStatusCode.BadRequest, type: typeof(IDictionary<string, string>), description: "<p>Bad request - could be missing or invalid licenceId, it must be an integer and greater than zero.</p>")]
+        [SwaggerResponse(statusCode: (int)HttpStatusCode.BadRequest, type: typeof(IDictionary<string, string>), description: "<p>Bad request - The request is invalid or one or more of the supplied products or UPNs are invalid.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.Unauthorized, description: "<p>Unauthorised - either you have not provided valid token, or your token is not recognised.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.Forbidden, description: "<p>Forbidden - you have no permission to use this API.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.TooManyRequests, description: "<p>Too Many Requests.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error.</p>")]
-        public virtual async Task<IActionResult> GeneratePermits(string productType, [FromBody] PermitRequest permitRequest)
+        public virtual async Task<IActionResult> GenerateS100Permits([FromBody] PermitRequest permitRequest)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", productType);
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", ProductType);
 
-            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(productType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(ProductType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
-            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", productType);
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", ProductType);
 
             return ToActionResult(permitServiceResult);
         }
