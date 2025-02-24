@@ -14,7 +14,6 @@ namespace UKHO.S100PermitService.API.Controllers
     [Authorize]
     public class PermitController : BaseController<PermitController>
     {
-        private const string PermitZipFileName = "Permits.zip";
         private const string ProductType = "s100";
 
         private readonly ILogger<PermitController> _logger;

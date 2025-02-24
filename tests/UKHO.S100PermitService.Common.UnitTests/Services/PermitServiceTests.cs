@@ -79,6 +79,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var expectedStream = new MemoryStream(Encoding.UTF8.GetBytes(GetExpectedXmlString()));
             var permitRequest = GetPermitRequests();
 
+            A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>.Ignored)).Returns(new ValidationResult());
+
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(Task.FromResult(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(
                     new List<ProductKeyServiceResponse>
@@ -88,9 +90,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     })));
 
             A.CallTo(() => _fakeS100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
-                .Returns(GetDecryptedKeysFromProductKeys());
-
-            A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>._)).Returns(new ValidationResult());
+                .Returns(GetDecryptedKeysFromProductKeys());           
 
             A.CallTo(() => _fakeS100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
                 .Returns(GetUpnInfoWithDecryptedHardwareId()); 
@@ -114,6 +114,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
              ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log" &&
+                call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProductsFilteredCellCount.ToEventId() &&
+                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
             && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
@@ -129,7 +136,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.ServiceUnavailable)]
         public async Task WhenProductKeyServiceReturnsOtherThanOk_ThenPermitFileNoCreated(HttpStatusCode httpStatusCode)
         {
-            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpStatusCode));
+            A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>.Ignored)).Returns(new ValidationResult());
+
+            A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpStatusCode));
 
             var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
 
@@ -143,32 +153,33 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
                 call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId() &&
-                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
+                call.GetArgument<EventId>(1) == EventIds.ProductsFilteredCellCount.ToEventId() &&
+                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}."
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
                 call.GetArgument<LogLevel>(0) == LogLevel.Information &&
-                call.GetArgument<EventId>(1) == EventIds.ProductsFilteredCellCount.ToEventId() &&
-                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}."
-            ).MustHaveHappenedOnceExactly();
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId() &&
+                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
+            ).MustNotHaveHappened();
         }
 
-        [Ignore("Test is ignored due to invaid permit request data.")]
         [Test]        
-        public async Task WhenInvalidPermitRequest_ThenPermitServiceReturnsBadRequestResponse()
+        public async Task WhenPermitRequestValidationFailed_ThenPermitServiceReturnsBadRequestResponse()
         {
             var permitRequest = GetInvalidPermitRequestData();
-            A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>._)).Returns(GetInvalidValidationResultForPermitRequest());
+            A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>.Ignored)).Returns(GetInvalidValidationResultForPermitRequest());
 
             var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, _fakeCorrelationId, CancellationToken.None);
 
+            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
             var errors = response.ErrorResponse.Errors.ToList();
-            errors[0].Description.Should().Be("PermitExpiryDate must be today or a future date.");
-            errors[0].Source.Should().Be("Product[0].PermitExpiryDate");
-            errors[1].Description.Should().Be("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long");
-            errors[1].Source.Should().Be("UserPermit[1].Upn");
+            errors.Should().ContainSingle(e => e.Source.Equals("Product[0].PermitExpiryDate"));
+            errors.Should().ContainSingle(e => e.Description.Equals("PermitExpiryDate must be today or a future date."));
+            errors.Should().ContainSingle(e => e.Source.Equals("UserPermit[1].Upn"));
+            errors.Should().ContainSingle(e => e.Description.Equals("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long"));
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
 
@@ -187,10 +198,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
-                call.Method.Name == "Log"
-                && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
+                call.Method.Name == "Log" &&
+                call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProductsFilteredCellCount.ToEventId() &&
+                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}."
+            ).MustNotHaveHappened();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log" &&
+                call.GetArgument<LogLevel>(0) == LogLevel.Information &&
+                call.GetArgument<EventId>(1) == EventIds.ProcessPermitRequestCompleted.ToEventId() &&
+                call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Process permit request completed for ProductType {productType}."
             ).MustNotHaveHappened();
         }
 
@@ -300,16 +318,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             };
         }
 
-        private static string GetExpectedXmlString()
-        {
-            var sb = new StringBuilder();
-            sb.Append("<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.2\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.2\"><S100SE:header>");
-            sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>");
-            sb.Append("<S100SE:userpermit>fakeUserPermit</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>");
-            sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>");
-
-            return sb.ToString();
-        }
         private static PermitRequest GetInvalidPermitRequestData()
         {
             return new PermitRequest()
@@ -343,6 +351,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     }
                 ]
             };
+        }
+
+        private static string GetExpectedXmlString()
+        {
+            var sb = new StringBuilder();
+            sb.Append("<?xmlversion=\"1.0\"encoding=\"UTF-8\"standalone=\"yes\"?><Permitxmlns:S100SE=\"http://www.iho.int/s100/se/5.2\"xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\"xmlns=\"http://www.iho.int/s100/se/5.2\"><S100SE:header>");
+            sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:dataServerName>fakeDataServerName</S100SE:dataServerName><S100SE:dataServerIdentifier>fakeDataServerIdentifier</S100SE:dataServerIdentifier><S100SE:version>1</S100SE:version>");
+            sb.Append("<S100SE:userpermit>fakeUserPermit</S100SE:userpermit></S100SE:header><S100SE:products><S100SE:productid=\"fakeID\"><S100SE:datasetPermit><S100SE:filename>fakefilename</S100SE:filename><S100SE:editionNumber>1</S100SE:editionNumber>");
+            sb.Append("<S100SE:issueDate>2024-09-02+01:00</S100SE:issueDate><S100SE:expiry>2024-09-02</S100SE:expiry><S100SE:encryptedKey>fakeencryptedkey</S100SE:encryptedKey></S100SE:datasetPermit></S100SE:product></S100SE:products></Permit>");
+
+            return sb.ToString();
         }
 
         private static ValidationResult GetInvalidValidationResultForPermitRequest()
