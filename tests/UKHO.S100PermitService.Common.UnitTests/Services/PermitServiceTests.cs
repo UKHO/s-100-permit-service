@@ -176,7 +176,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var errors = response.ErrorResponse.Errors.ToList();
             errors.Should().ContainSingle(e => e.Source.Equals("Product[0].PermitExpiryDate"));
-            errors.Should().ContainSingle(e => e.Description.Equals("PermitExpiryDate must be today or a future date."));
+            errors.Should().ContainSingle(e => e.Description.Equals("Must be today or a future date."));
             errors.Should().ContainSingle(e => e.Source.Equals("UserPermit[1].Upn"));
             errors.Should().ContainSingle(e => e.Description.Equals("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long"));
 
@@ -367,7 +367,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             return new ValidationResult(new List<ValidationFailure>
             {
-                new("Product[0].PermitExpiryDate", "PermitExpiryDate must be today or a future date."),
+                new("Product[0].PermitExpiryDate", "Must be today or a future date."),
                 new("UserPermit[1].Upn", "Invalid UPN found for: FakeTitle2. UPN must be 46 characters long")
             });
         }

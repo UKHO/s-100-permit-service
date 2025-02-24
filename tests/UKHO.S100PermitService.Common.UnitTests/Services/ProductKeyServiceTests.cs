@@ -108,7 +108,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        [TestCase(HttpStatusCode.Unauthorized, "Unauthorized")]
         [TestCase(HttpStatusCode.BadRequest, "BadRequest")]
         [TestCase(HttpStatusCode.Forbidden, "Forbidden")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
@@ -130,8 +129,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(httpStatusCode);
-            response.ErrorResponse.Errors.Equals(content);
+            AssertResponse(response, httpStatusCode, content);           
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -193,6 +191,62 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                   ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
+        }
+
+        [Test]
+        public async Task WhenProductKeyServiceResponseUnauthorizedWithNoContent_ThenServiceReturnsFailureResponse()
+        {           
+            A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
+                    (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+                                .Returns(new HttpResponseMessage()
+                                {
+                                    StatusCode = HttpStatusCode.Unauthorized,
+                                    RequestMessage = new HttpRequestMessage()
+                                    {
+                                        RequestUri = new Uri("http://test.com")
+                                    },                                    
+                                });
+
+            var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
+
+            response.ErrorResponse.Errors.Should().BeNull();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} started."
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Error
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestFailed.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}"
+            ).MustHaveHappenedOnceExactly();
+
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompletedWithStatus200Ok.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
+            ).MustNotHaveHappened();
+        }
+
+        private void AssertResponse(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>> response, HttpStatusCode statusCode, string content)
+        {
+            
+            if(statusCode == HttpStatusCode.BadRequest || statusCode == HttpStatusCode.InternalServerError)
+            {
+                response.ErrorResponse.CorrelationId.Should().BeEquivalentTo(_fakeCorrelationId);
+            }
+            else
+            {
+                response.ErrorResponse.CorrelationId.Should().BeNull();
+            }
+            
+            response.StatusCode.Should().Be(statusCode);
+            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Description == content);
         }
     }
 }
