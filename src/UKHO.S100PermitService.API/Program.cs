@@ -138,9 +138,14 @@ namespace UKHO.S100PermitService.API
                        options.Authority = $"{azureAdConfiguration.MicrosoftOnlineLoginUrl}{azureAdConfiguration.TenantId}";
                        options.Events = new JwtBearerEvents
                        {
-                           OnChallenge = context =>
+                           OnForbidden = context =>
                            {
-                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, "S100PermitService");
+                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.S100PermitService);
+                               return Task.CompletedTask;
+                           },
+                           OnAuthenticationFailed = context =>
+                           {
+                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.S100PermitService);
                                return Task.CompletedTask;
                            }
                        };
