@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
@@ -74,7 +75,7 @@ namespace UKHO.S100PermitService.Common.Services
             return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
             {
                 Errors = errorResponse?.Errors!,
-                CorrelationId = correlationId,
+                CorrelationId = httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.InternalServerError ? correlationId : null,
                 Origin = origin!
             });
         }

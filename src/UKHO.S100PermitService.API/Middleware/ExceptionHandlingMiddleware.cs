@@ -45,7 +45,6 @@ namespace UKHO.S100PermitService.API.Middleware
             _logger.LogError(eventId, exception, message, messageArgs);
 
             var correlationId = httpContext.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
-            var origin = httpContext.Request.Headers.TryGetValue(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.S100PermitService;
 
             var problemDetails = new ProblemDetails
             {
@@ -54,7 +53,7 @@ namespace UKHO.S100PermitService.API.Middleware
                     ["correlationId"] = correlationId
                 }
             };
-            httpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, origin);
+            httpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.S100PermitService);
             await httpContext.Response.WriteAsJsonAsync(problemDetails);
         }
     }
