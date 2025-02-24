@@ -56,7 +56,7 @@
     <None Update="TestData\Payload\payloadWithPastExpiry.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\Payload\unauthroizedPKSRequest.json">
+    <None Update="TestData\Payload\unauthorisedPKSRequest.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="TestData\Payload\validPayload.json">

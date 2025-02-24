@@ -18,8 +18,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="accessToken">Sets the access Token</param>
         /// <param name="payload">Provides the payload</param>
         /// <param name="isUrlValid">Sets the validity of url</param>
-        /// <returns></returns>
-        public static async Task<HttpResponseMessage> AsyncPermitServiceEndPoint(string? baseUrl, string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
+        /// <returns>Response of S-100 Permit Service Endpoint</returns>
+        public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? baseUrl, string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
         {
             _uri = $"{baseUrl}/v1/permits/s100";
             if(!isUrlValid)
@@ -40,8 +40,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// This method is used to download the Permits.Zip File
         /// </summary>
         /// <param name="response"></param>
-        /// <returns></returns>
-        public static async Task<string> AsyncDownloadZipFile(HttpResponseMessage response)
+        /// <returns>The path of the location where PERMIT.ZIP is downloaded and extracted</returns>
+        public static async Task<string> DownloadZipFileAsync(HttpResponseMessage response)
         {
             var tempFilePath = Path.Combine(Path.GetTempPath(), "temp");
             if(!Directory.Exists(tempFilePath))
@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// This method is used to rename the .zip folder.
         /// </summary>
         /// <param name="pathInput"></param>
-        /// <returns></returns>
+        /// <returns>The filename after renaming</returns>
         public static string RenameFolder(string pathInput)
         {
             var fileName = Path.GetFileName(pathInput);
@@ -85,8 +85,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// This method is used to load the payload from the file
         /// </summary>
         /// <param name="filePath"></param>
-        /// <returns></returns>
-        public static async Task<RequestBodyModel> LoadPayload(string filePath)
+        /// <returns>The payload after reading as Request Body</returns>
+        public static async Task<RequestBodyModel> LoadPayloadAsync(string filePath)
         {
             using(var reader = new StreamReader(filePath))
             {
