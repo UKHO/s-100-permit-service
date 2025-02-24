@@ -75,7 +75,7 @@ namespace UKHO.S100PermitService.Common.Services
             return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
             {
                 Errors = errorResponse?.Errors!,
-                CorrelationId = httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.InternalServerError ? correlationId : null,
+                CorrelationId = errorResponse?.CorrelationId ?? correlationId,
                 Origin = origin!
             });
         }
