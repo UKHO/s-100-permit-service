@@ -109,7 +109,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
         [Test]
         [TestCase(HttpStatusCode.BadRequest, "BadRequest")]
-        [TestCase(HttpStatusCode.Forbidden, "Forbidden")]
         [TestCase(HttpStatusCode.InternalServerError, "InternalServerError")]
         [TestCase(HttpStatusCode.ServiceUnavailable, "ServiceUnavailable")]
         [TestCase(HttpStatusCode.UnsupportedMediaType, "UnsupportedMediaType")]
@@ -194,7 +193,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public async Task WhenProductKeyServiceResponseUnauthorizedWithNoContent_ThenServiceReturnsFailureResponse()
+        [TestCase(HttpStatusCode.Forbidden)]
+        [TestCase(HttpStatusCode.Unauthorized)]
+        public async Task WhenProductKeyServiceResponseUnauthorizedOrForbiddenWithNoContent_ThenServiceReturnsFailureResponse(HttpStatusCode httpStatusCode)
         {           
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
                     (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
@@ -234,8 +235,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         private void AssertResponse(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>> response, HttpStatusCode statusCode, string content)
-        {
-            
+        {            
             if(statusCode == HttpStatusCode.BadRequest || statusCode == HttpStatusCode.InternalServerError)
             {
                 response.ErrorResponse.CorrelationId.Should().BeEquivalentTo(_fakeCorrelationId);
