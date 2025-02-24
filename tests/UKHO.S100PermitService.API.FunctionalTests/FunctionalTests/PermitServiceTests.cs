@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _payload = await PermitServiceEndPointFactory.LoadPayload("./TestData/Payload/validPayload.json");
         }
 
-        // PBI 172720: Add AD Auth to get permits EndPoint
+        // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
@@ -37,28 +37,32 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.StatusCode.Should().Be((HttpStatusCode)200);
         }
 
-        // PBI 172720: Add AD Auth to get permits EndPoint
+        // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
+        // PBI 203832 : S-100 Permit Service Request and Response
         [Test]
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
             var noAuthToken = await _authTokenProvider!.AsyncGetPermitServiceToken(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
             var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _payload!);
             response.StatusCode.Should().Be((HttpStatusCode)403);
+            response.Headers.GetValues("Origin").Should().Contain("S100PermitService");
         }
 
-        // PBI 172720: Add AD Auth to get permits EndPoint
+        // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
+        // PBI 203832 : S-100 Permit Service Request and Response
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorizedStatusCode401IsReturned()
         {
             var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _payload!);
             response.StatusCode.Should().Be((HttpStatusCode)401);
+            response.Headers.GetValues("Origin").Should().Contain("S100PermitService");
         }
 
-        // PBI 172917: Build ZipStream as Response
-        // PBI 172914: Remove duplicate dataset files & select the dataset file with highest expiry date
+        // PBI 203803 : S-100 Permit Service Validations
+        // PBI 203832 : S-100 Permit Service Request and Response
         [Test]
         [TestCase("50ProductsPayload", "Permits", TestName = "WhenICallPermitServiceEndpointWith50ProductsAnd3UPNs_Then200OKResponseIsReturnedAndPERMITSZipIsGeneratedSuccessfully")]
-        //[TestCase("duplicateProductsPayload", "DuplicatePermits", TestName = "RenameTest2")]    // This test case will work post the merge of PBi 203803
+        [TestCase("duplicateProductsPayload", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointWithDuplicateProducts_ThenPERMITSZipHaveProductWithHigherExpiryDate")]   
         public async Task WhenICallPermitServiceEndpointWithValidPayload_Then200OKResponseIsReturnedAlongWithPERMITSZip(string payload, string comparePermitFolderName)
         {
             _payload = await PermitServiceEndPointFactory.LoadPayload($"./TestData/Payload/{payload}.json");
@@ -67,11 +71,22 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
         }
 
+        // PBI 203803 : S-100 Permit Service Validations
+        [Test]
+        public async Task WhenICallWhenICallPermitServiceEndpointWithPayloadHavingPastDateAsExpiryDate_Then400BadRequestIsReturned()
+        { 
+           _payload = await PermitServiceEndPointFactory.LoadPayload($"./TestData/Payload/payloadWithPastExpiry.json");
+           var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
+           response.StatusCode.Should().Be((HttpStatusCode)400);
+           response.Headers.GetValues("Origin").Should().Contain("S100PermitService");
+        }
+
+        // PBI 203832 : S-100 Permit Service Request and Response
         [Test]
         [TestCase("unauthroizedPKSRequest",401, TestName = "WhenICallPermitServiceEndpointButPermitServiceRequestIsUnauthroized_Then401UnauthorizedIsReturned")]
         [TestCase("forbiddenPKSRequest", 403, TestName = "WhenICallPermitServiceEndpointButPermitServiceIsForbidden_Then403ForbiddenIsReturned")]
         [TestCase("notFoundPKSRequest", 400, TestName = "WhenICallPermitServiceEndpointForProductNotAvailableInPKS_Then400VadRequestIsReturned")]
-        public async Task WhenICallPermitServiceEndpointWhichHasLimitedOrNoAccessToPKS_ThenPKSResponseIsReturnedByPermitService(string payload, HttpStatusCode expectedStatusCode)
+        public async Task WhenICallPermitServiceEndpointWhichHasLimitedOrNoAccessToPKS_ThenPKSResponseIsReturnedByPermitServiceAlongWithOrigin(string payload, HttpStatusCode expectedStatusCode)
         {
             _payload = await PermitServiceEndPointFactory.LoadPayload($"./TestData/Payload/{payload}.json");
             var response = await PermitServiceEndPointFactory.AsyncPermitServiceEndPoint(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
@@ -79,6 +94,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.Headers.GetValues("Origin").Should().Contain("PKS");
         }
 
+        // PBI 203803 : S-100 Permit Service Validations
         [Test]
         public async Task WhenICallPermitServiceEndPointWithInvalidUrl_Then404NotFoundIsReturned()
         {

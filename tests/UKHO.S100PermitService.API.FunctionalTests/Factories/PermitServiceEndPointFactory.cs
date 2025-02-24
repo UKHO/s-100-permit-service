@@ -28,7 +28,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             }
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
             var payloadJson = JsonConvert.SerializeObject(payload);
-            Console.WriteLine($"Payload: {payload}");
             httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             if(!string.IsNullOrEmpty(accessToken))
             {
