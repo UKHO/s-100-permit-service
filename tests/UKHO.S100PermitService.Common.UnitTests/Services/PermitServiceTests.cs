@@ -4,7 +4,6 @@ using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
-using System.Net.Mail;
 using System.Text;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
@@ -85,15 +84,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 .Returns(Task.FromResult(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(
                     new List<ProductKeyServiceResponse>
                     {
-                        new ProductKeyServiceResponse { ProductName = "CellCode", Edition = "1", Key = "123456" },
-                        new ProductKeyServiceResponse { ProductName = "CellCode1", Edition = "2", Key = "7891011" }
+                        new() { ProductName = "CellCode", Edition = "1", Key = "123456" },
+                        new() { ProductName = "CellCode1", Edition = "2", Key = "7891011" }
                     })));
 
             A.CallTo(() => _fakeS100Crypt.GetDecryptedKeysFromProductKeysAsync(A<IEnumerable<ProductKeyServiceResponse>>.Ignored, A<string>.Ignored))
-                .Returns(GetDecryptedKeysFromProductKeys());           
+                .Returns(GetDecryptedKeysFromProductKeys());
 
             A.CallTo(() => _fakeS100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(A<IEnumerable<UserPermit>>.Ignored))
-                .Returns(GetUpnInfoWithDecryptedHardwareId()); 
+                .Returns(GetUpnInfoWithDecryptedHardwareId());
 
             A.CallTo(() => _fakePermitReaderWriter.ReadXsdVersion()).Returns("5.2.0");
 
@@ -165,7 +164,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             ).MustNotHaveHappened();
         }
 
-        [Test]        
+        [Test]
         public async Task WhenPermitRequestValidationFailed_ThenPermitServiceReturnsBadRequestResponse()
         {
             var permitRequest = GetInvalidPermitRequestData();

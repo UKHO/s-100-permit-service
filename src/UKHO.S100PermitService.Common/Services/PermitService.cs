@@ -80,7 +80,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var listOfUpnInfo = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(permitRequest.UserPermits);
 
-                var permitDetails = await BuildPermitsAsync(permitRequest.Products, decryptedProductKeys, listOfUpnInfo);
+                var permitDetails = await BuildPermitsAsync(productsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
                 _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
 
