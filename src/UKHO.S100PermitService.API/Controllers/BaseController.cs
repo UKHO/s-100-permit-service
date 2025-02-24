@@ -58,7 +58,9 @@ namespace UKHO.S100PermitService.API.Controllers
             return permitServiceResult.StatusCode switch
             {
                 HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
-                _ => StatusCode((int)permitServiceResult.StatusCode, permitServiceResult.ErrorResponse.CorrelationId == null ? null : permitServiceResult.ErrorResponse)
+                HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
+                HttpStatusCode.InternalServerError => StatusCode(StatusCodes.Status500InternalServerError, permitServiceResult.ErrorResponse),
+                _ => StatusCode((int)permitServiceResult.StatusCode, null)
             };
         }
     }
