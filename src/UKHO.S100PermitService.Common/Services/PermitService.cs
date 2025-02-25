@@ -203,7 +203,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             var latestExpiryProducts = products
                 .GroupBy(product => product.ProductName)
-                .Select(group => group.OrderByDescending(product => product.PermitExpiryDate).First());
+                .Select(group => group.OrderByDescending(product => product.PermitExpiryDate).ThenByDescending(product => product.EditionNumber).First());
 
             _logger.LogInformation(EventIds.ProductsFilteredCellCount.ToEventId(), "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", products.Count(), latestExpiryProducts.Count());
 
