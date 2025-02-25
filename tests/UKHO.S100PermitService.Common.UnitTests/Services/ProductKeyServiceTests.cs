@@ -128,7 +128,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            AssertResponse(response, httpStatusCode, content);           
+            response.StatusCode.Should().Be(httpStatusCode);
+            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -174,7 +175,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
             response.StatusCode.Should().Be(httpStatusCode);
-            response.ErrorResponse.Errors.Equals(content);
+            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -201,7 +202,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                     (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
                                 {
-                                    StatusCode = HttpStatusCode.Unauthorized,
+                                    StatusCode = httpStatusCode,
                                     RequestMessage = new HttpRequestMessage()
                                     {
                                         RequestUri = new Uri("http://test.com")
@@ -210,6 +211,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
+            response.StatusCode.Should().Be(httpStatusCode);
             response.ErrorResponse.Errors.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -232,21 +234,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 && call.GetArgument<EventId>(1) == EventIds.GetProductKeysRequestCompletedWithStatus200Ok.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}"
             ).MustNotHaveHappened();
-        }
-
-        private void AssertResponse(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>> response, HttpStatusCode statusCode, string content)
-        {            
-            if(statusCode == HttpStatusCode.BadRequest || statusCode == HttpStatusCode.InternalServerError)
-            {
-                response.ErrorResponse.CorrelationId.Should().BeEquivalentTo(_fakeCorrelationId);
-            }
-            else
-            {
-                response.ErrorResponse.CorrelationId.Should().BeNull();
-            }
-            
-            response.StatusCode.Should().Be(statusCode);
-            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Description == content);
         }
     }
 }

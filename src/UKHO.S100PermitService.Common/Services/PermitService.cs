@@ -48,7 +48,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// Get required data from dependent services and build zip stream containing PERMIT.XML.
         /// </summary>
         /// <remarks>
-        /// If duplicate holdings data found, Then remove duplicate dataset and select the dataset with highest expiry date.
+        /// If duplicate product data found, Then remove duplicate dataset and select the dataset with highest expiry date.
         /// </remarks>
         /// <param name="productType">Requested product type.</param>
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
