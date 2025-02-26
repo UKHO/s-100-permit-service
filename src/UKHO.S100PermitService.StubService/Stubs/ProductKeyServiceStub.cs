@@ -23,31 +23,6 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
-            server //401
-                 .Given(Request.Create()
-                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                 .UsingPost()
-                 .WithHeader("Authorization", "Bearer ", MatchBehaviour.RejectOnMatch))
-                 .RespondWith(Response.Create()
-                 .WithCallback(request => CreateResponse(request, "response-401.json", HttpStatusCode.Unauthorized)));
-
-            server //404 when invalid or non-existent cell passed
-                .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                .UsingPost()
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-datanotfound-404.json", HttpStatusCode.NotFound)));
-
-            server //404 when cell is correct but data is not available on pks service
-                .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                .UsingPost()
-                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-404.json"))))
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-404.json", HttpStatusCode.NotFound)));
-
             server //200
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
@@ -102,6 +77,14 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200-12-DuplicateCell.json", HttpStatusCode.OK)));
 
+            server //400 when invalid or non-existent cell passed
+                .Given(Request.Create()
+                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                .UsingPost()
+                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                .RespondWith(Response.Create()
+                .WithCallback(request => CreateResponse(request, "response-400-data_not_found.json", HttpStatusCode.BadRequest)));
+
             server //400 when incorrect request passed
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
@@ -110,6 +93,33 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));
+
+            server //401
+                 .Given(Request.Create()
+                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+                 .UsingPost()
+                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-401.json"))))
+                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+                 .RespondWith(Response.Create()
+                 .WithStatusCode(HttpStatusCode.Unauthorized));
+
+            server //403 
+              .Given(Request.Create()
+              .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+              .UsingPost()
+              .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-403.json"))))
+              .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+              .RespondWith(Response.Create()
+              .WithStatusCode(HttpStatusCode.Forbidden));
+
+            server //500 
+              .Given(Request.Create()
+              .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
+              .UsingPost()
+              .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-500.json"))))
+              .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
+              .RespondWith(Response.Create()
+              .WithCallback(request => CreateResponse(request, "response-500.json", HttpStatusCode.InternalServerError)));
         }
 
         private static string GetJsonData(string filePath)

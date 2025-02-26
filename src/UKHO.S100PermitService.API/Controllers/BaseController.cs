@@ -1,12 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using UKHO.S100PermitService.Common;
+using UKHO.S100PermitService.Common.Models;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
     [ExcludeFromCodeCoverage]
     public abstract class BaseController<T> : ControllerBase
     {
+        private const string PermitZipFileName = "Permits.zip";
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         protected BaseController(IHttpContextAccessor httpContextAccessor)
@@ -38,6 +41,27 @@ namespace UKHO.S100PermitService.API.Controllers
         protected CancellationToken GetRequestCancellationToken()
         {
             return _httpContextAccessor.HttpContext.RequestAborted;
+        }
+
+        /// <summary>
+        /// Converts a PermitServiceResult to an appropriate IActionResult based on the status code.
+        /// </summary>
+        /// <param name="permitServiceResult">The result of the permit service operation, containing the status code, error response, and value.</param>
+        /// <returns>An IActionResult representing the HTTP response, including a permit file if the operation was successful.</returns>
+        protected IActionResult ToActionResult(PermitServiceResult permitServiceResult)
+        {
+            if(!string.IsNullOrEmpty(permitServiceResult.ErrorResponse?.Origin))
+            {
+                _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, permitServiceResult.ErrorResponse.Origin);
+            }
+
+            return permitServiceResult.StatusCode switch
+            {
+                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
+                HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
+                HttpStatusCode.InternalServerError => StatusCode(StatusCodes.Status500InternalServerError, permitServiceResult.ErrorResponse),
+                _ => StatusCode((int)permitServiceResult.StatusCode, null)
+            };
         }
     }
 }

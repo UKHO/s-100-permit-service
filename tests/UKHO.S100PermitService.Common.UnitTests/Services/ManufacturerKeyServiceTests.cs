@@ -103,11 +103,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             return new KeyVaultSecret(key, value);
         }
 
-        private static IEnumerable<SecretProperties> GetSecretProperties(string secret)
-        {
-            return [new SecretProperties(secret)];
-        }
-
         private static Dictionary<string, string> SetCacheKeyValue()
         {
             var secrets = new Dictionary<string, string>() {

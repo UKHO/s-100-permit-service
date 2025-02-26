@@ -1,12 +1,10 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Factories;
 using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models;
@@ -41,15 +39,13 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <remarks>
         /// If service responded with 429 TooManyRequests or 503 ServiceUnavailable StatusCodes, Then re-try mechanism will be triggered.
-        /// If service responded with other than 200 Ok StatusCode, Then PermitServiceException exception will be thrown.
+        /// If service responded with other than 200 Ok StatusCode, Then errorResponse will be return with origin PKS.
         /// </remarks>
         /// <param name="productKeyServiceRequest">Product Key Service request body.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <returns>Product key details.</returns>
-        /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
-        [ExcludeFromCodeCoverage] //as the status code and its implementation is changed in next PBI 203832, so excluding it temporary for pipeline to get passed
-        public async Task<ServiceResponseResult<List<ProductKeyServiceResponse>>> GetProductKeysAsync(List<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
+        public async Task<ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>> GetProductKeysAsync(IEnumerable<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
         {
             var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
 
@@ -57,10 +53,9 @@ namespace UKHO.S100PermitService.Common.Services
 
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
-            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).ExecuteAsync(async () =>
-            {
-                return await _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, correlationId, cancellationToken);
-            });
+            var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).ExecuteAsync(() =>
+                _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, correlationId, cancellationToken)
+            );
 
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
 
@@ -68,17 +63,21 @@ namespace UKHO.S100PermitService.Common.Services
             {
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200Ok.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);
 
-                var productKeyServiceResponse = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(bodyJson)!;
-                return ServiceResponseResult<List<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
+                var productKeyServiceResponse = JsonSerializer.Deserialize<IEnumerable<ProductKeyServiceResponse>>(bodyJson)!;
+                return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Success(productKeyServiceResponse);
             }
-            if(httpResponseMessage.StatusCode is HttpStatusCode.BadRequest or HttpStatusCode.NotFound)
+
+            var origin = httpResponseMessage.Headers.TryGetValues(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.PermitKeyService;
+            var errorResponse = !string.IsNullOrEmpty(bodyJson) ? JsonSerializer.Deserialize<ErrorResponse>(bodyJson) : new ErrorResponse();
+
+            _logger.LogError(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+
+            return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
             {
-                var eventId = httpResponseMessage.StatusCode == HttpStatusCode.BadRequest ? EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus400BadRequest.ToEventId() : EventIds.ProductKeyServiceGetProductKeysRequestCompletedWithStatus404NotFound.ToEventId();
-
-                throw new PermitServiceException(eventId, "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
-            }
-
-            throw new PermitServiceException(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
+                Errors = errorResponse?.Errors!,
+                CorrelationId = errorResponse?.CorrelationId ?? correlationId,
+                Origin = origin!
+            });
         }
     }
 }

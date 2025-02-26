@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Permit xmlns:S100SE="http://www.iho.int/s100/se/5.2" xmlns:ns2="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns="http://www.iho.int/s100/se/5.2">
 	<S100SE:header>
-		<S100SE:issueDate>2024-11-15+00:00</S100SE:issueDate>
+		<S100SE:issueDate>2025-02-21+00:00</S100SE:issueDate>
 		<S100SE:dataServerName>UK Hydrographic Office</S100SE:dataServerName>
 		<S100SE:dataServerIdentifier>GB00</S100SE:dataServerIdentifier>
 		<S100SE:version>5.2.0</S100SE:version>
@@ -10,310 +10,310 @@
 	<S100SE:products>
 		<S100SE:product id="S-101">
 			<S100SE:datasetPermit>
-				<S100SE:filename>101GB40079ABCDEFG.000</S100SE:filename>
-				<S100SE:editionNumber>1</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>3F3D19CF22DAE9EBDA6C2FE757BBC5C4</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101NO328024112234.000</S100SE:filename>
-				<S100SE:editionNumber>2</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>DE4D7EF91072FE0C7AB0731535936297</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101NO64N37XC32VEK.000</S100SE:filename>
-				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>203D81ABD671973E8EEE8ED351F954CE</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101NZ30J7QCWXVCZW.000</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>DB3BDFBF61BA4F4F75408355B2DAFF40</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101RU077865323234.000</S100SE:filename>
-				<S100SE:editionNumber>7</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>2D18499C017068710446D26EE35B4C65</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101TH098632457234.000</S100SE:filename>
-				<S100SE:editionNumber>1</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>126C1E99979D87784F9A8E1296815B86</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101UN27RED2R27L5C.000</S100SE:filename>
-				<S100SE:editionNumber>1</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>8498904B7916FF2B2C46A0B73B20A00F</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101CO02WZMA5DS5U1.000</S100SE:filename>
+				<S100SE:filename>101CO02WZMA5DS5U1</S100SE:filename>
 				<S100SE:editionNumber>5</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>3B1DEEA15ABD4A63FD9F28C9AF0BA75D</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101CY76HQ47G93CYM.000</S100SE:filename>
+				<S100SE:filename>101CY76HQ47G93CYM</S100SE:filename>
 				<S100SE:editionNumber>7</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>0A32512415D355FDA4D1085960046D68</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101PT08OIRERKJKER.000</S100SE:filename>
-				<S100SE:editionNumber>1</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>EEBB2BE094298144D96ABF62936709A8</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101RO89YIEKOW0YMY.000</S100SE:filename>
+				<S100SE:filename>101GB11079ABCDEFG</S100SE:filename>
 				<S100SE:editionNumber>11</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>6D604A0F52DAFC5BA26568B2872D862F</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>101GB11079ABCDEFG.000</S100SE:filename>
-				<S100SE:editionNumber>11</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>901A9FB40ECEC0D9B6732DC7F99D1A85</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101NO128024112234.000</S100SE:filename>
-				<S100SE:editionNumber>12</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>26ED4075B652B81C83518D60DDFD7524</S100SE:encryptedKey>
+				<S100SE:filename>101GB40079ABCDEFG</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>3F3D19CF22DAE9EBDA6C2FE757BBC5C4</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101KE24079ABCDEFG.000</S100SE:filename>
+				<S100SE:filename>101KE24079ABCDEFG</S100SE:filename>
 				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>591D63076C215C497A48CF3CA838BDCD</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101NO78N37XC32VEK.000</S100SE:filename>
+				<S100SE:filename>101NO128024112234</S100SE:filename>
+				<S100SE:editionNumber>12</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>26ED4075B652B81C83518D60DDFD7524</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101NO328024112234</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>DE4D7EF91072FE0C7AB0731535936297</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101NO64N37XC32VEK</S100SE:filename>
+				<S100SE:editionNumber>4</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>203D81ABD671973E8EEE8ED351F954CE</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101NO78N37XC32VEK</S100SE:filename>
 				<S100SE:editionNumber>5</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>CA2D4B53D3AA26C14EB07C03ED921BD6</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>101NP778024112234.000</S100SE:filename>
+				<S100SE:filename>101NP778024112234</S100SE:filename>
 				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>2D36DE23F3DC75C261B337F61E9D5B32</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101NZ30J7QCWXVCZW</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>DB3BDFBF61BA4F4F75408355B2DAFF40</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101PT08OIRERKJKER</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>EEBB2BE094298144D96ABF62936709A8</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101RO89YIEKOW0YMY</S100SE:filename>
+				<S100SE:editionNumber>11</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>6D604A0F52DAFC5BA26568B2872D862F</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101RU077865323234</S100SE:filename>
+				<S100SE:editionNumber>7</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>2D18499C017068710446D26EE35B4C65</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101TH098632457234</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>126C1E99979D87784F9A8E1296815B86</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101UN27RED2R27L5C</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>8498904B7916FF2B2C46A0B73B20A00F</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 		</S100SE:product>
 		<S100SE:product id="S-102">
 			<S100SE:datasetPermit>
-				<S100SE:filename>102GE959048208012.h5</S100SE:filename>
-				<S100SE:editionNumber>21</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>2CE0FF8EC1831CF105AF6762EAA0274A</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102GR30907391012.h5</S100SE:filename>
-				<S100SE:editionNumber>2</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>DDA02195B7506645521203303337DE2F</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102CH066NVG4GMH5.h5</S100SE:filename>
-				<S100SE:editionNumber>2</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>9C1645F8295366FA53203ED4461C934E</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102GB98_.h5</S100SE:filename>
-				<S100SE:editionNumber>9</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>B8D917CCB2716E707F7BF7154DA336C6</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102NO329048208012.h5</S100SE:filename>
-				<S100SE:editionNumber>2</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>9CD85E9CD5ACC48AF79B635B807867DD</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102NZ786UTXGEX58XMJ.h5</S100SE:filename>
-				<S100SE:editionNumber>12</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>112789BFA4373FFB6BCD9D6E47C49254</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102US76CS_W2LLZ7.h5</S100SE:filename>
-				<S100SE:editionNumber>2</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>7CF91A43478F29A73F3F3E217C77CC11</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102NO39904820801012.h5</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>C9B05150B2448C90C0C552B0BFC8B715</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102NZ186UTXGEX58XMJ.h5</S100SE:filename>
-				<S100SE:editionNumber>18</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>8ACE20451773E2C4359C16B182F73607</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>102AN59CS_W2LLZ7.h5</S100SE:filename>
+				<S100SE:filename>102AN59CS_W2LLZ7</S100SE:filename>
 				<S100SE:editionNumber>5</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>FC2080F8052E96547F24B46F0936F175</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>102CH896NVG4GMH5.h5</S100SE:filename>
+				<S100SE:filename>102CH066NVG4GMH5</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>9C1645F8295366FA53203ED4461C934E</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102CH896NVG4GMH5</S100SE:filename>
 				<S100SE:editionNumber>34</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>055D5F2E773A25D18C7FFCA5D3C32FF5</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102GB98_</S100SE:filename>
+				<S100SE:editionNumber>9</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>B8D917CCB2716E707F7BF7154DA336C6</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102GE959048208012</S100SE:filename>
+				<S100SE:editionNumber>21</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>2CE0FF8EC1831CF105AF6762EAA0274A</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102GR30907391012</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>DDA02195B7506645521203303337DE2F</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102NO329048208012</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>9CD85E9CD5ACC48AF79B635B807867DD</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102NO39904820801012</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>C9B05150B2448C90C0C552B0BFC8B715</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102NZ186UTXGEX58XMJ</S100SE:filename>
+				<S100SE:editionNumber>18</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>8ACE20451773E2C4359C16B182F73607</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102NZ786UTXGEX58XMJ</S100SE:filename>
+				<S100SE:editionNumber>12</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>112789BFA4373FFB6BCD9D6E47C49254</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>102US76CS_W2LLZ7</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>7CF91A43478F29A73F3F3E217C77CC11</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 		</S100SE:product>
 		<S100SE:product id="S-104">
 			<S100SE:datasetPermit>
-				<S100SE:filename>104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>9</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>B1662D6DE96353B23EE0BC23993D1963</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104EG01_qE4cDLyIu89987Tzbw_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104EG01_qE4cDLyIu89987Tzbw_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>11</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>3C23C3FA721684A51B26E1DD8AF55D40</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104GH45_DLyceTRaG5_G9hYYucrfBG_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>95657405DEEE57C9C45CF789C5D39D8C</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>104JM87_DDt3w3qTCS_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>8</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>3AA3588C3037B74A19DFC6C4B8D4B012</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>104GB29_8qT1KWyKAnxXSFl_20100703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104GB29_8qT1KWyKAnxXSFl_20100703T00Z</S100SE:filename>
 				<S100SE:editionNumber>13</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>4756D192687F0BCE32493CE0A8BE881E</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104GZ87_8qT1KWyKA_nxXSFl_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104GH45_DLyceTRaG5_G9hYYucrfBG_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>4</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>95657405DEEE57C9C45CF789C5D39D8C</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>104GZ87_8qT1KWyKA_nxXSFl_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>6</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>72B9F35CF09FFC7CBFE104882A6C1798</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104US00_ches_dcf8_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>90392F37508FC106203602A2DA704C73</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>104US00_CHES_TYPE1_20210630_0600.h5</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>CF35D27A96A1563841014F8B04076533</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>104US00_rard-4ZPD6h_20200703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>1</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>5E75F22E699D9917D1E9DE5F5E53E6A1</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>104KP85_8qT1KWyKA_nxXSFl_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104JM87_DDt3w3qTCS_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>8</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>3AA3588C3037B74A19DFC6C4B8D4B012</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>104KP85_8qT1KWyKA_nxXSFl_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>8</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>887E324C7A3A7A742F837E7E106B8BBE</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104OM68_rard-4ZPD6h_20200703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104OM68_rard-4ZPD6h_20200703T00Z</S100SE:filename>
 				<S100SE:editionNumber>6</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>1381D010C341CEE9BD496F2A03157923</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>104PK32_uoioiiewrd-4ZPD6h_20200703T00Z.h5</S100SE:filename>
+				<S100SE:filename>104PK32_uoioiiewrd-4ZPD6h_20200703T00Z</S100SE:filename>
 				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>E95525F9B870200B6CC22BC1CA40A5F4</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>104US00_ches_dcf8_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>90392F37508FC106203602A2DA704C73</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>104US00_CHES_TYPE1_20210630_0600</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>CF35D27A96A1563841014F8B04076533</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>104US00_rard-4ZPD6h_20200703T00Z</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>5E75F22E699D9917D1E9DE5F5E53E6A1</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 		</S100SE:product>
 		<S100SE:product id="S-111">
 			<S100SE:datasetPermit>
-				<S100SE:filename>111CR436Nzqb_R49NS-MfUiHLaaVMFLAc_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>23</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>77097272D22F78C757296A1B304411DC</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>7</S100SE:editionNumber>
-				<S100SE:expiry>2026-01-31</S100SE:expiry>
-				<S100SE:encryptedKey>2AC84FD68EC9FB8A53A0E4B038755489</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111IT39_3mMkfwryhcJxa_pDHnKrrV84-VnXQVP39hDMdyk_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>657C28AAE39CDACB8104EA5FF995D97A</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111IT99_ryTCN4QjLWJzmBPwRfrzgEYW7hE_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>9</S100SE:editionNumber>
-				<S100SE:expiry>2026-03-05</S100SE:expiry>
-				<S100SE:encryptedKey>2FFE8E9A0136B0271296BEFEBDA9EB82</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111NZ87_ches_dcf8_20190703T00Z.h5</S100SE:filename>
-				<S100SE:editionNumber>3</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>B60F33B21687D6F7B2336F61EF1258AB</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111US09_CHES_TYPE1_20210630_0600.h5</S100SE:filename>
-				<S100SE:editionNumber>9</S100SE:editionNumber>
-				<S100SE:expiry>2026-04-30</S100SE:expiry>
-				<S100SE:encryptedKey>346745D78B4243AB50553D2FB3F6AEA8</S100SE:encryptedKey>
-			</S100SE:datasetPermit>
-			<S100SE:datasetPermit>
-				<S100SE:filename>111CH06_pceI9CfEHdBNxuY0A_L-ZwcJMUNMiRun_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>111CH06_pceI9CfEHdBNxuY0A_L-ZwcJMUNMiRun_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>38E78B2F61C35ABD0E8CFE2852CC7F9F</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>111GB80GeI1an0vd-DIPjH_bhAqN06bhjL6caVWGgOaS.h5</S100SE:filename>
+				<S100SE:filename>111CR436Nzqb_R49NS-MfUiHLaaVMFLAc_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>23</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>77097272D22F78C757296A1B304411DC</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111GB80GeI1an0vd-DIPjH_bhAqN06bhjL6caVWGgOaS</S100SE:filename>
 				<S100SE:editionNumber>8</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>77F646C078014B1BAD7A72DAE73C5BD2</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>111NZ09vZgcSM6sG2FW1rXoYgZu.h5</S100SE:filename>
+				<S100SE:filename>111IT39_3mMkfwryhcJxa_pDHnKrrV84-VnXQVP39hDMdyk_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2029-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>657C28AAE39CDACB8104EA5FF995D97A</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111IT99_ryTCN4QjLWJzmBPwRfrzgEYW7hE_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>9</S100SE:editionNumber>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>2FFE8E9A0136B0271296BEFEBDA9EB82</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>7</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>2AC84FD68EC9FB8A53A0E4B038755489</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111NZ09vZgcSM6sG2FW1rXoYgZu</S100SE:filename>
 				<S100SE:editionNumber>14</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>4DDA3C74FA21B8945B986143D4DAB931</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>111US00_ches_dcf8_20190703T00Z.h5</S100SE:filename>
+				<S100SE:filename>111NZ87_ches_dcf8_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>3</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>B60F33B21687D6F7B2336F61EF1258AB</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111US00_ches_dcf8_20190703T00Z</S100SE:filename>
 				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>F73091B7C88B98F938A1E3E8D982CF86</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 			<S100SE:datasetPermit>
-				<S100SE:filename>111US00_CHES_TYPE1_20210630_0600.h5</S100SE:filename>
+				<S100SE:filename>111US00_CHES_TYPE1_20210630_0600</S100SE:filename>
 				<S100SE:editionNumber>4</S100SE:editionNumber>
-				<S100SE:expiry>2027-01-01</S100SE:expiry>
+				<S100SE:expiry>2027-12-31</S100SE:expiry>
 				<S100SE:encryptedKey>5395C9AE8831A90BDBFCA7C742BB66F4</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>111US09_CHES_TYPE1_20210630_0600</S100SE:filename>
+				<S100SE:editionNumber>9</S100SE:editionNumber>
+				<S100SE:expiry>2028-12-31</S100SE:expiry>
+				<S100SE:encryptedKey>346745D78B4243AB50553D2FB3F6AEA8</S100SE:encryptedKey>
 			</S100SE:datasetPermit>
 		</S100SE:product>
 	</S100SE:products>

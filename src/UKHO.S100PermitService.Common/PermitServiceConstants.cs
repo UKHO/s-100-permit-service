@@ -12,5 +12,11 @@ namespace UKHO.S100PermitService.Common
         public const string ContentType = "application/json";
 
         public const string ZipContentType = "application/zip";
+
+        public const string OriginHeaderKey = "origin";
+
+        public const string PermitKeyService = "PKS";
+
+        public const string S100PermitService = "S100PermitService";
     }
 }

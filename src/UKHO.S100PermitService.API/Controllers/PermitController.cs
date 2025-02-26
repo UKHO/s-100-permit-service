@@ -14,7 +14,6 @@ namespace UKHO.S100PermitService.API.Controllers
     [Authorize]
     public class PermitController : BaseController<PermitController>
     {
-        private const string PermitZipFileName = "Permits.zip";
         private const string ProductType = "s100";
 
         private readonly ILogger<PermitController> _logger;
@@ -32,8 +31,9 @@ namespace UKHO.S100PermitService.API.Controllers
         /// </summary>
         /// <remarks>
         /// Generate S100 standard PERMIT.XML for the respective User Permit Number (UPN) and products and provides the zip stream containing PERMIT.XML.
+        /// If internal service fails, errorResponse will be returned along with origin in response headers as internal service name (for e.g. PKS).
+        /// If S100PermitService fails, errorResponse will be returned along with origin in response headers as "S100PermitService"
         /// </remarks>
-        /// <param name="productType" example="s100">Requested Product type.</param>
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="400">Bad Request.</response>
@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <response code="429">You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
         [HttpPost]
-        [Route($"/v1/permits/{ProductType}")]
+        [Route("/v1/permits/s100")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
@@ -60,12 +60,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", ProductType);
 
-            return permitServiceResult.StatusCode switch
-            {
-                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
-                HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
-                _ => StatusCode((int)permitServiceResult.StatusCode)
-            };
+            return ToActionResult(permitServiceResult);
         }
     }
 }
