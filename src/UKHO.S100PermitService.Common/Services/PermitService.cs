@@ -230,7 +230,7 @@ namespace UKHO.S100PermitService.Common.Services
                 };
 
                 _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
-                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.S100PermitService, errorResponse);
+                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.PermitService, errorResponse);
             }
             return null;
         }

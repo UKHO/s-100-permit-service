@@ -15,8 +15,8 @@ namespace UKHO.S100PermitService.Common
 
         public const string OriginHeaderKey = "origin";
 
-        public const string PermitKeyService = "PKS";
+        public const string ProductKeyService = "PKS";
 
-        public const string S100PermitService = "PermitService";
+        public const string PermitService = "PermitService";
     }
 }

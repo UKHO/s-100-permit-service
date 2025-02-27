@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             var originHeaderValue = !permitServiceResult.IsSuccess && !string.IsNullOrEmpty(permitServiceResult.Origin)
                 ? permitServiceResult.Origin
-                : PermitServiceConstants.S100PermitService;
+                : PermitServiceConstants.PermitService;
 
             _httpContextAccessor.HttpContext.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, originHeaderValue);
 
