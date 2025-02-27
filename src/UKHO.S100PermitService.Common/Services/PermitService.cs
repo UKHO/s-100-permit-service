@@ -195,10 +195,10 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
+        /// Filters the products by selecting the ones with the latest expiry date and removing duplicates.
         /// </summary>
-        /// <param name="products"></param>
-        /// <returns>Products</returns>
+        /// <param name="products">The collection of products to filter.</param>
+        /// <returns>The filtered collection of products.</returns>
         private IEnumerable<Product> FilterProductsByLatestExpiry(IEnumerable<Product> products)
         {
             var latestExpiryProducts = products
@@ -211,12 +211,12 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Validate permit request
+        /// Validates the permit request for a specific product type.
         /// </summary>
-        /// <param name="productType"></param>
-        /// <param name="permitRequest"></param>
-        /// <param name="correlationId"></param>
-        /// <returns>PermitServiceResult</returns>
+        /// <param name="productType">The requested product type.</param>
+        /// <param name="permitRequest">The permit request containing products and UPNs.</param>
+        /// <param name="correlationId">The unique identifier to track the request.</param>
+        /// <returns>A PermitServiceResult indicating the result of the validation.</returns>
         private PermitServiceResult ValidatePermitRequest(string productType, PermitRequest permitRequest, string correlationId)
         {
             var validationResult = _permitRequestValidator.Validate(permitRequest);
