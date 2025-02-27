@@ -20,16 +20,7 @@
     <None Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="StubData\ProductKeyService\request-200-11-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <None Update="StubData\ProductKeyService\request-200-12-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\request-200-9-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\request-200-8-DuplicateCell.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\request-200.json">
@@ -54,15 +45,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="StubData\ProductKeyService\response-200-12-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\response-200-11-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\response-200-9-DuplicateCell.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="StubData\ProductKeyService\response-200-8-DuplicateCell.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
 	  <None Update="StubData\ProductKeyService\request-200-50.json">
