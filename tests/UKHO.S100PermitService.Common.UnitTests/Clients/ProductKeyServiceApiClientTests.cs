@@ -18,12 +18,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         private ILogger<ProductKeyServiceApiClient> _fakeLogger;
         private IHttpClientFactory _fakeHttpClientFactory;
         private IProductKeyServiceApiClient? _productKeyServiceApiClient;
+        private HttpClient _fakeHttpClient;
 
         [SetUp]
         public void SetUp()
         {
             _fakeLogger = A.Fake<ILogger<ProductKeyServiceApiClient>>();
             _fakeHttpClientFactory = A.Fake<IHttpClientFactory>();
+            _fakeHttpClient = A.Fake<HttpClient>();
+        }
+
+        [TearDown]
+        public void TearDown()
+        {
+            _fakeHttpClient.Dispose();
         }
 
         [Test]
@@ -79,7 +87,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         }
 
         [Test]
-        public void WhenNullAccessTokenIsPassed_ThenResponseShouldBeUnauthorized()
+        [TestCase("")]
+        [TestCase(null)]
+        public void WhenNullOrEmptyAccessTokenIsPassed_ThenResponseShouldBeUnauthorized(string? token)
         {
             var messageHandler = FakeHttpMessageHandler.GetHttpMessageHandler(
                 JsonSerializer.Serialize(new List<ProductKeyServiceResponse>() { new() }), HttpStatusCode.Unauthorized);
@@ -93,7 +103,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
 
-            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "", _fakeCorrelationId, CancellationToken.None);
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], token, _fakeCorrelationId, CancellationToken.None);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -104,6 +114,39 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             ).MustHaveHappenedOnceExactly();
 
             result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Test]
+        public void WhenAccessTokenIsProvided_ThenShouldSetBearerTokenAndAddCorrelationIdHeader()
+        {
+            var httpRequestMessage = new HttpRequestMessage();
+            var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
+
+            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(_fakeHttpClient);
+
+            A.CallTo(() => _fakeHttpClient.SendAsync(A<HttpRequestMessage>.Ignored, A<CancellationToken>.Ignored))
+                .Invokes((HttpRequestMessage requestMessage, CancellationToken token) =>
+                {
+                    httpRequestMessage = requestMessage;
+                })
+                .Returns(Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new StringContent(JsonSerializer.Serialize(new List<ProductKeyServiceResponse>()
+                                    { new() { ProductName = "test101", Edition = "1", Key = "123456"} }))
+                }));
+
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+
+            var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
+
+            var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
+            httpRequestMessage.Headers.Authorization.Parameter.Should().Be("testToken");
+
+            httpRequestMessage.Headers.Contains(PermitServiceConstants.XCorrelationIdHeaderKey).Should().BeTrue();
+            httpRequestMessage.Headers.GetValues(PermitServiceConstants.XCorrelationIdHeaderKey).Should().Contain(_fakeCorrelationId);
+            result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
+            deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
+            deSerializedResult![0].Key.Should().Be("123456");
         }
     }
 }
