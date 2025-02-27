@@ -87,7 +87,7 @@ namespace UKHO.S100PermitService.Common.Services
                 return PermitServiceResult.Success(permitDetails);
             }
 
-            return PermitServiceResult.Failure(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.ErrorResponse);
+            return PermitServiceResult.Failure(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.Origin, productKeyServiceResponseResult.ErrorResponse);
         }
 
         /// <summary>
@@ -227,11 +227,10 @@ namespace UKHO.S100PermitService.Common.Services
                 {
                     CorrelationId = correlationId,
                     Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
-                    Origin = PermitServiceConstants.S100PermitService
                 };
 
                 _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
-                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, errorResponse);
+                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.S100PermitService, errorResponse);
             }
             return null;
         }

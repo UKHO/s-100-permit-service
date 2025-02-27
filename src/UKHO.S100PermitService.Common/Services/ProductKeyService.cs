@@ -72,11 +72,10 @@ namespace UKHO.S100PermitService.Common.Services
 
             _logger.LogError(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 
-            return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, new ErrorResponse
+            return ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpResponseMessage.StatusCode, origin, new ErrorResponse
             {
                 Errors = errorResponse?.Errors!,
                 CorrelationId = errorResponse?.CorrelationId ?? correlationId,
-                Origin = origin!
             });
         }
     }

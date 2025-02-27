@@ -17,6 +17,6 @@ namespace UKHO.S100PermitService.Common
 
         public const string PermitKeyService = "PKS";
 
-        public const string S100PermitService = "S100PermitService";
+        public const string S100PermitService = "PermitService";
     }
 }
