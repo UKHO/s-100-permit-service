@@ -27,6 +27,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
             _authToken = await _authTokenProvider!.GetPermitServiceTokenAsync(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync("./TestData/Payload/validPayload.json");
+            _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
         }
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
@@ -67,6 +68,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithValidPayload_Then200OKResponseIsReturnedAlongWithPERMITSZip(string payload, string comparePermitFolderName)
         {
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync($"./TestData/Payload/{payload}.json");
+            _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
             var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
             response.Headers.GetValues("Origin").Should().Contain("PermitService");
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
