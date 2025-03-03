@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.API.Controllers
         [Route("/v1/permits/s100")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]
-        [SwaggerOperation(Description = "<p>Generates signed PERMIT.XML files for requested products and user permits (UPNs), returning them in a compressed ZIP file.</p>")]
+        [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.OK, type: typeof(string), description: "<p>OK - Returns permit files in a compressed ZIP file.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.BadRequest, type: typeof(IDictionary<string, string>), description: "<p>Bad request - The request is invalid or one or more of the supplied products or UPNs are invalid.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.Unauthorized, description: "<p>Unauthorised - either you have not provided valid token, or your token is not recognised.</p>")]
