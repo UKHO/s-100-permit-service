@@ -31,6 +31,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         }
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
+        // PBI 206666 : Adding Origin in Response Header for 200 status code
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
@@ -41,6 +42,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
         // PBI 203832 : S-100 Permit Service Request and Response
+        // PBI 206666 : Adding Origin in Response Header for 200 status code
         [Test]
         public async Task WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned()
         {
@@ -52,6 +54,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
         // PBI 203832 : S-100 Permit Service Request and Response
+        // PBI 206666 : Adding Origin in Response Header for 200 status code
         [Test]
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorisedStatusCode401IsReturned()
         {
@@ -62,6 +65,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 
         // PBI 203803 : S-100 Permit Service Validations
         // PBI 203832 : S-100 Permit Service Request and Response
+        // PBI 206666 : Adding Origin in Response Header for 200 status code
         [Test]
         [TestCase("50ProductsPayload", "Permits", TestName = "WhenICallPermitServiceEndpointWith50ProductsAnd3UPNs_Then200OKResponseAndPERMITSZipIsReturned")]
         [TestCase("duplicateProductsPayload", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointWithDuplicateProducts_ThenProductWithHigherExpiryDateInPERMITIsReturned")]   
@@ -76,6 +80,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         }
 
         // PBI 203803 : S-100 Permit Service Validations
+        // PBI 206666 : Adding Origin in Response Header for 200 status code
         [Test]
         public async Task WhenICallPermitServiceEndpointWithPayloadHavingPastDateAsExpiryDate_Then400BadRequestIsReturned()
         { 

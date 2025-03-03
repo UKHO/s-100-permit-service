@@ -79,7 +79,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 }
             };
 
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(PermitServiceResult.Success(expectedStream));
 
             var result = await _permitController.GenerateS100Permits(permitRequest);
@@ -115,7 +115,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponseWithOriginHeader(HttpStatusCode httpStatusCode)
         {
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetPermitServiceResult(httpStatusCode));
 
             var result = await _permitController.GenerateS100Permits(permitRequest);

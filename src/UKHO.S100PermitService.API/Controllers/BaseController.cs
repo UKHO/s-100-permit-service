@@ -9,7 +9,6 @@ namespace UKHO.S100PermitService.API.Controllers
     [ExcludeFromCodeCoverage]
     public abstract class BaseController<T> : ControllerBase
     {
-        private const string PermitZipFileName = "Permits.zip";
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         protected BaseController(IHttpContextAccessor httpContextAccessor)
@@ -58,7 +57,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
             return permitServiceResult.StatusCode switch
             {
-                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitZipFileName),
+                HttpStatusCode.OK => File(permitServiceResult.Value, PermitServiceConstants.ZipContentType, PermitServiceConstants.PermitZipFileName),
                 HttpStatusCode.BadRequest => BadRequest(permitServiceResult.ErrorResponse),
                 HttpStatusCode.InternalServerError => StatusCode(StatusCodes.Status500InternalServerError, permitServiceResult.ErrorResponse),
                 _ => StatusCode((int)permitServiceResult.StatusCode, null)

@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
@@ -21,8 +20,6 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly IProductKeyServiceApiClient _productKeyServiceApiClient;
         private readonly IWaitAndRetryPolicy _waitAndRetryPolicy;
         private readonly IUriFactory _uriFactory;
-
-        private const string KeysEnc = "/keys/s100";
 
         public ProductKeyService(ILogger<ProductKeyService> logger, IOptions<ProductKeyServiceApiConfiguration> productKeyServiceApiConfiguration, IProductKeyServiceAuthTokenProvider productKeyServiceAuthTokenProvider, IProductKeyServiceApiClient productKeyServiceApiClient, IWaitAndRetryPolicy waitAndRetryPolicy, IUriFactory uriFactory)
         {
@@ -47,7 +44,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>Product key details.</returns>
         public async Task<ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>> GetProductKeysAsync(IEnumerable<ProductKeyServiceRequest> productKeyServiceRequest, string correlationId, CancellationToken cancellationToken)
         {
-            var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, KeysEnc);
+            var uri = _uriFactory.CreateUri(_productKeyServiceApiConfiguration.Value.BaseUrl, PermitServiceConstants.KeysEnc);
 
             _logger.LogInformation(EventIds.GetProductKeysRequestStarted.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} started.", uri.AbsolutePath);
 
