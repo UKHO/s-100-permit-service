@@ -37,7 +37,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
         /// <response code="200">OK - Zip stream containing PERMIT.XML.</response>
         /// <response code="400">Bad Request-Invalid request or invalid product/UPN data.</response>
-        /// <response code="401">Unauthorized - either you have not provided any credentials, or your credentials are not recognized.</response>
+        /// <response code="401">Unauthorized - Either you have not provided any credentials, or your credentials are not recognized.</response>
         /// <response code="403">Forbidden - you have been authorized, but you are not allowed to access this resource.</response>
         /// <response code="429">Too Many Requests - You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
@@ -48,8 +48,8 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate signed PERMIT.XML files for all the User Permit Numbers (UPNs) for the requested licence and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.OK, type: typeof(string), description: "<p>OK - Returns permit files in a compressed ZIP file.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.BadRequest, type: typeof(IDictionary<string, string>), description: "<p>Bad request - The request is invalid or one or more of the supplied products or UPNs are invalid.</p>")]
-        [SwaggerResponse(statusCode: (int)HttpStatusCode.Unauthorized, description: "<p>Unauthorised - either you have not provided valid token, or your token is not recognised.</p>")]
-        [SwaggerResponse(statusCode: (int)HttpStatusCode.Forbidden, description: "<p>Forbidden - You are not authorised to access this resource..</p>")]
+        [SwaggerResponse(statusCode: (int)HttpStatusCode.Unauthorized, description: "<p>Unauthorised - Either you have not provided valid token, or your token is not recognised.</p>")]
+        [SwaggerResponse(statusCode: (int)HttpStatusCode.Forbidden, description: "<p>Forbidden - You are not authorised to access this resource.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.TooManyRequests, description: "<p>Too Many Requests - Too many requests are being sent in a given amount of time.</p>")]
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error - An error occurred on the server.</p>")]
         public virtual async Task<IActionResult> GenerateS100Permits([FromBody] PermitRequest permitRequest)

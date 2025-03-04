@@ -13,8 +13,7 @@ namespace UKHO.S100PermitService.Common.Validations
         /// <remarks>
         /// The ProductName field must be non-empty and not exceed 255 characters.
         /// The EditionNumber must be a positive integer.
-        /// The PermitExpiryDate must be a valid date in the format YYYY-MM-DD and represent a date 
-        /// that is either today or in the future.
+        /// The PermitExpiryDate must be a valid date in the format YYYY-MM-DD and represent a date i.e. Either today or in the future.
         /// </remarks>
         public ProductValidator()
         {
