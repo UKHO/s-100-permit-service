@@ -61,19 +61,18 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </summary>
         /// <param name="generatedXmlFilePath"></param>
         /// <param name="xmlFilePath"></param>
-        /// <returns></returns>
+        /// <returns>true or false based on comparing two xml files</returns>
         public static bool VerifyPermitProductValues(string generatedXmlFilePath, string xmlFilePath)
         {
             var generatedXml = XElement.Load(generatedXmlFilePath);
             var testDataXml = XElement.Load(xmlFilePath);
 
-            if(generatedXml.Descendants().Count() == testDataXml.Descendants().Count())
+            if (generatedXml.Descendants().Count() == testDataXml.Descendants().Count())
             {
                 var generatedXmlProducts = generatedXml.Elements(XName.Get("products", "http://www.iho.int/s100/se/5.2")).ToList();
-
                 var testDataXmlProducts = testDataXml.Elements(XName.Get("products", "http://www.iho.int/s100/se/5.2")).ToList();
 
-                for(var i = 0 ; i < generatedXmlProducts.Count ; i++)
+                for (var i = 0; i < generatedXmlProducts.Count; i++)
                 {
                     var generatedXmlProduct = generatedXmlProducts[i];
                     var testDataXmlProduct = testDataXmlProducts[i];
@@ -81,10 +80,19 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                     var generatedXmlDatasetPermit = generatedXmlProduct.Descendants(XName.Get("datasetPermit", "http://www.iho.int/s100/se/5.2")).ToList();
                     var testDataXmlDatasetPermit = testDataXmlProduct.Descendants(XName.Get("datasetPermit", "http://www.iho.int/s100/se/5.2")).ToList();
 
-                    // Compare each testData
-                    for(var j = 0 ; j < generatedXmlDatasetPermit.Count ; j++)
+                    // Updates expiry date to one year from today in testData
+                    foreach(var child in testDataXml.Elements())
                     {
-                        if(!ComparePermitXmlData(generatedXmlDatasetPermit[j], testDataXmlDatasetPermit[j]))
+                        foreach(var expiryNode in child.Descendants(XName.Get("expiry", "http://www.iho.int/s100/se/5.2")))
+                        {
+                            expiryNode.Value = UpdateDate(); 
+                        }
+                    }
+
+                    // Compare each testData
+                    for (var j = 0; j < generatedXmlDatasetPermit.Count; j++)
+                    {
+                        if (!ComparePermitXmlData(generatedXmlDatasetPermit[j], testDataXmlDatasetPermit[j]))
                         {
                             return false;
                         }
@@ -103,7 +111,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </summary>
         /// <param name="generatedXmlDatasetPermit"></param>
         /// <param name="testDataXmlDatasetPermit"></param>
-        /// <returns></returns>
+        /// <returns>true or false based on comparison of two xml data</returns>
         private static bool ComparePermitXmlData(XElement generatedXmlDatasetPermit, XElement testDataXmlDatasetPermit)
         {
             // Compare relevant elements in testData
@@ -125,7 +133,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// This method is used to verify duplicate file name is not present in PERMIT.XML
         /// </summary>
         /// <param name="permitFilePath"></param>
-        /// <returns></returns>
+        /// <returns>true or false based on the presence of duplicate FileNames</returns>
         public static bool VerifyDuplicateFileNameNotPresentInPermitXml(string permitFilePath)
         {
             var xmlDoc = new XmlDocument();
@@ -161,6 +169,16 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 // Delete the folder and its contents
                 Directory.Delete(folderPath, true);
             }
+        }
+
+        /// <summary>
+        /// This method is used to update the Date after 1 year from current date
+        /// </summary>
+        /// <returns>updated date</returns>
+        public static string UpdateDate()
+        {
+            var updatedDate = DateTime.UtcNow.AddYears(1).ToString("yyyy-MM-dd");
+            return updatedDate;
         }
     }
 }

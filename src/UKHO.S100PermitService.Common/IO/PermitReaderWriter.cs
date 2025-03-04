@@ -13,14 +13,7 @@ namespace UKHO.S100PermitService.Common.IO
 {
     public class PermitReaderWriter : IPermitReaderWriter
     {
-        private const string FirstNamespacePrefix = "S100SE";
-        private const string SecondNamespace = "http://standards.iso.org/iso/19115/-3/gco/1.0";
-        private const string SecondNamespacePrefix = "ns2";
-        private const string XmlDeclaration = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n";
-        private const string Namespace = "http://www.iho.int/s100/se/5.0";
-        private const string PermitXmlFileName = "PERMIT.XML";
-        private const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
-        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, SchemaFile);
+        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, PermitServiceConstants.SchemaFile);
 
         private readonly ILogger<PermitReaderWriter> _logger;
         private readonly ISchemaValidator _schemaValidator;
@@ -78,15 +71,15 @@ namespace UKHO.S100PermitService.Common.IO
         {
             _logger.LogInformation(EventIds.PermitXmlCreationStarted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} started.", upnTitle);
 
-            var fileName = $"{upnTitle}/{PermitXmlFileName}";
+            var fileName = $"{upnTitle}/{PermitServiceConstants.PermitXmlFileName}";
             // Create an entry for the XML file
             var zipEntry = zipArchive.CreateEntry(fileName);
 
             // Serialize the class to XML
             var serializer = new XmlSerializer(typeof(Permit));
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add(FirstNamespacePrefix, GetTargetNamespace());
-            namespaces.Add(SecondNamespacePrefix, SecondNamespace);
+            namespaces.Add(PermitServiceConstants.FirstNamespacePrefix, GetTargetNamespace());
+            namespaces.Add(PermitServiceConstants.SecondNamespacePrefix, PermitServiceConstants.SecondNamespace);
 
             var settings = new XmlWriterSettings
             {
@@ -110,7 +103,7 @@ namespace UKHO.S100PermitService.Common.IO
             var xmlContent = reader.ReadToEnd();
 
             // Replace "_x003A_" with ":"
-            xmlContent = XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(Namespace, GetTargetNamespace());
+            xmlContent = PermitServiceConstants.XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(PermitServiceConstants.Namespace, GetTargetNamespace());
 
             // Validate schema
             if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))

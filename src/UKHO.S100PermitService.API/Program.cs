@@ -140,12 +140,12 @@ namespace UKHO.S100PermitService.API
                        {
                            OnForbidden = context =>
                            {
-                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.S100PermitService);
+                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.PermitService);
                                return Task.CompletedTask;
                            },
                            OnAuthenticationFailed = context =>
                            {
-                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.S100PermitService);
+                               context.Response.Headers.Append(PermitServiceConstants.OriginHeaderKey, PermitServiceConstants.PermitService);
                                return Task.CompletedTask;
                            }
                        };

@@ -32,34 +32,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200.json", HttpStatusCode.OK)));
 
-            server //200
-                .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                .UsingPost()
-                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-8-DuplicateCell.json"))))
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-200-8-DuplicateCell.json", HttpStatusCode.OK)));
-
-            server //200
-                .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                .UsingPost()
-                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-9-DuplicateCell.json"))))
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-200-9-DuplicateCell.json", HttpStatusCode.OK)));
-
-            server //200
-                .Given(Request.Create()
-                .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
-                .UsingPost()
-                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-11-DuplicateCell.json"))))
-                .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
-                .RespondWith(Response.Create()
-                .WithCallback(request => CreateResponse(request, "response-200-11-DuplicateCell.json", HttpStatusCode.OK)));
-
-            server //200 for 50 Holdings scenario
+            server //200 for 50 Products scenario
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()

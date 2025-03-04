@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System.Net;
 using System.Text;
 using UKHO.S100PermitService.API.Controllers;
+using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Request;
@@ -20,8 +21,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         private IHttpContextAccessor _fakeHttpContextAccessor;
         private ILogger<PermitController> _fakeLogger;
         private IPermitService _fakePermitService;
+        private DefaultHttpContext _fakeHttpContext;
+
         private PermitController _permitController;
-        private const string ProductType = "s100";
 
         [SetUp]
         public void Setup()
@@ -29,6 +31,9 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             _fakeHttpContextAccessor = A.Fake<IHttpContextAccessor>();
             _fakeLogger = A.Fake<ILogger<PermitController>>();
             _fakePermitService = A.Fake<IPermitService>();
+            _fakeHttpContext = new DefaultHttpContext();
+            A.CallTo(() => _fakeHttpContextAccessor.HttpContext).Returns(_fakeHttpContext);
+
             _permitController = new PermitController(_fakeHttpContextAccessor, _fakeLogger, _fakePermitService);
         }
 
@@ -74,7 +79,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                 }
             };
 
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(PermitServiceResult.Success(expectedStream));
 
             var result = await _permitController.GenerateS100Permits(permitRequest);
@@ -83,6 +88,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             var fileStreamResult = (FileStreamResult)result;
             fileStreamResult.FileDownloadName.Should().Be("Permits.zip");
             fileStreamResult.FileStream.Length.Should().Be(expectedStream.Length);
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
@@ -106,10 +112,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         [TestCase(HttpStatusCode.ServiceUnavailable)]
         [TestCase(HttpStatusCode.UnsupportedMediaType)]
         [TestCase(HttpStatusCode.InternalServerError)]
-        public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponse(HttpStatusCode httpStatusCode)
+        public async Task WhenPermitGenerationFailed_ThenReturnsNotOkResponseWithOriginHeader(HttpStatusCode httpStatusCode)
         {
             var permitRequest = new PermitRequest();
-            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<string>.Ignored, A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
+            A.CallTo(() => _fakePermitService.ProcessPermitRequestAsync(A<PermitRequest>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                 .Returns(GetPermitServiceResult(httpStatusCode));
 
             var result = await _permitController.GenerateS100Permits(permitRequest);
@@ -118,11 +124,13 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             {
                 case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode:
                     statusCodeResult.StatusCode.Should().Be((int)httpStatusCode);
+                    _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
                     break;
 
                 case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
                     badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
                     badRequestObjectResult.Value.Should().BeEquivalentTo(new { Errors = new List<ErrorDetail> { new() { Description = "Key not found for ProductName: Product1 and Edition: 1.", Source = "GetProductKey" } } });
+                    _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.ProductKeyService);
                     break;
             }
 
@@ -145,7 +153,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         {
             return httpStatusCode switch
             {
-                HttpStatusCode.BadRequest => PermitServiceResult.Failure(httpStatusCode, new ErrorResponse
+                HttpStatusCode.BadRequest => PermitServiceResult.Failure(httpStatusCode, PermitServiceConstants.ProductKeyService, new ErrorResponse
                 {
                     CorrelationId = Guid.NewGuid().ToString(),
                     Errors = [new ErrorDetail
@@ -154,7 +162,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
                                     Source = "GetProductKey"
                                 }]
                 }),
-                _ => PermitServiceResult.Failure(httpStatusCode, new ErrorResponse { CorrelationId = Guid.NewGuid().ToString() })
+                _ => PermitServiceResult.Failure(httpStatusCode, PermitServiceConstants.PermitService, new ErrorResponse { CorrelationId = Guid.NewGuid().ToString() })
             };
         }
 

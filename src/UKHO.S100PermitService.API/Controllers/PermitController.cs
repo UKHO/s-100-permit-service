@@ -14,8 +14,6 @@ namespace UKHO.S100PermitService.API.Controllers
     [Authorize]
     public class PermitController : BaseController<PermitController>
     {
-        private const string ProductType = "s100";
-
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
 
@@ -54,11 +52,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error - An error occurred on the server.</p>")]
         public virtual async Task<IActionResult> GenerateS100Permits([FromBody] PermitRequest permitRequest)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", ProductType);
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", PermitServiceConstants.ProductType);
 
-            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(ProductType, permitRequest, GetCorrelationId(), GetRequestCancellationToken());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(permitRequest, GetCorrelationId(), GetRequestCancellationToken());
 
-            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", ProductType);
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", PermitServiceConstants.ProductType);
 
             return ToActionResult(permitServiceResult);
         }
