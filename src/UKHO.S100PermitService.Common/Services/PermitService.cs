@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -69,7 +70,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
                 };
 
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, JsonSerializer.Serialize(errorResponse.Errors));
                 return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.PermitService, errorResponse);
             }
 
@@ -177,7 +178,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="products">Products details.</param>
         /// <returns>ProductKeyServiceRequests</returns>
-        [ExcludeFromCodeCoverage]
         private static IEnumerable<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<Product> products) =>
             products.Select(p => new ProductKeyServiceRequest
@@ -193,7 +193,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
         /// <param name="cellCode">ProductName</param>
         /// <returns>EncryptedKey</returns>
-        [ExcludeFromCodeCoverage]
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
@@ -206,7 +205,6 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="products">The collection of products to filter.</param>
         /// <returns>The filtered collection of products.</returns>
-        [ExcludeFromCodeCoverage]
         private IEnumerable<Product> FilterProductsByLatestExpiry(IEnumerable<Product> products)
         {
             var latestExpiryProducts = products
