@@ -1,8 +1,8 @@
 {
   "products": [
     {
-      "productName": "NonExistingProductInPKS",
-      "editionNumber": 1,
+      "productName": "101GB40079ABCDEFG",
+      "editionNumber": 3,
       "permitExpiryDate": "2026-01-31"
     }
   ],

@@ -28,7 +28,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private IOptions<ProductKeyServiceApiConfiguration> _fakeProductKeyServiceApiConfiguration;
         private IOptions<PermitFileConfiguration> _fakePermitFileConfiguration;
         private readonly string _fakeCorrelationId = Guid.NewGuid().ToString();
-        private const string PRODUCT_TYPE = "s100";
         private IPermitService _permitService;
         private IPermitRequestValidator _fakePermitRequestValidator;
 
@@ -100,10 +99,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakePermitReaderWriter.CreatePermitZipAsync(A<Dictionary<string, Permit>>.Ignored)).Returns(expectedStream);
 
-            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Value.Length.Should().Be(expectedStream.Length);
+            response.Origin.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
              call.Method.Name == "Log"
@@ -138,9 +138,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>.Ignored)).Returns(new ValidationResult());
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
-                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpStatusCode));
+                .Returns(ServiceResponseResult<IEnumerable<ProductKeyServiceResponse>>.Failure(httpStatusCode, PermitServiceConstants.ProductKeyService));
 
-            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
+
+            response.StatusCode.Should().Be(httpStatusCode);
+            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
@@ -170,9 +173,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var permitRequest = GetInvalidPermitRequestData();
             A.CallTo(() => _fakePermitRequestValidator.Validate(A<PermitRequest>.Ignored)).Returns(GetInvalidValidationResultForPermitRequest());
 
-            var response = await _permitService.ProcessPermitRequestAsync(PRODUCT_TYPE, permitRequest, _fakeCorrelationId, CancellationToken.None);
+            var response = await _permitService.ProcessPermitRequestAsync(permitRequest, _fakeCorrelationId, CancellationToken.None);
 
             response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+            response.Origin.Should().Be(PermitServiceConstants.PermitService);
 
             var errors = response.ErrorResponse.Errors.ToList();
             errors.Should().ContainSingle(e => e.Source.Equals("Product[0].PermitExpiryDate"));

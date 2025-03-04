@@ -91,6 +91,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             response.StatusCode.Should().Be(HttpStatusCode.OK);
             response.Value.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
+            response.Origin.Should().BeNull();
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -123,13 +124,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     {
                                         RequestUri = new Uri("http://test.com")
                                     },
-                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Origin = "PKS", Errors = [new() { Source = "GetProductKey", Description = content }] }))))
+                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Errors = [new() { Source = "GetProductKey", Description = content }] }))))
                                 });
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
             response.StatusCode.Should().Be(httpStatusCode);
             response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
+            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -166,7 +168,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     {
                                         RequestUri = new Uri("http://test.com")
                                     },
-                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Origin = "PKS", Errors = [new() { Source = "GetProductKey", Description = content }] }))))
+                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Errors = [new() { Source = "GetProductKey", Description = content }] }))))
                                 });
 
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
@@ -176,6 +178,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             response.StatusCode.Should().Be(httpStatusCode);
             response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
+            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -213,6 +216,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             response.StatusCode.Should().Be(httpStatusCode);
             response.ErrorResponse.Errors.Should().BeNull();
+            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

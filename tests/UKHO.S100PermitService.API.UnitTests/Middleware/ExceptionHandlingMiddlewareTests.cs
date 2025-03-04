@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -111,7 +111,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
             problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
             _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
             _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal("S100PermitService");
+            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error

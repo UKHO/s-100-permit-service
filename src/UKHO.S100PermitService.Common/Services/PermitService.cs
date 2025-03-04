@@ -16,8 +16,7 @@ namespace UKHO.S100PermitService.Common.Services
 {
     public class PermitService : IPermitService
     {
-        private const string DateFormat = "yyyy-MM-ddzzz";
-        private readonly string _issueDate = DateTimeOffset.UtcNow.ToString(DateFormat);
+        private readonly string _issueDate = DateTimeOffset.UtcNow.ToString(PermitServiceConstants.DateFormat);
 
         private readonly ILogger<PermitService> _logger;
         private readonly IPermitReaderWriter _permitReaderWriter;
@@ -50,22 +49,28 @@ namespace UKHO.S100PermitService.Common.Services
         /// <remarks>
         /// If duplicate product data found, Then remove duplicate dataset and select the dataset with highest expiry date.
         /// </remarks>
-        /// <param name="productType">Requested product type.</param>
         /// <param name="permitRequest">The JSON body containing products and UPNs.</param>
         /// <param name="correlationId">Guid based id to track request.</param>
         /// <param name="cancellationToken">If true then notifies the underlying connection is aborted thus request operations should be cancelled.</param>
         /// <response code="200">Zip stream containing PERMIT.XML.</response>
         /// <response code="400,401,403,500">If service responded with other than 200 Ok StatusCode, Then errorResponse will be return with origin PKS</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        public async Task<PermitServiceResult> ProcessPermitRequestAsync(string productType, PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
+        public async Task<PermitServiceResult> ProcessPermitRequestAsync(PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", productType);
+            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", PermitServiceConstants.ProductType);
 
-            var validationResult = ValidatePermitRequest(productType, permitRequest, correlationId);
+            var validationResult = _permitRequestValidator.Validate(permitRequest);
 
-            if(validationResult != null)
+            if(!validationResult.IsValid)
             {
-                return validationResult;
+                var errorResponse = new ErrorResponse
+                {
+                    CorrelationId = correlationId,
+                    Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
+                };
+
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
+                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.PermitService, errorResponse);
             }
 
             var productsWithLatestExpiry = FilterProductsByLatestExpiry(permitRequest.Products);
@@ -82,12 +87,12 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var permitDetails = await BuildPermitsAsync(productsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
-                _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", productType);
+                _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", PermitServiceConstants.ProductType);
 
                 return PermitServiceResult.Success(permitDetails);
             }
 
-            return PermitServiceResult.Failure(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.ErrorResponse);
+            return PermitServiceResult.Failure(productKeyServiceResponseResult.StatusCode, productKeyServiceResponseResult.Origin, productKeyServiceResponseResult.ErrorResponse);
         }
 
         /// <summary>
@@ -208,32 +213,6 @@ namespace UKHO.S100PermitService.Common.Services
             _logger.LogInformation(EventIds.ProductsFilteredCellCount.ToEventId(), "Filtered products: Total count before filtering: {TotalCellCount}, after filtering for highest expiry dates and removing duplicates: {FilteredCellCount}.", products.Count(), latestExpiryProducts.Count());
 
             return latestExpiryProducts;
-        }
-
-        /// <summary>
-        /// Validate permit request
-        /// </summary>
-        /// <param name="productType"></param>
-        /// <param name="permitRequest"></param>
-        /// <param name="correlationId"></param>
-        /// <returns>PermitServiceResult</returns>
-        private PermitServiceResult ValidatePermitRequest(string productType, PermitRequest permitRequest, string correlationId)
-        {
-            var validationResult = _permitRequestValidator.Validate(permitRequest);
-
-            if(!validationResult.IsValid)
-            {
-                var errorResponse = new ErrorResponse
-                {
-                    CorrelationId = correlationId,
-                    Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
-                    Origin = PermitServiceConstants.S100PermitService
-                };
-
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
-                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, errorResponse);
-            }
-            return null;
         }
     }
 }
