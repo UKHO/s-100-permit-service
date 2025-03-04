@@ -45,6 +45,9 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <summary>
         /// Converts a PermitServiceResult to an appropriate IActionResult based on the status code.
         /// </summary>
+        /// <remarks>
+        /// This method appends an "Origin" header to the HTTP response, with the value derived from the result's origin if available, or the default PermitService origin if not.
+        /// </remarks>
         /// <param name="permitServiceResult">The result of the permit service operation, containing the status code, error response, and value.</param>
         /// <returns>An IActionResult representing the HTTP response, including a permit file if the operation was successful.</returns>
         protected IActionResult ToActionResult(PermitServiceResult permitServiceResult)

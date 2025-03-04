@@ -7,6 +7,7 @@ namespace UKHO.S100PermitService.Common.Encryption
     public class AesEncryption : IAesEncryption
     {
         private const int KeySize = 128, BlockSize = 128, IvLength = 16, HexSize = 32;
+        private const string NewValue = "";
 
         /// <summary>
         /// Get decrypted data.
@@ -103,7 +104,7 @@ namespace UKHO.S100PermitService.Common.Encryption
             using var cryptoStream = new CryptoStream(memoryStream, cryptoTransform, CryptoStreamMode.Write);
             await cryptoStream?.WriteAsync(cypherBytes, 0, cypherBytes.Length);
             await cryptoStream.FlushFinalBlockAsync();
-            return BitConverter.ToString(memoryStream.ToArray()).Replace("-", "");
+            return BitConverter.ToString(memoryStream.ToArray()).Replace("-", NewValue);
         }
 
         /// <summary>

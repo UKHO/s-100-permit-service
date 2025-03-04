@@ -6,6 +6,13 @@ namespace UKHO.S100PermitService.Common.Validations
 {
     public class PermitRequestValidator : AbstractValidator<PermitRequest>, IPermitRequestValidator
     {
+        /// <summary>
+        ///Validate Permit Request details.
+        /// </summary>
+        /// <remarks>
+        /// The Products list must not be empty, and each individual product within the list is validated using the ProductValidator/>.
+        /// The UserPermits list must not be empty, and each individual user permit is validated using the UserPermitValidator/>.
+        /// </remarks>
         public PermitRequestValidator()
         {
             RuleFor(x => x.Products)

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
+using System.Text.Json;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -69,7 +70,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
                 };
 
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, JsonSerializer.Serialize(errorResponse.Errors));
                 return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.PermitService, errorResponse);
             }
 
@@ -200,10 +201,10 @@ namespace UKHO.S100PermitService.Common.Services
         }
 
         /// <summary>
-        /// Filtered products total count before filtering and after filtering for highest expiry dates and removing duplicates.
+        /// Filters the products by selecting the ones with the latest expiry date and removing duplicates.
         /// </summary>
-        /// <param name="products"></param>
-        /// <returns>Products</returns>
+        /// <param name="products">The collection of products to filter.</param>
+        /// <returns>The filtered collection of products.</returns>
         private IEnumerable<Product> FilterProductsByLatestExpiry(IEnumerable<Product> products)
         {
             var latestExpiryProducts = products
