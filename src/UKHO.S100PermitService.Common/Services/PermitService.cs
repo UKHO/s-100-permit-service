@@ -214,31 +214,5 @@ namespace UKHO.S100PermitService.Common.Services
 
             return latestExpiryProducts;
         }
-
-        /// <summary>
-        /// Validates the permit request for a specific product type.
-        /// </summary>
-        /// <param name="productType">The requested product type.</param>
-        /// <param name="permitRequest">The permit request containing products and UPNs.</param>
-        /// <param name="correlationId">The unique identifier to track the request.</param>
-        /// <returns>A PermitServiceResult indicating the result of the validation.</returns>
-        private PermitServiceResult ValidatePermitRequest(string productType, PermitRequest permitRequest, string correlationId)
-        {
-            var validationResult = _permitRequestValidator.Validate(permitRequest);
-
-            if(!validationResult.IsValid)
-            {
-                var errorResponse = new ErrorResponse
-                {
-                    CorrelationId = correlationId,
-                    Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
-                    Origin = PermitServiceConstants.S100PermitService
-                };
-
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", productType, string.Join(Environment.NewLine, errorResponse.Errors.Select(e => $"Source: {e.Source}, Description: {e.Description}")));
-                return PermitServiceResult.Failure(HttpStatusCode.BadRequest, errorResponse);
-            }
-            return null;
-        }
     }
 }
