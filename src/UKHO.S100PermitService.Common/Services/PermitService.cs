@@ -177,6 +177,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="products">Products details.</param>
         /// <returns>ProductKeyServiceRequests</returns>
+        [ExcludeFromCodeCoverage]
         private static IEnumerable<ProductKeyServiceRequest> CreateProductKeyServiceRequest(
             IEnumerable<Product> products) =>
             products.Select(p => new ProductKeyServiceRequest
@@ -192,6 +193,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="hardwareId">Decrypted HW_ID from Upn.</param>
         /// <param name="cellCode">ProductName</param>
         /// <returns>EncryptedKey</returns>
+        [ExcludeFromCodeCoverage]
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
@@ -204,6 +206,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="products">The collection of products to filter.</param>
         /// <returns>The filtered collection of products.</returns>
+        [ExcludeFromCodeCoverage]
         private IEnumerable<Product> FilterProductsByLatestExpiry(IEnumerable<Product> products)
         {
             var latestExpiryProducts = products
