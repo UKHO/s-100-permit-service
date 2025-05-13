@@ -59,8 +59,8 @@ resource "azurerm_key_vault_secret" "passed_in_secrets" {
   depends_on = [azurerm_key_vault_access_policy.kv_access_terraform]
 }
 
-resource "azurerm_key_vault" "midkv" {
-  name                        = var.name_midkv
+resource "azurerm_key_vault" "securedatakv" {
+  name                        = var.name_securedata_kv
   location                    = var.location
   resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
