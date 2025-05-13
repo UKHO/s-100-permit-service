@@ -14,7 +14,7 @@ output keyvault_uri {
   value = module.key_vault.keyvault_uri
 }
 
-output keyvault_securedatakv_uri {
+output keyvault_datakv_uri {
   value = module.key_vault.keyvault_datakv_uri
   sensitive = true
 }

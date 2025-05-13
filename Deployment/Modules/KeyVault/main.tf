@@ -60,7 +60,7 @@ resource "azurerm_key_vault_secret" "passed_in_secrets" {
 }
 
 resource "azurerm_key_vault" "datakv" {
-  name                        = var.name_securedata_kv
+  name                        = var.name_data_kv
   location                    = var.location
   resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
