@@ -14,7 +14,7 @@ locals {
   web_app_name                 = "${local.service_name}-${local.env_name}-api"
   stub_web_app_name            = "${local.service_name}-${local.env_name}-stub"
   key_vault_name               = "${local.service_name}-ukho-${local.env_name}-kv"
-  key_vault_securedata_kv      = "${local.service_name}-ukho-${local.env_name}-securedata-kv"
+  key_vault_data_kv      = "${local.service_name}-ukho-${local.env_name}-data-kv"
   pe_identity                  = "${local.service_name}${local.env_name}"
   vnet_link                    = "${local.service_name}${local.env_name}"
   private_connection           = "/subscriptions/${var.subscription_id}/resourceGroups/ps-${local.env_name}-rg/providers/Microsoft.Web/sites/ps-${local.env_name}-api"

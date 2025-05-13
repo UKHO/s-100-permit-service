@@ -52,7 +52,7 @@ module "webapp_service" {
 module "key_vault" {
   source              = "./Modules/KeyVault"
   name                = local.key_vault_name
-  name_securedata_kv  = local.key_vault_securedata_kv
+  name_data_kv        = local.key_vault_data_kv
   resource_group_name = azurerm_resource_group.rg.name
   env_name            = local.env_name
   tenant_id           = module.webapp_service.web_app_tenant_id
@@ -64,7 +64,7 @@ module "key_vault" {
     "EventHubLoggingConfiguration--ConnectionString"            = module.eventhub.log_primary_connection_string
     "EventHubLoggingConfiguration--EntityPath"                  = module.eventhub.entity_path
     "ApplicationInsights--ConnectionString"                     = module.app_insights.connection_string
-    "ManufacturerKeyVault--ServiceUri"                          = module.key_vault.keyvault_securedatakv_uri
+    "ManufacturerKeyVault--ServiceUri"                          = module.key_vault.keyvault_datakv_uri
     "ProductKeyServiceApiConfiguration--HardwareId"             = var.hardwareid
   }
   tags                                                          = local.tags
