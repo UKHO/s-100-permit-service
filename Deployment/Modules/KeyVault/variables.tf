@@ -29,7 +29,7 @@ variable "secrets" {
 variable "tags" {
 
 }
-variable "name_securedata_kv " {
+variable "name_securedata_kv" {
   
 }
 
