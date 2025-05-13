@@ -45,7 +45,7 @@ if($totalDestroyLines -ge 2)
 }
 
 write-output "executing terraform apply"
-#terraform apply  "terraform.deployment.tfplan"
+terraform apply  "terraform.deployment.tfplan"
 if ( !$? ) { echo "something went wrong during terraform apply" ; throw "error" }
 
 Write-output "Terraform output as json"
