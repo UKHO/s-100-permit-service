@@ -7,13 +7,13 @@ namespace UKHO.S100PermitService.Common.Services
     public class PermitSignGeneratorService : IPermitSignGeneratorService
     {
         private readonly IDigitalSignatureProvider _digitalSignatureProvider;
-        private readonly IDataKeyService _dataKeyService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;
 
-        public PermitSignGeneratorService(IDigitalSignatureProvider digitalSignatureProvider, IDataKeyService dataKeyService, IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
+        public PermitSignGeneratorService(IDigitalSignatureProvider digitalSignatureProvider, IKeyVaultService keyVaultService, IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
         {
             _digitalSignatureProvider = digitalSignatureProvider ?? throw new ArgumentNullException(nameof(digitalSignatureProvider));
-            _dataKeyService = dataKeyService ?? throw new ArgumentNullException(nameof(dataKeyService));
+            _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _dataKeyVaultConfiguration = dataKeyVaultConfiguration ?? throw new ArgumentNullException(nameof(dataKeyVaultConfiguration));
         }
 
@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.Common.Services
             var permitXmlHash = _digitalSignatureProvider.GeneratePermitXmlHash(permitXmlContent);
 
             //Retrieved the data server's private key from the Key Vault.
-            var privateKeySecret = _dataKeyService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
+            var privateKeySecret = _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
 
             //Import the private key in ECDsa format from the Key Vault secrets.
             var ecdsaPrivateKey = _digitalSignatureProvider.ImportEcdsaPrivateKey(privateKeySecret);

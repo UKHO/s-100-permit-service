@@ -168,9 +168,9 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
-            builder.Services.AddSingleton<IDataKeyService, DataKeyService>();
+            builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
             builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
-            builder.Services.AddSingleton<IKeyVaultCertificateClient, KeyVaultCertificateClient>();
+            builder.Services.AddSingleton<ICertificateClient, KeyVaultCertificateClient>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();

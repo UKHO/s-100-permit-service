@@ -10,7 +10,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     public class PermitSignGeneratorServiceTests
     {
         private IDigitalSignatureProvider _fakeDigitalSignatureProvider;
-        private IDataKeyService _fakeDataKeyService;
+        private IKeyVaultService _fakeKeyVaultService;
         private IOptions<DataKeyVaultConfiguration> _fakeDataKeyVaultConfiguration;
         private PermitSignGeneratorService _permitSignGeneratorService;
 
@@ -18,9 +18,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void SetUp()
         {
             _fakeDigitalSignatureProvider = A.Fake<IDigitalSignatureProvider>();
-            _fakeDataKeyService = A.Fake<IDataKeyService>();
+            _fakeKeyVaultService = A.Fake<IKeyVaultService>();
             _fakeDataKeyVaultConfiguration = A.Fake<IOptions<DataKeyVaultConfiguration>>();
-            _permitSignGeneratorService = new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeDataKeyService, _fakeDataKeyVaultConfiguration);
+            _permitSignGeneratorService = new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration);
         }
 
         [Test]

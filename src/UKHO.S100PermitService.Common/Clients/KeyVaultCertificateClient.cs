@@ -7,7 +7,7 @@ using UKHO.S100PermitService.Common.Configuration;
 namespace UKHO.S100PermitService.Common.Clients
 {
     [ExcludeFromCodeCoverage]
-    public class KeyVaultCertificateClient : IKeyVaultCertificateClient
+    public class KeyVaultCertificateClient : ICertificateClient
     {
         private readonly CertificateClient _certificateClient;
         private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;

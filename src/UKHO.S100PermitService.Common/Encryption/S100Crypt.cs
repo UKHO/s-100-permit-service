@@ -11,13 +11,13 @@ namespace UKHO.S100PermitService.Common.Encryption
         private const int MIdLength = 6, EncryptedHardwareIdLength = 32;
 
         private readonly IAesEncryption _aesEncryption;
-        private readonly IDataKeyService _dataKeyService;
+        private readonly IKeyVaultService _keyVaultService;
         private readonly ILogger<S100Crypt> _logger;
 
-        public S100Crypt(IAesEncryption aesEncryption, IDataKeyService dataKeyService, ILogger<S100Crypt> logger)
+        public S100Crypt(IAesEncryption aesEncryption, IKeyVaultService keyVaultService, ILogger<S100Crypt> logger)
         {
             _aesEncryption = aesEncryption ?? throw new ArgumentNullException(nameof(aesEncryption));
-            _dataKeyService = dataKeyService ?? throw new ArgumentNullException(nameof(dataKeyService));
+            _keyVaultService = keyVaultService ?? throw new ArgumentNullException(nameof(keyVaultService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                     Title = userPermit.Title
                 };
 
-                var mKey = _dataKeyService.GetSecretKeys(userPermit.Upn[^MIdLength..]);
+                var mKey = _keyVaultService.GetSecretKeys(userPermit.Upn[^MIdLength..]);
                 upnInfo.DecryptedHardwareId = await _aesEncryption.DecryptAsync(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
 
                 listOfUpnInfo.Add(upnInfo);

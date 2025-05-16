@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         private const string FakeHardwareId = "FAKE583E6CB6F32FD0B0648AF006A2BD";
 
         private IAesEncryption _fakeAesEncryption;
-        private IDataKeyService _fakeDataKeyService;
+        private IKeyVaultService _fakeKeyVaultService;
         private ILogger<S100Crypt> _fakeLogger;
         private IS100Crypt _s100Crypt;
 
@@ -23,22 +23,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         public void SetUp()
         {
             _fakeAesEncryption = A.Fake<IAesEncryption>();
-            _fakeDataKeyService = A.Fake<IDataKeyService>();
+            _fakeKeyVaultService = A.Fake<IKeyVaultService>();
             _fakeLogger = A.Fake<ILogger<S100Crypt>>();
 
-            _s100Crypt = new S100Crypt(_fakeAesEncryption, _fakeDataKeyService, _fakeLogger);
+            _s100Crypt = new S100Crypt(_fakeAesEncryption, _fakeKeyVaultService, _fakeLogger);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullAesEncryption = () => new S100Crypt(null, _fakeDataKeyService, _fakeLogger);
+            Action nullAesEncryption = () => new S100Crypt(null, _fakeKeyVaultService, _fakeLogger);
             nullAesEncryption.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("aesEncryption");
 
             Action nullDataKeyService = () => new S100Crypt(_fakeAesEncryption, null, _fakeLogger);
-            nullDataKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("dataKeyService");
+            nullDataKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("keyVaultService");
 
-            Action nullLogger = () => new S100Crypt(_fakeAesEncryption, _fakeDataKeyService, null);
+            Action nullLogger = () => new S100Crypt(_fakeAesEncryption, _fakeKeyVaultService, null);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
         }
 
@@ -79,7 +79,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             const string FakeDecryptedHardwareId = "86C520323CEA3056B5ED7000F98814CB";
             const string FakeMKey = "validMKey12345678901234567890123";
 
-            A.CallTo(() => _fakeDataKeyService.GetSecretKeys(A<string>.Ignored)).Returns(FakeMKey);
+            A.CallTo(() => _fakeKeyVaultService.GetSecretKeys(A<string>.Ignored)).Returns(FakeMKey);
 
             A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
 
