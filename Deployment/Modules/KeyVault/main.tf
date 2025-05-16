@@ -59,8 +59,8 @@ resource "azurerm_key_vault_secret" "passed_in_secrets" {
   depends_on = [azurerm_key_vault_access_policy.kv_access_terraform]
 }
 
-resource "azurerm_key_vault" "midkv" {
-  name                        = var.name_midkv
+resource "azurerm_key_vault" "datakv" {
+  name                        = var.name_data_kv
   location                    = var.location
   resource_group_name         = var.resource_group_name
   enabled_for_disk_encryption = true
@@ -75,8 +75,8 @@ resource "azurerm_key_vault" "midkv" {
 }
 
 #access policy for terraform script service account
-resource "azurerm_key_vault_access_policy" "midkv_access_terraform" {
-  key_vault_id = azurerm_key_vault.midkv.id
+resource "azurerm_key_vault_access_policy" "datakv_access_terraform" {
+  key_vault_id = azurerm_key_vault.datakv.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
   object_id    = data.azurerm_client_config.current.object_id
 
@@ -99,9 +99,9 @@ resource "azurerm_key_vault_access_policy" "midkv_access_terraform" {
 }
 
 #access policy for read access (app service)
-resource "azurerm_key_vault_access_policy" "midkv_read_access" {
+resource "azurerm_key_vault_access_policy" "datakv_read_access" {
   for_each     = var.read_access_objects
-  key_vault_id = azurerm_key_vault.midkv.id
+  key_vault_id = azurerm_key_vault.datakv.id
   tenant_id    = var.tenant_id
   object_id    = each.value
 
