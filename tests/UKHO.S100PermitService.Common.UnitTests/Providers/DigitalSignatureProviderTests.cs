@@ -1,5 +1,6 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -64,6 +65,42 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                  && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit hash generation started."
              ).MustHaveHappenedOnceExactly();
 
+        }
+
+        [Test]
+        public void WhenImportEcdsaPrivateKeyIsCalledWithValidKey_ThenShouldReturnEcdsaInstance()
+        {
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384); 
+            var privateKeyData = ecdsa.ExportECPrivateKey(); 
+            var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
+
+            var result = _provider.ImportEcdsaPrivateKey(validBase64PrivateKey);
+
+            Assert.IsNotNull(result, "The returned ECDsa instance should not be null.");
+            Assert.IsInstanceOf<ECDsa>(result, "The returned object should be an instance of ECDsa.");
+        }
+
+        [Test]
+        [TestCase("InvalidBase64Key")]
+        [TestCase("")]
+        public void WhenImportEcdsaPrivateKeyIsCalledWithInvalidInputs_ThenShouldThrowPermitServiceException(string privateKey)
+        {
+            var exception = Assert.Throws<PermitServiceException>(() => _provider.ImportEcdsaPrivateKey(privateKey));
+            Assert.That(exception.Message, Does.Contain("Permit private key import failed with Exception"));
+        }
+
+        [Test]
+        public void WhenSignHashIsCalledWithValidInputs_ThenShouldReturnBase64EncodedSignature()
+        {
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384); 
+            var hashContent = new byte[] { 1, 2, 3, 4, 5 }; 
+
+            var signature = _provider.SignHash(ecdsa, hashContent);
+
+            Assert.IsNotNull(signature, "The returned signature should not be null.");
+            Assert.IsNotEmpty(signature, "The returned signature should not be empty.");
+            Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
+            Assert.That(signature.Length, Is.EqualTo(128)); 
         }
     }
 }

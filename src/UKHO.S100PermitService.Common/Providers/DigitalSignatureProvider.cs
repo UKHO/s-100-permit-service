@@ -41,16 +41,26 @@ namespace UKHO.S100PermitService.Common.Providers
         }
 
         /// <summary>
-        /// Imports an ECDsa private key from a base64-encoded PEM string.
+        /// Imports an ECDsa private key from a Base64-encoded string.
         /// </summary>
-        /// <param name="privateKeySecret">The base64-encoded PEM string containing the ECDsa private key.</param>
+        /// <param name="privateKeySecret">The Base64-encoded string containing the ECDsa private key.</param>
         /// <returns>An <see cref="ECDsa"/> instance initialized with the provided private key.</returns>
+        /// <exception cref="PermitServiceException">
+        /// Thrown when the private key import fails due to invalid input or other errors.
+        /// </exception>
         public ECDsa ImportEcdsaPrivateKey(string privateKeySecret)
         {
-            var privateKeyData = Convert.FromBase64String(privateKeySecret);
-            var ecdsaPrivateKey = ECDsa.Create();
-            ecdsaPrivateKey.ImportECPrivateKey(privateKeyData, out _);
-            return ecdsaPrivateKey;
+            try
+            {
+                var privateKeyData = Convert.FromBase64String(privateKeySecret);
+                var ecdsaPrivateKey = ECDsa.Create();
+                ecdsaPrivateKey.ImportECPrivateKey(privateKeyData, out _);
+                return ecdsaPrivateKey;
+            }
+            catch(Exception ex)
+            {
+                throw new PermitServiceException(EventIds.PermitPrivateKeyImportFailed.ToEventId(), "Permit private key import failed with Exception: {Message}", ex.Message);
+            }
         }
 
         /// <summary>

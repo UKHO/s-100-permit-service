@@ -203,6 +203,11 @@
         /// <summary>
         /// 840040 - An error occurred while generating the SHA-384 hash.
         /// </summary>
-        PermitHashGenerationFailed = 840040
+        PermitHashGenerationFailed = 840040,
+
+        /// <summary>
+        /// 840041 - An error occurred while importing the ECDsa private key.
+        /// </summary>
+        PermitPrivateKeyImportFailed = 840041
     }
 }
