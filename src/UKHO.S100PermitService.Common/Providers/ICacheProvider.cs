@@ -4,5 +4,7 @@
     {
         public string GetCacheValue(string key);
         public void SetCache(string key, string value);
+        public void SetCertificateCache(string key, byte[] value);
+        public byte[] GetCertificateCacheValue(string key);
     }
 }

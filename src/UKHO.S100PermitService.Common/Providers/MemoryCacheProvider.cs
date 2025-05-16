@@ -20,8 +20,8 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <returns>Cache value</returns>
         public string GetCacheValue(string key)
         {
-            _memoryCache.TryGetValue(key, out string? Value);
-            return Value;
+            _memoryCache.TryGetValue(key, out string? value);
+            return value;
         }
 
         /// <summary>
@@ -30,8 +30,28 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <param name="key">Cache Key.</param>
         /// <param name="value">Cache Value.</param>
         public void SetCache(string key, string value)
-        {            
+        {
             _memoryCache.Set(key, value);
+        }
+
+        /// <summary>
+        /// Stores a certificate in the cache memory with the specified key.
+        /// </summary>
+        /// <param name="key">The unique identifier for the cache entry.</param>
+        /// <param name="value">The certificate data to be cached as a byte array.</param>
+        public void SetCertificateCache(string key, byte[] value)
+        {
+            _memoryCache.Set(key, value);
+        }
+
+        /// <summary>
+        /// Retrieves the certificate data associated with the specified key from the cache memory.
+        /// </summary>
+        /// <param name="key">The unique identifier for the cache entry.</param>
+        /// <returns>The cached certificate data as a byte array, or null if the key does not exist.</returns>
+        public byte[] GetCertificateCacheValue(string key)
+        {
+            return _memoryCache.TryGetValue(key, out byte[]? value) ? value : null;
         }
     }
 }

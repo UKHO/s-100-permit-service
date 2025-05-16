@@ -96,14 +96,14 @@
         GetProductKeysRequestFailed = 840018,
 
         /// <summary>
-        /// 840019 - Manufacturer Id not found for Manufacturer keys in Memory Key Vault.
+        /// 840019 - Secret name not found for Secret keys in Memory Key Vault.
         /// </summary>
-        ManufacturerIdNotFoundInKeyVault = 840019,
+        SecretNameNotFoundInKeyVault = 840019,
 
         /// <summary>
-        /// 840020 - New Manufacturer Key is added in Cache.
+        /// 840020 - New Secret Key is added in Cache.
         /// </summary>
-        AddingNewManufacturerKeyInCache = 840020,
+        AddingNewSecretKeyInCache = 840020,
 
         /// <summary>
         /// 840021 - Access token is empty or null.
@@ -161,9 +161,9 @@
         PermitZipCreationCompleted = 840031,
 
         /// <summary>
-        /// 840032 - Manufacturer Key found in Cache.
+        /// 840032 - Secret Key found in Cache.
         /// </summary>
-        ManufacturerKeyFoundInCache = 840032,
+        SecretKeyFoundInCache = 840032,
 
         /// <summary>
         /// 840033 - Request to ProductKeyService GetProductKeys responded with status not found
@@ -183,6 +183,26 @@
         /// <summary>
         /// 840036 - Permit request validation failed.
         /// </summary>
-        PermitRequestValidationFailed = 840036
+        PermitRequestValidationFailed = 840036,
+
+        /// <summary>
+        /// 840037 - Permit Sign Creation Started.
+        /// </summary>
+        PermitSignCreationStarted = 840037,
+
+        /// <summary>
+        /// 840038 - SHA-384 hash generation started.
+        /// </summary>
+        PermitHashGenerationStarted = 840038,
+
+        /// <summary>
+        /// 840039 - SHA-384 hash successfully generated.
+        /// </summary>
+        PermitHashGenerationCompleted = 840039,
+
+        /// <summary>
+        /// 840040 - An error occurred while generating the SHA-384 hash.
+        /// </summary>
+        PermitHashGenerationFailed = 840040
     }
 }

@@ -10,12 +10,12 @@ namespace UKHO.S100PermitService.Common.Clients
     public class KeyVaultSecretClient : ISecretClient
     {
         private readonly SecretClient _secretClient;
-        private readonly IOptions<ManufacturerKeyVaultConfiguration> _manufacturerKeyVaultConfiguration;
+        private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;
 
-        public KeyVaultSecretClient(IOptions<ManufacturerKeyVaultConfiguration> manufacturerKeyVaultConfiguration)
+        public KeyVaultSecretClient(IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
         {
-            _manufacturerKeyVaultConfiguration = manufacturerKeyVaultConfiguration ?? throw new ArgumentNullException(nameof(manufacturerKeyVaultConfiguration));
-            _secretClient = new SecretClient(new Uri(_manufacturerKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
+            _dataKeyVaultConfiguration = dataKeyVaultConfiguration ?? throw new ArgumentNullException(nameof(dataKeyVaultConfiguration));
+            _secretClient = new SecretClient(new Uri(_dataKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
         }
 
         /// <summary>

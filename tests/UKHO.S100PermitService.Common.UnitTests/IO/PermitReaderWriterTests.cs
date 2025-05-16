@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
@@ -16,6 +17,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
     {
         private ILogger<PermitReaderWriter> _fakeLogger;
         private ISchemaValidator _fakeSchemaValidator;
+        private IPermitSignGeneratorService _fakePermitSignGeneratorService;
         private IPermitReaderWriter _permitReaderWriter;
 
         [SetUp]
@@ -23,19 +25,36 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             _fakeLogger = A.Fake<ILogger<PermitReaderWriter>>();
             _fakeSchemaValidator = A.Fake<ISchemaValidator>();
+            _fakePermitSignGeneratorService = A.Fake<IPermitSignGeneratorService>();
 
-            _permitReaderWriter = new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator);
+            _permitReaderWriter = new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, _fakePermitSignGeneratorService);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
 
-            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator);
+            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService);
             nullPermitReaderWriterLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null);
+            Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService);
             nullSchemaValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("schemaValidator");
+        }
+
+        [Test]
+        public void WhenConstructorIsCalledWithNullDependencies_ThenShouldThrowArgumentNullException()
+        {
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
+
+                Assert.That(() => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'schemaValidator')"));
+
+                Assert.That(() => new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, null),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'permitSignGeneratorService')"));
+            });
         }
 
         [Test]
@@ -70,9 +89,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.PermitXmlCreationCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.PermitSignCreationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                    ["{OriginalFormat}"].ToString() == "Creation of Permit XML for UPN: {UpnTitle} completed."
+                    ["{OriginalFormat}"].ToString() == "Creation of Permit SIGN for UPN: {UpnTitle} started."
             ).MustHaveHappenedTwiceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
@@ -91,6 +110,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
 
             await FluentActions.Invoking(async () => await _permitReaderWriter.CreatePermitZipAsync(GetInValidPermitDetails())).Should().
                                             ThrowExactlyAsync<PermitServiceException>().WithMessage("Invalid permit xml schema.");
+        }
+
+        [Test]
+        public void WhenPermitSignGenerationFails_ThenThrowsException()
+        {
+            A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
+            A.CallTo(() => _fakePermitSignGeneratorService.GeneratePermitSignXmlAsync(A<string>.Ignored))
+                .Throws(new Exception("Permit sign generation failed."));
+
+            Assert.ThrowsAsync<Exception>(async () => await _permitReaderWriter.CreatePermitZipAsync(GetPermitDetails()));
         }
 
         private Dictionary<string, Permit> GetPermitDetails()

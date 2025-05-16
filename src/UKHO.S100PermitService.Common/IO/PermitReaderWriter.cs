@@ -8,6 +8,7 @@ using System.Xml.Serialization;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.Permits;
+using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.Common.IO
 {
@@ -17,11 +18,14 @@ namespace UKHO.S100PermitService.Common.IO
 
         private readonly ILogger<PermitReaderWriter> _logger;
         private readonly ISchemaValidator _schemaValidator;
+        private readonly IPermitSignGeneratorService _permitSignGeneratorService;
+
         public PermitReaderWriter(ILogger<PermitReaderWriter> logger,
-                                  ISchemaValidator schemaValidator)
+                                  ISchemaValidator schemaValidator, IPermitSignGeneratorService permitSignGeneratorService)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
+            _permitSignGeneratorService = permitSignGeneratorService ?? throw new ArgumentNullException(nameof(permitSignGeneratorService));
         }
 
         /// <summary>
@@ -51,7 +55,8 @@ namespace UKHO.S100PermitService.Common.IO
             {
                 foreach(var permit in permits)
                 {
-                    await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
+                    var permitXmlContent = await CreatePermitXmlAsync(archive, permit.Key, permit.Value);
+                    await CreatePermitSignAsync(permit.Key, permitXmlContent);
                 }
             }
 
@@ -67,7 +72,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive">Zip object.</param>
         /// <param name="upnTitle">User permit title.</param>
         /// <param name="permit">Permit details.</param>
-        private async Task CreatePermitXmlAsync(ZipArchive zipArchive, string upnTitle, Permit permit)
+        private async Task<string> CreatePermitXmlAsync(ZipArchive zipArchive, string upnTitle, Permit permit)
         {
             _logger.LogInformation(EventIds.PermitXmlCreationStarted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} started.", upnTitle);
 
@@ -116,6 +121,19 @@ namespace UKHO.S100PermitService.Common.IO
             await streamWriter.WriteAsync(xmlContent);
 
             _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} completed.", upnTitle);
+
+            return xmlContent;
+        }
+
+        /// <summary>
+        /// Create permit sign and add into permit zip
+        /// </summary>
+        /// <param name="upnTitle">User permit title.</param>
+        /// <param name="permitXmlContent"></param>
+        private async Task CreatePermitSignAsync(string upnTitle, string permitXmlContent)
+        {
+            _logger.LogInformation(EventIds.PermitSignCreationStarted.ToEventId(), "Creation of Permit SIGN for UPN: {UpnTitle} started.", upnTitle);
+            var signXmlContent = await _permitSignGeneratorService.GeneratePermitSignXmlAsync(permitXmlContent);
         }
 
         private string GetTargetNamespace()

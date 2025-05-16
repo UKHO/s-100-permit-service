@@ -11,33 +11,35 @@ using UKHO.S100PermitService.Common.Services;
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {
     [TestFixture]
-    public class ManufacturerKeyServiceTests
+    public class DataKeyServiceTests
     {
-        private ILogger<ManufacturerKeyService> _fakeLogger;
+        private ILogger<DataKeyService> _fakeLogger;
         private ICacheProvider _fakeCacheProvider;
         private ISecretClient _fakeSecretClient;
-        private IManufacturerKeyService _manufacturerKeyService;
+        private IKeyVaultCertificateClient _fakeCertificateSecretClient;
+        private IDataKeyService _dataKeyService;
 
         [SetUp]
         public void Setup()
         {
-            _fakeLogger = A.Fake<ILogger<ManufacturerKeyService>>();
+            _fakeLogger = A.Fake<ILogger<DataKeyService>>();
             _fakeCacheProvider = A.Fake<ICacheProvider>();
             _fakeSecretClient = A.Fake<ISecretClient>();
+            _fakeCertificateSecretClient = A.Fake<IKeyVaultCertificateClient>();
 
-            _manufacturerKeyService = new ManufacturerKeyService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient);
+            _dataKeyService = new DataKeyService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            Action nullLogger = () => new ManufacturerKeyService(null, _fakeCacheProvider, _fakeSecretClient);
+            Action nullLogger = () => new DataKeyService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient);
             nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullCacheProvider = () => new ManufacturerKeyService(_fakeLogger, null, _fakeSecretClient);
+            Action nullCacheProvider = () => new DataKeyService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient);
             nullCacheProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("cacheProvider");
 
-            Action nullSecretClient = () => new ManufacturerKeyService(_fakeLogger, _fakeCacheProvider, null);
+            Action nullSecretClient = () => new DataKeyService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient);
             nullSecretClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("secretClient");
         }
 
@@ -46,9 +48,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
 
-            var result = () => _manufacturerKeyService.GetManufacturerKeys("pqr");
+            var result = () => _dataKeyService.GetSecretKeys("pqr");
 
-            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Manufacturer Key Vault, failed with Exception :{Message}");
+            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Secret Key Vault, failed with Exception :{Message}");
         }
 
         [Test]
@@ -59,15 +61,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(secretKey);
 
-            var result = _manufacturerKeyService.GetManufacturerKeys("abc");
+            var result = _dataKeyService.GetSecretKeys("abc");
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Information
-            && call.GetArgument<EventId>(1) == EventIds.ManufacturerKeyFoundInCache.ToEventId()
-            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Manufacturer Key found in Cache."
+            && call.GetArgument<EventId>(1) == EventIds.SecretKeyFoundInCache.ToEventId()
+            && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Secret Key found in Cache."
             ).MustHaveHappenedOnceExactly();
 
             result.Should().NotBeNull();
@@ -84,15 +86,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
-            var result = _manufacturerKeyService.GetManufacturerKeys(secretKey);
+            var result = _dataKeyService.GetSecretKeys(secretKey);
 
             A.CallTo(() => _fakeCacheProvider.SetCache(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
              call.Method.Name == "Log"
              && call.GetArgument<LogLevel>(0) == LogLevel.Information
-             && call.GetArgument<EventId>(1) == EventIds.AddingNewManufacturerKeyInCache.ToEventId()
-             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "New Manufacturer Key added in Cache."
+             && call.GetArgument<EventId>(1) == EventIds.AddingNewSecretKeyInCache.ToEventId()
+             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "New Secret Key added in Cache."
              ).MustHaveHappenedOnceExactly();
 
             result.Should().Be(secretValue);
