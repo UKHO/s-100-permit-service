@@ -203,6 +203,11 @@
         /// <summary>
         /// 840040 - An error occurred while generating the SHA-384 hash.
         /// </summary>
-        PermitHashGenerationFailed = 840040
+        PermitHashGenerationFailed = 840040,
+
+        /// <summary>
+        /// 840041 - Permit Sign Creation Completed.
+        /// </summary>
+        PermitSignCreationCompleted = 840041,
     }
 }
