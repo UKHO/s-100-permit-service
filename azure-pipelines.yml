@@ -51,6 +51,8 @@ variables:
     value: "90"
   - name: DeploymentPoolPE
     value: "Private Link Deployments (ENG)"
+  - name: snykAbzuOrganizationId
+    value: "aeb7543b-8394-457c-8334-a31493d8910d"
 
 stages:
 
@@ -116,8 +118,7 @@ stages:
           - task: UseDotNet@2
             displayName: Use .NET SDK $(SdkVersion)
             inputs:
-              packageType: sdk
-              version: $(SdkVersion)
+              packageType: sdk             
 
           - task: DotNetCoreCLI@2
             displayName: .NET - NuGet restore
