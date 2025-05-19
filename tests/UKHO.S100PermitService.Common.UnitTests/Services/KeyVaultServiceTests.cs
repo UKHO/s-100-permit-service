@@ -1,4 +1,5 @@
-﻿using Azure.Security.KeyVault.Secrets;
+﻿using Azure.Security.KeyVault.Certificates;
+using Azure.Security.KeyVault.Secrets;
 using FakeItEasy;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
@@ -18,6 +19,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ISecretClient _fakeSecretClient;
         private ICertificateClient _fakeCertificateSecretClient;
         private IKeyVaultService _keyVaultService;
+        private const string CertificateName = "testCertificate";
 
         [SetUp]
         public void Setup()
@@ -41,6 +43,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             Action nullSecretClient = () => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient);
             nullSecretClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("secretClient");
+
+            Action nullCertificateClient = () => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null);
+            nullCertificateClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("certificateSecretClient");
         }
 
         [Test]
@@ -100,6 +105,49 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             result.Should().Be(secretValue);
         }
 
+        [Test]
+        public void WhenCertificateIsInCache_ThenReturnsCertificateAndLogsInfo()
+        {
+            var expectedCertificateBytes = new byte[] { 1, 2, 3, 4 };
+
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName)).Returns(expectedCertificateBytes);
+
+            var result = _keyVaultService.GetCertificate(CertificateName);
+
+            Assert.That(result, Is.EqualTo(expectedCertificateBytes));
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.SecretKeyFoundInCache.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Certificate found in Cache."
+            ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenCertificateIsNotInCache_ThenFetchesFromKeyVaultAndCachesIt()
+        {
+            var keyVaultCertificate = A.Fake<KeyVaultCertificate>();
+
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns((byte[]?)null);
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Returns(keyVaultCertificate);
+
+            _keyVaultService.GetCertificate(CertificateName);
+
+            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(CertificateName, null)).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenCertificateClientThrowsException_ThenPermitServiceExceptionIsThrown()
+        {
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns(null);
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Throws(new Exception("KeyVault failure"));
+
+            var ex = Assert.Throws<PermitServiceException>(() => _keyVaultService.GetCertificate(CertificateName));
+
+            Assert.That(ex.Message, Is.EqualTo("No Certificate found in Certificate Key Vault, failed with Exception :{Message}"));
+        }
+
         private static KeyVaultSecret GetSecret(string key, string value)
         {
             return new KeyVaultSecret(key, value);
@@ -108,9 +156,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private static Dictionary<string, string> SetCacheKeyValue()
         {
             var secrets = new Dictionary<string, string>() {
-                                        { "abc", "M_IDabc"},
-                                        { "pqr", "M_IDpqr"},
-                                        { "xyz","M_IDxyz"} };
+                { "abc", "M_IDabc"},
+                { "pqr", "M_IDpqr"},
+                { "xyz","M_IDxyz"} };
             return secrets;
         }
     }

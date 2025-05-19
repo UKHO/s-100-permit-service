@@ -18,8 +18,6 @@ namespace UKHO.S100PermitService.Common.IO
         private readonly IPermitSignGeneratorService _permitSignGeneratorService;
         private readonly IXmlTransformer _xmlTransformer;
 
-
-
         public PermitReaderWriter(ILogger<PermitReaderWriter> logger, IPermitSignGeneratorService permitSignGeneratorService, IXmlTransformer xmlTransformer)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));

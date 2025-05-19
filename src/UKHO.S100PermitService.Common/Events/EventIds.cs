@@ -206,8 +206,13 @@
         PermitHashGenerationFailed = 840040,
 
         /// <summary>
-        /// 840041 - Permit Sign Creation Completed.
+        /// 840041 - An error occurred while importing the ECDsa private key.
         /// </summary>
-        PermitSignCreationCompleted = 840041,
+        PermitPrivateKeyImportFailed = 840041,
+
+        /// <summary>
+        /// 840042 - Permit Sign Creation Completed.
+        /// </summary>
+        PermitSignCreationCompleted = 840042
     }
 }

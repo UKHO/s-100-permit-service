@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.Services
             }
             catch(Exception ex)
             {
-                throw new PermitServiceException(EventIds.SecretNameNotFoundInKeyVault.ToEventId(), "No Secrets found in Secret Key Vault, failed with Exception :{Message}", ex.Message);
+                throw new PermitServiceException(EventIds.SecretNameNotFoundInKeyVault.ToEventId(), "No Certificate found in Certificate Key Vault, failed with Exception :{Message}", ex.Message);
             }
         }
 
