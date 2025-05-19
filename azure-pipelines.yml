@@ -166,11 +166,10 @@ stages:
               organization: $(snykAbzuOrganizationId)
               serviceConnectionEndpoint: Snyk
               codeSeverityThreshold: low
-              testType: IaC
+              testType: iac
               monitorwhen: never
               severityThreshold: low
               workingDirectory: '$(Build.SourcesDirectory)/Deployment'
-
 
       - job: UnitTestsAndCodeCoverage
         workspace:
