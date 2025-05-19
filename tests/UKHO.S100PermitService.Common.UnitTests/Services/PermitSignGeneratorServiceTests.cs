@@ -1,5 +1,6 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
@@ -26,6 +27,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenConstructorIsCalledWithNullDependency_ThenShouldThrowArgumentNullException()
         {
+            var fakeSignatureProvider = A.Fake<IDigitalSignatureProvider>();
+            var fakeKeyVaultService = A.Fake<IKeyVaultService>();
+            var fakeOptions = A.Fake<IOptions<DataKeyVaultConfiguration>>();
+
+            Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(null, fakeKeyVaultService, fakeOptions));
+            Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(fakeSignatureProvider, null, fakeOptions));
+            Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(fakeSignatureProvider, fakeKeyVaultService, null));
             Assert.That(() => new PermitSignGeneratorService(null, null, null),
                 Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'digitalSignatureProvider')"));
         }
@@ -33,13 +41,31 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public async Task WhenGeneratePermitSignXmlIsCalled_ThenShouldCallDigitalSignatureProviderAndReturnExpectedResult()
         {
-            var content = "TestContent";
-            var expectedHash = new byte[] { 1, 2, 3, 4, 5 };
-            A.CallTo(() => _fakeDigitalSignatureProvider.GeneratePermitXmlHash(content)).Returns(expectedHash);
+            var fakeSignatureProvider = A.Fake<IDigitalSignatureProvider>();
+            var fakeKeyVaultService = A.Fake<IKeyVaultService>();
+            var fakeOptions = A.Fake<IOptions<DataKeyVaultConfiguration>>();
+            var dataKeyVaultConfiguration = new DataKeyVaultConfiguration { DsPrivateKey = "testPrivateKeyName" };
+            A.CallTo(() => fakeOptions.Value).Returns(dataKeyVaultConfiguration);
 
-            var result = await _permitSignGeneratorService.GeneratePermitSignXmlAsync(content);
+            const string PermitXmlContent = "<Permit>test</Permit>";
+            var hash = new byte[] { 1, 2, 3 };
+            var privateKey = ECDsa.Create();
+            const string Signature = "testBase64signature";
+            const string PrivateKeySecret = "testPrivateKeySecret";
 
-            A.CallTo(() => _fakeDigitalSignatureProvider.GeneratePermitXmlHash(content)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeSignatureProvider.GeneratePermitXmlHash(PermitXmlContent)).Returns(hash);
+            A.CallTo(() => fakeKeyVaultService.GetSecretKeys(dataKeyVaultConfiguration.DsPrivateKey)).Returns(PrivateKeySecret);
+            A.CallTo(() => fakeSignatureProvider.ImportEcdsaPrivateKey(PrivateKeySecret)).Returns(privateKey);
+            A.CallTo(() => fakeSignatureProvider.SignHash(privateKey, hash)).Returns(Signature);
+
+            var permitSignGeneratorService = new PermitSignGeneratorService(fakeSignatureProvider, fakeKeyVaultService, fakeOptions);
+
+            var result = await permitSignGeneratorService.GeneratePermitSignXmlAsync(PermitXmlContent);
+
+            A.CallTo(() => fakeSignatureProvider.GeneratePermitXmlHash(PermitXmlContent)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeKeyVaultService.GetSecretKeys(dataKeyVaultConfiguration.DsPrivateKey)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeSignatureProvider.ImportEcdsaPrivateKey(PrivateKeySecret)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => fakeSignatureProvider.SignHash(privateKey, hash)).MustHaveHappenedOnceExactly();
             Assert.That(result, Is.EqualTo(string.Empty));
         }
     }
