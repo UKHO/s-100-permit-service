@@ -1,8 +1,11 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Models.PermitSign;
 
 namespace UKHO.S100PermitService.Common.Providers
 {
@@ -62,6 +65,58 @@ namespace UKHO.S100PermitService.Common.Providers
         public string SignHash(ECDsa privateKey, byte[] hashContent)
         {
             return Convert.ToBase64String(privateKey.SignHash(hashContent));
+        }
+
+        /// <summary>
+        /// Creates a StandaloneDigitalSignature object containing the certificate and digital signature details.
+        /// </summary>
+        /// <param name="certificate">The X509 certificate used for signing, containing issuer and subject information.</param>
+        /// <param name="signatureBase64">The base64-encoded digital signature value.</param>
+        /// <returns>
+        /// A StandaloneDigitalSignature object populated with the filename, certificate details, and digital signature.
+        /// </returns>
+        public StandaloneDigitalSignature CreateStandaloneDigitalSignature(X509Certificate2 certificate, string signatureBase64)
+        {
+            var issuer = GetCnFromSubject(certificate.Issuer);
+            var certificateValue = Convert.ToBase64String(certificate.RawData);
+            var certificateDsId = GetCnFromSubject(certificate.Subject);
+
+            return new StandaloneDigitalSignature
+            {
+                Filename = PermitServiceConstants.PermitXmlFileName,
+                Certificates = new Certificates
+                {
+                    SchemeAdministrator = new SchemeAdministrator
+                    {
+                        Id = issuer
+                    },
+                    Certificate = new Certificate
+                    {
+                        Id = certificateDsId,
+                        Issuer = issuer,
+                        Value = certificateValue
+                    }
+                },
+                DigitalSignature = new DigitalSignature
+                {
+                    Id = PermitServiceConstants.DigitalSignatureId,
+                    CertificateRef = certificateDsId,
+                    Value = signatureBase64
+                }
+            };
+        }
+
+        /// <summary>
+        /// Extracts the Common Name (CN) value from a certificate subject or issuer string.
+        /// </summary>
+        /// <param name="subject">The subject or issuer string from an X509 certificate (e.g., "CN=Example, O=Org, C=GB").</param>
+        /// <returns>
+        /// The value of the CN field if present; otherwise, returns "UnknownCN".
+        /// </returns>
+        private string GetCnFromSubject(string subject)
+        {
+            var match = Regex.Match(subject, @"CN=([^,]+)");
+            return match.Success ? match.Groups[1].Value : "UnknownCN";
         }
     }
 }

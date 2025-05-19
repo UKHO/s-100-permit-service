@@ -22,6 +22,7 @@ using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Transformer;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.API
@@ -187,6 +188,7 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IDigitalSignatureProvider, DigitalSignatureProvider>();
 
             builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
+            builder.Services.AddScoped<IXmlTransformer, XmlTransformer>();
         }
 
         private static void ConfigureLogging(WebApplication webApplication)

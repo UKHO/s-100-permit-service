@@ -9,6 +9,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Transformer;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {
@@ -19,6 +20,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         private ISchemaValidator _fakeSchemaValidator;
         private IPermitSignGeneratorService _fakePermitSignGeneratorService;
         private IPermitReaderWriter _permitReaderWriter;
+        private IXmlTransformer _fakeXmlTransformer;
 
         [SetUp]
         public void Setup()
@@ -26,18 +28,19 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             _fakeLogger = A.Fake<ILogger<PermitReaderWriter>>();
             _fakeSchemaValidator = A.Fake<ISchemaValidator>();
             _fakePermitSignGeneratorService = A.Fake<IPermitSignGeneratorService>();
+            _fakeXmlTransformer = A.Fake<IXmlTransformer>();
 
-            _permitReaderWriter = new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, _fakePermitSignGeneratorService);
+            _permitReaderWriter = new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, _fakePermitSignGeneratorService, _fakeXmlTransformer);
         }
 
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
 
-            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService);
+            Action nullPermitReaderWriterLogger = () => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService, _fakeXmlTransformer);
             nullPermitReaderWriterLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
 
-            Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService);
+            Action nullSchemaValidator = () => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService, _fakeXmlTransformer);
             nullSchemaValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("schemaValidator");
         }
 
@@ -46,14 +49,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             Assert.Multiple(() =>
             {
-                Assert.That(() => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService),
+                Assert.That(() => new PermitReaderWriter(null, _fakeSchemaValidator, _fakePermitSignGeneratorService, _fakeXmlTransformer),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
 
-                Assert.That(() => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService),
+                Assert.That(() => new PermitReaderWriter(_fakeLogger, null, _fakePermitSignGeneratorService, _fakeXmlTransformer),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'schemaValidator')"));
 
-                Assert.That(() => new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, null),
+                Assert.That(() => new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, null, _fakeXmlTransformer),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'permitSignGeneratorService')"));
+
+                Assert.That(() => new PermitReaderWriter(_fakeLogger, _fakeSchemaValidator, _fakePermitSignGeneratorService, null),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'XmlTransformer')"));
             });
         }
 

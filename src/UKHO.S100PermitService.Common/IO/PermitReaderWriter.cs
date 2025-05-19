@@ -1,14 +1,12 @@
 ﻿using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using System.Reflection;
-using System.Text;
 using System.Xml;
 using System.Xml.Schema;
-using System.Xml.Serialization;
 using UKHO.S100PermitService.Common.Events;
-using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Services;
+using UKHO.S100PermitService.Common.Transformer;
 
 namespace UKHO.S100PermitService.Common.IO
 {
@@ -19,13 +17,15 @@ namespace UKHO.S100PermitService.Common.IO
         private readonly ILogger<PermitReaderWriter> _logger;
         private readonly ISchemaValidator _schemaValidator;
         private readonly IPermitSignGeneratorService _permitSignGeneratorService;
+        private readonly IXmlTransformer _xmlTransformer;
 
         public PermitReaderWriter(ILogger<PermitReaderWriter> logger,
-                                  ISchemaValidator schemaValidator, IPermitSignGeneratorService permitSignGeneratorService)
+                                  ISchemaValidator schemaValidator, IPermitSignGeneratorService permitSignGeneratorService, IXmlTransformer xmlTransformer)
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
             _permitSignGeneratorService = permitSignGeneratorService ?? throw new ArgumentNullException(nameof(permitSignGeneratorService));
+            _xmlTransformer = xmlTransformer ?? throw new ArgumentNullException(nameof(xmlTransformer));
         }
 
         /// <summary>
@@ -80,49 +80,11 @@ namespace UKHO.S100PermitService.Common.IO
             // Create an entry for the XML file
             var zipEntry = zipArchive.CreateEntry(fileName);
 
-            // Serialize the class to XML
-            var serializer = new XmlSerializer(typeof(Permit));
-            var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add(PermitServiceConstants.FirstNamespacePrefix, GetTargetNamespace());
-            namespaces.Add(PermitServiceConstants.SecondNamespacePrefix, PermitServiceConstants.SecondNamespace);
-
-            var settings = new XmlWriterSettings
-            {
-                OmitXmlDeclaration = true,
-                Indent = true,
-                Encoding = new UTF8Encoding(false)
-            };
-
-            using var entryStream = zipEntry.Open();
-            using var memoryStream = new MemoryStream();
-            using(var writer = XmlWriter.Create(memoryStream, settings))
-            {
-                serializer.Serialize(writer, permit, namespaces);
-            }
-
-            // Reset the position of the MemoryStream to the beginning
-            memoryStream.Seek(0, SeekOrigin.Begin);
-
-            // Read the XML content from the MemoryStream
-            using var reader = new StreamReader(memoryStream);
-            var xmlContent = reader.ReadToEnd();
-
-            // Replace "_x003A_" with ":"
-            xmlContent = PermitServiceConstants.XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(PermitServiceConstants.Namespace, GetTargetNamespace());
-
-            // Validate schema
-            if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
-            {
-                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema.");
-            }
-
-            // Write the modified XML content to the zip entry
-            using var streamWriter = new StreamWriter(entryStream);
-            await streamWriter.WriteAsync(xmlContent);
-
+            var permitXmlContent = await _xmlTransformer.SerializeToXml(permit);
+            
             _logger.LogInformation(EventIds.PermitXmlCreationCompleted.ToEventId(), "Creation of Permit XML for UPN: {UpnTitle} completed.", upnTitle);
 
-            return xmlContent;
+            return permitXmlContent;
         }
 
         /// <summary>

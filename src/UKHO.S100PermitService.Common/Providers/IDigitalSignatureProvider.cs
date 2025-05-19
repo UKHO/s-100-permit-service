@@ -1,4 +1,6 @@
 ﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using UKHO.S100PermitService.Common.Models.PermitSign;
 
 namespace UKHO.S100PermitService.Common.Providers
 {
@@ -7,5 +9,6 @@ namespace UKHO.S100PermitService.Common.Providers
         public byte[] GeneratePermitXmlHash(string permitXmlContent);
         public ECDsa ImportEcdsaPrivateKey(string privateKeySecret);
         public string SignHash(ECDsa privateKey, byte[] hashContent);
+        public StandaloneDigitalSignature CreateStandaloneDigitalSignature(X509Certificate2 certificate, string signatureBase64);
     }
 }
