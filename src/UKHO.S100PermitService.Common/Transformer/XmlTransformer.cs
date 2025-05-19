@@ -11,12 +11,13 @@ using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Transformer
 {
-    public class XmlTransformer: IXmlTransformer
+    public class XmlTransformer : IXmlTransformer
     {
+        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, PermitServiceConstants.SchemaFile);
+
         private readonly ISchemaValidator _schemaValidator;
         private readonly ILogger<DigitalSignatureProvider> _logger;
-        private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, PermitServiceConstants.SchemaFile);
-       
+
         public XmlTransformer(ILogger<DigitalSignatureProvider> logger, ISchemaValidator schemaValidator)
         {
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
@@ -25,17 +26,18 @@ namespace UKHO.S100PermitService.Common.Transformer
 
         /// <summary>
         /// Serializes the specified object to an XML string with required namespaces and formatting,
-         /// </summary>
+        /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object instance to serialize to XML.</param>
         /// <returns>A string containing the serialized and schema-validated XML.</returns>
-         public async Task<string> SerializeToXml<T>(T obj)
+        public async Task<string> SerializeToXml<T>(T obj)
         {
             _logger.LogInformation(EventIds.XMLSerializationStarted.ToEventId(), "XML serialization process started.");
 
+            // Serialize the class to XML
             var serializer = new XmlSerializer(typeof(T));
             var namespaces = new XmlSerializerNamespaces();
-            namespaces.Add(PermitServiceConstants.FirstNamespacePrefix, GetTargetNamespace() ?? throw new InvalidOperationException("Target namespace cannot be null."));
+            namespaces.Add(PermitServiceConstants.FirstNamespacePrefix, GetTargetNamespace());
             namespaces.Add(PermitServiceConstants.SecondNamespacePrefix, PermitServiceConstants.SecondNamespace);
 
             var settings = new XmlWriterSettings
@@ -50,21 +52,24 @@ namespace UKHO.S100PermitService.Common.Transformer
             {
                 serializer.Serialize(writer, obj, namespaces);
             }
-
+            // Reset the position of the MemoryStream to the beginning
             memoryStream.Seek(0, SeekOrigin.Begin);
 
+            // Read the XML content from the MemoryStream
             using var reader = new StreamReader(memoryStream);
             var xmlContent = await reader.ReadToEndAsync();
 
-            xmlContent = PermitServiceConstants.XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(PermitServiceConstants.Namespace, GetTargetNamespace() ?? throw new InvalidOperationException("Target namespace cannot be null."));
+            // Replace "_x003A_" with ":"
+            xmlContent = PermitServiceConstants.XmlDeclaration + xmlContent.Replace("_x003A_", ":").Replace(PermitServiceConstants.Namespace, GetTargetNamespace());
 
+            // Validate schema
             if(!_schemaValidator.ValidateSchema(xmlContent, _xsdPath))
             {
-                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid xml schema.");
+                throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema.");
             }
 
             _logger.LogInformation(EventIds.XMLSerializationCompleted.ToEventId(), "XML serialization process completed.");
-            
+
             return xmlContent;
         }
 
@@ -75,7 +80,7 @@ namespace UKHO.S100PermitService.Common.Transformer
         private string? GetTargetNamespace()
         {
             XmlSchema? schema;
-            using (var reader = XmlReader.Create(_xsdPath))
+            using(var reader = XmlReader.Create(_xsdPath))
             {
                 schema = XmlSchema.Read(reader, null);
             }

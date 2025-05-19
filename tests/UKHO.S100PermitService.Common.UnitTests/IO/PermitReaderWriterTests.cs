@@ -1,10 +1,10 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using System.IO.Compression;
 using System.Text;
 using System.Text.RegularExpressions;
 using UKHO.S100PermitService.Common.Events;
+using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Services;
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         {
             var result = _permitReaderWriter.ReadXsdVersion();
 
-            result.Should().NotBeNullOrEmpty();
+            Assert.That(result, Is.Not.Null.And.Not.Empty);
         }
 
         [Test]
@@ -131,6 +131,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "Permit zip creation completed."
             ).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task WhenSchemaIsInvalid_ThenReturnsFalse()
+        {
+            A.CallTo(() => _fakeXmlTransformer.SerializeToXml(A<Permit>.Ignored))
+                .Throws(new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema."));
+            var ex = Assert.ThrowsAsync<PermitServiceException>(async () => await _permitReaderWriter.CreatePermitZipAsync(GetInValidPermitDetails()));
+            Assert.That(ex.Message, Is.EqualTo("Invalid permit xml schema."));
         }
 
         [Test]
@@ -283,13 +292,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             expectedResult += "<S100SE:StandaloneDigitalSignature xmlns:S100SE=\"http://www.iho.int/s100/se/5.2\" xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\" xmlns=\"http://www.iho.int/s100/se/5.2\">";
             expectedResult += "<S100SE:filename>PERMIT.XML</S100SE:filename>";
             expectedResult += "<S100SE:certificates>";
-            expectedResult += "<S100SE:schemeAdministrator id=\"Permit Signing Authority\" />";
-            expectedResult += "<S100SE:certificate id=\"Permit Data Signing\" issuer=\"Permit Signing Authority\">";
-            expectedResult += "Certificate_Details";
+            expectedResult += "<S100SE:schemeAdministrator id=\"issuer\" />";
+            expectedResult += "<S100SE:certificate id=\"certificateDsId\" issuer=\"issuer\">";
+            expectedResult += "certificateValue";
             expectedResult += "</S100SE:certificate>";
             expectedResult += "</S100SE:certificates>";
-            expectedResult += "<S100SE:digitalSignature id=\"permit\" certificateRef=\"Permit Data Signing\">";
-            expectedResult += "SignDetails";
+            expectedResult += "<S100SE:digitalSignature id=\"permit\" certificateRef=\"certificateDsId\">";
+            expectedResult += "signatureValue";
             expectedResult += "</S100SE:digitalSignature>";
             expectedResult += "</S100SE:StandaloneDigitalSignature>";
 
