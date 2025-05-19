@@ -213,6 +213,27 @@
         /// <summary>
         /// 840042 - Permit Sign Creation Completed.
         /// </summary>
-        PermitSignCreationCompleted = 840042
+        PermitSignCreationCompleted = 840042,
+
+        /// <summary>
+        /// 840043 - StandaloneDigitalSignature generation Started.
+        /// </summary>
+        StandaloneDigitalSignatureGenerationStarted = 840043,
+
+        /// <summary>
+        /// 840044 - StandaloneDigitalSignature generation completed.
+        /// </summary>
+        StandaloneDigitalSignatureGenerationCompleted = 840044,
+
+        /// <summary>
+        /// 840045 - XML Serialization Started.
+        /// </summary>
+        XMLSerializationStarted = 840045,
+
+        /// <summary>
+        /// 840046 - XML Serialization completed.
+        /// </summary>
+        XMLSerializationCompleted = 840046,
+
     }
 }

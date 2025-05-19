@@ -87,11 +87,13 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </returns>
         public StandaloneDigitalSignature CreateStandaloneDigitalSignature(X509Certificate2 certificate, string signatureBase64)
         {
+            _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(), "StandaloneDigitalSignature generation process started.");
+         
             var issuer = GetCnFromSubject(certificate.Issuer);
             var certificateValue = Convert.ToBase64String(certificate.RawData);
             var certificateDsId = GetCnFromSubject(certificate.Subject);
 
-            return new StandaloneDigitalSignature
+            var standaloneSignature = new StandaloneDigitalSignature
             {
                 Filename = PermitServiceConstants.PermitXmlFileName,
                 Certificates = new Certificates
@@ -114,6 +116,10 @@ namespace UKHO.S100PermitService.Common.Providers
                     Value = signatureBase64
                 }
             };
+
+            _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationCompleted.ToEventId(), "StandaloneDigitalSignature generation process completed.");
+
+            return standaloneSignature;
         }
 
         /// <summary>

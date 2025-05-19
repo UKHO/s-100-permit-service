@@ -1,6 +1,8 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
+using System.Text;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -101,6 +103,43 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             Assert.IsNotEmpty(signature, "The returned signature should not be empty.");
             Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
             Assert.That(signature.Length, Is.EqualTo(128)); 
+        }
+
+        [Test]
+        public void WhenCreateStandaloneDigitalSignatureHasValidCertificateAndSignature_ThenReturnsExpectedObject()
+        {
+            var certificate = CreateSelfSignedCertificate("CN=TestSubject", "CN=TestIssuer");
+            var signatureBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes("signature"));
+
+            var result = _provider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
+
+            Assert.Multiple(() =>
+            {
+                Assert.NotNull(result);
+                Assert.That(result.Filename, Does.Contain(PermitServiceConstants.PermitXmlFileName));
+                Assert.That(result.Certificates.SchemeAdministrator.Id, Does.Contain("TestIssuer"));
+                Assert.That(result.Certificates.Certificate.Id, Does.Contain("TestSubject"));
+                Assert.That(result.Certificates.Certificate.Issuer, Does.Contain("TestIssuer"));
+                Assert.That(result.Certificates.Certificate.Value, Does.Contain(Convert.ToBase64String(certificate.RawData)));
+                Assert.That(result.DigitalSignature.Id, Does.Contain(PermitServiceConstants.DigitalSignatureId));
+                Assert.That(result.DigitalSignature.CertificateRef, Does.Contain("TestSubject"));
+                Assert.That(result.DigitalSignature.Value, Does.Contain(signatureBase64));
+            });
+            A.CallTo(_fakeLogger).Where(call =>
+                 call.Method.Name == "Log"
+                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                 && call.GetArgument<EventId>(1) == EventIds.StandaloneDigitalSignatureGenerationCompleted.ToEventId()
+                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "StandaloneDigitalSignature generation process completed."
+             ).MustHaveHappened();
+        }
+
+        private static X509Certificate2 CreateSelfSignedCertificate(string subject, string issuer)
+        {
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP256);
+            var subjectName = new X500DistinguishedName(subject);
+            var req = new CertificateRequest(subjectName, ecdsa, HashAlgorithmName.SHA256);
+            var cert = req.Create(new X500DistinguishedName(issuer), X509SignatureGenerator.CreateForECDsa(ecdsa), DateTimeOffset.Now, DateTimeOffset.Now.AddDays(1), Guid.NewGuid().ToByteArray());
+            return new X509Certificate2(cert.Export(X509ContentType.Pfx));
         }
     }
 }
