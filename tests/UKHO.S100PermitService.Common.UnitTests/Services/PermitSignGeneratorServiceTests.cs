@@ -27,14 +27,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenConstructorIsCalledWithNullDependency_ThenShouldThrowArgumentNullException()
         {
-            var nullDataKeyVaultConfiguration = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration));
-            Assert.That(nullDataKeyVaultConfiguration.ParamName, Is.EqualTo("digitalSignatureProvider"));
+            var nullDigitalSignatureProvider = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration));
+            Assert.That(nullDigitalSignatureProvider.ParamName, Is.EqualTo("digitalSignatureProvider"));
 
-            var nullDataKeyService = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration));
-            Assert.That(nullDataKeyService.ParamName, Is.EqualTo("keyVaultService"));
+            var nullKeyVaultService = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration));
+            Assert.That(nullKeyVaultService.ParamName, Is.EqualTo("keyVaultService"));
 
-            var nullXmlTransformer = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null));
-            Assert.That(nullXmlTransformer.ParamName, Is.EqualTo("dataKeyVaultConfiguration"));
+            var nullDataKeyVaultConfiguration = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null));
+            Assert.That(nullDataKeyVaultConfiguration.ParamName, Is.EqualTo("dataKeyVaultConfiguration"));
         }
 
         [Test]
