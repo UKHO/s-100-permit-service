@@ -158,7 +158,7 @@ stages:
               additionalArguments: --all-projects
 
           - task: UkhoSnykScanTask@0
-            displayName: Snyk SCA scan
+            displayName: Snyk Iac scan
             condition: succeededOrFailed()
             inputs:
               failOnIssues: true
