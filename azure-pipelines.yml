@@ -169,7 +169,7 @@ stages:
               testType: IaC
               monitorwhen: never
               severityThreshold: low
-              additionalArguments: --all-projects
+              workingDirectory: '$(Build.SourcesDirectory)/Deployment'
 
 
       - job: UnitTestsAndCodeCoverage
