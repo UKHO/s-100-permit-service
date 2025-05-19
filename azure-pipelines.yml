@@ -157,6 +157,20 @@ stages:
               severityThreshold: low
               additionalArguments: --all-projects
 
+          - task: UkhoSnykScanTask@0
+            displayName: Snyk SCA scan
+            condition: succeededOrFailed()
+            inputs:
+              failOnIssues: true
+              failOnThreshold: high
+              organization: $(snykAbzuOrganizationId)
+              serviceConnectionEndpoint: Snyk
+              codeSeverityThreshold: low
+              testType: IaC
+              monitorwhen: never
+              severityThreshold: low
+              additionalArguments: --all-projects
+
 
       - job: UnitTestsAndCodeCoverage
         workspace:
