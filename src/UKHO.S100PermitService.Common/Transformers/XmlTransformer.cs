@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.Transformers
         /// <returns>A string containing the serialized and schema-validated XML.</returns>
         public async Task<string> SerializeToXml<T>(T obj)
         {
-            _logger.LogInformation(EventIds.XMLSerializationStarted.ToEventId(), "XML serialization process started.");
+            _logger.LogInformation(EventIds.XmlSerializationStarted.ToEventId(), "XML serialization process started.");
 
             // Serialize the class to XML
             var serializer = new XmlSerializer(typeof(T));
@@ -68,7 +68,7 @@ namespace UKHO.S100PermitService.Common.Transformers
                 throw new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema.");
             }
 
-            _logger.LogInformation(EventIds.XMLSerializationCompleted.ToEventId(), "XML serialization process completed.");
+            _logger.LogInformation(EventIds.XmlSerializationCompleted.ToEventId(), "XML serialization process completed.");
 
             return xmlContent;
         }

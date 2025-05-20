@@ -13,13 +13,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
     public class DigitalSignatureProviderTests
     {
         private ILogger<DigitalSignatureProvider> _fakeLogger;
-        private DigitalSignatureProvider _provider;
+        private DigitalSignatureProvider _digitalSignatureProvider;
 
         [SetUp]
         public void SetUp()
         {
             _fakeLogger = A.Fake<ILogger<DigitalSignatureProvider>>();
-            _provider = new DigitalSignatureProvider(_fakeLogger);
+            _digitalSignatureProvider = new DigitalSignatureProvider(_fakeLogger);
         }
 
         [Test]
@@ -33,10 +33,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         public void WhenGeneratePermitXmlHashHasDifferentValidContent_ThenShouldReturnHashesOfSameLengthAndLogMessages()
         {
             var content1 = "TestContents";
-            var content2 = "TestContents12345";
+            var content2 = "TestContents_123";
 
-            var result1 = _provider.GeneratePermitXmlHash(content1);
-            var result2 = _provider.GeneratePermitXmlHash(content2);
+            var result1 = _digitalSignatureProvider.GeneratePermitXmlHash(content1);
+            var result2 = _digitalSignatureProvider.GeneratePermitXmlHash(content2);
 
             Assert.That(result1.Length, Is.EqualTo(result2.Length), "The hash lengths for both inputs should be the same.");
 
@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [Test]
         public void WhenGeneratePermitXmlHashHasNullContent_ThenShouldThrowPermitServiceException()
         {
-            var exception = Assert.Throws<PermitServiceException>(() => _provider.GeneratePermitXmlHash(null));
+            var exception = Assert.Throws<PermitServiceException>(() => _digitalSignatureProvider.GeneratePermitXmlHash(null));
             Assert.That(exception.Message, Does.Contain("Permit hash generation failed with Exception"));
             A.CallTo(_fakeLogger).Where(call =>
                  call.Method.Name == "Log"
@@ -76,10 +76,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             var privateKeyData = ecdsa.ExportECPrivateKey();
             var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
 
-            var result = _provider.ImportEcdsaPrivateKey(validBase64PrivateKey);
+            var result = _digitalSignatureProvider.ImportEcdsaPrivateKey(validBase64PrivateKey);
 
-            Assert.IsNotNull(result, "The returned ECDsa instance should not be null.");
-            Assert.IsInstanceOf<ECDsa>(result, "The returned object should be an instance of ECDsa.");
+            Assert.That(result, Is.Not.Null, "The returned ECDsa instance should not be null.");
+            Assert.That(result, Is.InstanceOf<ECDsa>(), "The returned object should be an instance of ECDsa.");
         }
 
         [Test]
@@ -87,7 +87,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [TestCase("")]
         public void WhenImportEcdsaPrivateKeyIsCalledWithInvalidInputs_ThenShouldThrowPermitServiceException(string privateKey)
         {
-            var exception = Assert.Throws<PermitServiceException>(() => _provider.ImportEcdsaPrivateKey(privateKey));
+            var exception = Assert.Throws<PermitServiceException>(() => _digitalSignatureProvider.ImportEcdsaPrivateKey(privateKey));
             Assert.That(exception.Message, Does.Contain("Permit private key import failed with Exception"));
         }
 
@@ -97,12 +97,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
             var hashContent = new byte[] { 1, 2, 3, 4, 5 };
 
-            var signature = _provider.SignHash(ecdsa, hashContent);
+            var signature = _digitalSignatureProvider.SignHash(ecdsa, hashContent);
 
-            Assert.IsNotNull(signature, "The returned signature should not be null.");
-            Assert.IsNotEmpty(signature, "The returned signature should not be empty.");
+            Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
+            Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
             Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
-            Assert.That(signature.Length, Is.EqualTo(128));
+            Assert.That(signature, Has.Length.EqualTo(128)); 
         }
 
         [Test]
@@ -111,7 +111,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             var certificate = CreateSelfSignedCertificate("CN=TestSubject", "CN=TestIssuer");
             var signatureBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes("signature"));
 
-            var result = _provider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
+            var result = _digitalSignatureProvider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
 
             Assert.Multiple(() =>
             {

@@ -33,17 +33,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenConstructorIsCalledWithNullDependency_ThenShouldThrowArgumentNullException()
         {
-            var nullDigitalSignatureProvider = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer));
-            Assert.That(nullDigitalSignatureProvider.ParamName, Is.EqualTo("digitalSignatureProvider"));
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'digitalSignatureProvider')"));
 
-            var nullDataKeyService = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer));
-            Assert.That(nullDataKeyService.ParamName, Is.EqualTo("keyVaultService"));
+                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'keyVaultService')"));
 
-            var nullDataKeyVaultConfiguration = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null, _fakeXmlTransformer));
-            Assert.That(nullDataKeyVaultConfiguration.ParamName, Is.EqualTo("dataKeyVaultConfiguration"));
+                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null, _fakeXmlTransformer),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'dataKeyVaultConfiguration')"));
 
-            var nullXmlTransformer = Assert.Throws<ArgumentNullException>(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, null));
-            Assert.That(nullXmlTransformer.ParamName, Is.EqualTo("xmlTransformer"));
+                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, null),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'xmlTransformer')"));
+            });
         }
 
         [Test]

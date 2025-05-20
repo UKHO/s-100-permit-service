@@ -55,9 +55,8 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             try
             {
-                var privateKeyData = Convert.FromBase64String(privateKeySecret);
                 var ecdsaPrivateKey = ECDsa.Create();
-                ecdsaPrivateKey.ImportECPrivateKey(privateKeyData, out _);
+                ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
                 return ecdsaPrivateKey;
             }
             catch(Exception ex)

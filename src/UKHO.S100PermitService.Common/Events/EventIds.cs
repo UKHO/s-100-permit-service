@@ -211,29 +211,43 @@
         PermitPrivateKeyImportFailed = 840041,
 
         /// <summary>
-        /// 840042 - Permit Sign Creation Completed.
+        /// 840042 - Certificate found in Cache.
         /// </summary>
-        PermitSignCreationCompleted = 840042,
+        CertificateFoundInCache = 840042,
 
         /// <summary>
-        /// 840043 - StandaloneDigitalSignature generation Started.
+        /// 840043 - Certificate name not found for Certificate in Memory Key Vault.
         /// </summary>
-        StandaloneDigitalSignatureGenerationStarted = 840043,
+        CertificateNameNotFoundInKeyVault = 840043,
 
         /// <summary>
-        /// 840044 - StandaloneDigitalSignature generation completed.
+        /// 840044 - New Certificate is added in Cache.
         /// </summary>
-        StandaloneDigitalSignatureGenerationCompleted = 840044,
+        AddingNewCertificateInCache = 840044,
 
         /// <summary>
-        /// 840045 - XML Serialization Started.
+        /// 840045 - Permit Sign Creation Completed.
         /// </summary>
-        XMLSerializationStarted = 840045,
+        PermitSignCreationCompleted = 840045,
 
         /// <summary>
-        /// 840046 - XML Serialization completed.
+        /// 840046 - StandaloneDigitalSignature generation Started.
         /// </summary>
-        XMLSerializationCompleted = 840046,
+        StandaloneDigitalSignatureGenerationStarted = 840046,
 
+        /// <summary>
+        /// 840047 - StandaloneDigitalSignature generation completed.
+        /// </summary>
+        StandaloneDigitalSignatureGenerationCompleted = 840047,
+
+        /// <summary>
+        /// 840048 - Xml Serialization Started.
+        /// </summary>
+        XmlSerializationStarted = 840048,
+
+        /// <summary>
+        /// 840049 - Xml Serialization completed.
+        /// </summary>
+        XmlSerializationCompleted = 840049
     }
 }

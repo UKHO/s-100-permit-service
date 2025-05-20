@@ -55,7 +55,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.XMLSerializationStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "XML serialization process started."
             ).MustHaveHappenedOnceExactly();
@@ -63,7 +63,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.XMLSerializationCompleted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.XmlSerializationCompleted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "XML serialization process completed."
             ).MustHaveHappenedOnceExactly();
@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.XMLSerializationStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "XML serialization process started."
             ).MustHaveHappenedOnceExactly();
@@ -101,7 +101,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
-                && call.GetArgument<EventId>(1) == EventIds.XMLSerializationStarted.ToEventId()
+                && call.GetArgument<EventId>(1) == EventIds.XmlSerializationStarted.ToEventId()
                 && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
                     ["{OriginalFormat}"].ToString() == "XML serialization process started."
             ).MustHaveHappenedOnceExactly();
