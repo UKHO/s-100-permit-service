@@ -107,7 +107,7 @@ stages:
               reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
               reportDisplayName: 'Permit Service Common Mutation Report'
 
-  - stage: VulnerabilityChecks
+  - stage: Snyk Check ,Build, Test and Publish
     displayName: "Snyk Checks"
     dependsOn: []
     jobs:
