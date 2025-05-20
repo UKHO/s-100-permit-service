@@ -69,7 +69,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         public async Task WhenProductModelIsPassed_ThenReturnXmlString()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(true);
-            A.CallTo(() => _fakePermitSignGeneratorService.GeneratePermitSignXmlAsync(A<string>.Ignored)) .Returns("<SignedPermit><Header>Test</Header></SignedPermit>");
+            A.CallTo(() => _fakePermitSignGeneratorService.GeneratePermitSignXmlAsync(A<string>.Ignored)).Returns("<SignedPermit><Header>Test</Header></SignedPermit>");
 
             var result = await _permitReaderWriter.CreatePermitZipAsync(GetPermitDetails());
 

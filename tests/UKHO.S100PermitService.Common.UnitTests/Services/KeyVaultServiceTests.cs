@@ -33,22 +33,25 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
+        public void WhenConstructorIsCalledWithNullDependencies_ThenShouldThrowArgumentNullException()
         {
-            Action nullLogger = () => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+            Assert.Multiple(() =>
+            {
+                Assert.That(() => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
 
-            Action nullCacheProvider = () => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient);
-            nullCacheProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("cacheProvider");
+                Assert.That(() => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'cacheProvider')"));
 
-            Action nullSecretClient = () => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient);
-            nullSecretClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("secretClient");
+                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'secretClient')"));
 
-            Action nullCertificateClient = () => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null);
-            nullCertificateClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("certificateSecretClient");
+                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'certificateSecretClient')"));
+            });
         }
 
-        [Test]
+            [Test]
         public void WhenNoSecretsInMemoryCacheOrKeyVault_ThenThrowException()
         {
             A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
@@ -134,6 +137,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             _keyVaultService.GetCertificate(CertificateName);
 
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeCacheProvider.SetCertificateCache(CertificateName, null)).MustHaveHappenedOnceExactly();
         }
 
