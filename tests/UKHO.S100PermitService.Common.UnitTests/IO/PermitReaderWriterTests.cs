@@ -134,7 +134,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
         }
 
         [Test]
-        public async Task WhenSchemaIsInvalid_ThenReturnsFalse()
+        public void WhenSchemaIsInvalid_ThenReturnsFalse()
         {
             A.CallTo(() => _fakeXmlTransformer.SerializeToXml(A<Permit>.Ignored))
                 .Throws(new PermitServiceException(EventIds.InvalidPermitXmlSchema.ToEventId(), "Invalid permit xml schema."));

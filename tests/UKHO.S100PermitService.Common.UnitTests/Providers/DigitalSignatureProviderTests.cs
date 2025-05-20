@@ -72,8 +72,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [Test]
         public void WhenImportEcdsaPrivateKeyIsCalledWithValidKey_ThenShouldReturnEcdsaInstance()
         {
-            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384); 
-            var privateKeyData = ecdsa.ExportECPrivateKey(); 
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
+            var privateKeyData = ecdsa.ExportECPrivateKey();
             var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
 
             var result = _provider.ImportEcdsaPrivateKey(validBase64PrivateKey);
@@ -94,15 +94,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [Test]
         public void WhenSignHashIsCalledWithValidInputs_ThenShouldReturnBase64EncodedSignature()
         {
-            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384); 
-            var hashContent = new byte[] { 1, 2, 3, 4, 5 }; 
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
+            var hashContent = new byte[] { 1, 2, 3, 4, 5 };
 
             var signature = _provider.SignHash(ecdsa, hashContent);
 
             Assert.IsNotNull(signature, "The returned signature should not be null.");
             Assert.IsNotEmpty(signature, "The returned signature should not be empty.");
             Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
-            Assert.That(signature.Length, Is.EqualTo(128)); 
+            Assert.That(signature.Length, Is.EqualTo(128));
         }
 
         [Test]
@@ -125,6 +125,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                 Assert.That(result.DigitalSignature.CertificateRef, Does.Contain("TestSubject"));
                 Assert.That(result.DigitalSignature.Value, Does.Contain(signatureBase64));
             });
+            A.CallTo(_fakeLogger).Where(call =>
+                call.Method.Name == "Log"
+                && call.GetArgument<LogLevel>(0) == LogLevel.Information
+                && call.GetArgument<EventId>(1) == EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId()
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "StandaloneDigitalSignature generation process started."
+            ).MustHaveHappened();
             A.CallTo(_fakeLogger).Where(call =>
                  call.Method.Name == "Log"
                  && call.GetArgument<LogLevel>(0) == LogLevel.Information

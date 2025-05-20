@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformer
         }
 
         [Test]
-        public async Task WhenSchemaIsInvalidForStandaloneDigitalSignature_ThenThrowsPermitServiceException()
+        public void WhenSchemaIsInvalidForStandaloneDigitalSignature_ThenThrowsPermitServiceException()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
@@ -89,7 +89,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformer
         }
 
         [Test]
-        public async Task WhenSchemaIsInvalidForPermitDetails_ThenThrowsPermitServiceException()
+        public void WhenSchemaIsInvalidForPermitDetails_ThenThrowsPermitServiceException()
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
