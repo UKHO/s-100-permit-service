@@ -208,6 +208,21 @@
         /// <summary>
         /// 840041 - An error occurred while importing the ECDsa private key.
         /// </summary>
-        PermitPrivateKeyImportFailed = 840041
+        PermitPrivateKeyImportFailed = 840041,
+
+        /// <summary>
+        /// 840042 - Certificate found in Cache.
+        /// </summary>
+        CertificateFoundInCache = 840042,
+
+        /// <summary>
+        /// 840043 - Certificate name not found for Certificate in Memory Key Vault.
+        /// </summary>
+        CertificateNameNotFoundInKeyVault = 840043,
+
+        /// <summary>
+        /// 840044 - New Certificate is added in Cache.
+        /// </summary>
+        AddingNewCertificateInCache = 840044,
     }
 }

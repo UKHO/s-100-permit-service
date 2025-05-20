@@ -78,14 +78,14 @@ namespace UKHO.S100PermitService.Common.Services
                 }
                 else
                 {
-                    _logger.LogInformation(EventIds.SecretKeyFoundInCache.ToEventId(), "Certificate found in Cache.");
+                    _logger.LogInformation(EventIds.CertificateFoundInCache.ToEventId(), "Certificate found in Cache.");
                 }
 
                 return certValue;
             }
             catch(Exception ex)
             {
-                throw new PermitServiceException(EventIds.SecretNameNotFoundInKeyVault.ToEventId(), "No Certificate found in Certificate Key Vault, failed with Exception :{Message}", ex.Message);
+                throw new PermitServiceException(EventIds.CertificateNameNotFoundInKeyVault.ToEventId(), "No Certificate found in Certificate Key Vault, failed with Exception :{Message}", ex.Message);
             }
         }
 
@@ -116,7 +116,7 @@ namespace UKHO.S100PermitService.Common.Services
 
             _cacheProvider.SetCertificateCache(secretName, secretValue.Cer);
 
-            _logger.LogInformation(EventIds.AddingNewSecretKeyInCache.ToEventId(), "New Certificate added in Cache.");
+            _logger.LogInformation(EventIds.AddingNewCertificateInCache.ToEventId(), "New Certificate added in Cache.");
 
             return secretValue.Cer;
         }
