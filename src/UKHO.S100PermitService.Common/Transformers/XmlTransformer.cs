@@ -77,7 +77,7 @@ namespace UKHO.S100PermitService.Common.Transformers
         /// Reads the target namespace from the XSD schema file.
         /// </summary>
         /// <returns>The target namespace string, or null if not found.</returns>
-        private string? GetTargetNamespace()
+        private string GetTargetNamespace()
         {
             XmlSchema? schema;
             using(var reader = XmlReader.Create(_xsdPath))
@@ -85,7 +85,7 @@ namespace UKHO.S100PermitService.Common.Transformers
                 schema = XmlSchema.Read(reader, null);
             }
 
-            return schema?.TargetNamespace;
+            return schema?.TargetNamespace ?? null;
         }
     }
 }
