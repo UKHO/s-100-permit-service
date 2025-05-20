@@ -8,7 +8,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Transformer;
+using UKHO.S100PermitService.Common.Transformers;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
 {

@@ -22,7 +22,7 @@ using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Transformer;
+using UKHO.S100PermitService.Common.Transformers;
 using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.API

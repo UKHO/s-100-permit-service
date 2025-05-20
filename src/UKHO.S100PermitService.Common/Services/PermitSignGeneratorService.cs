@@ -2,7 +2,7 @@
 using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Providers;
-using UKHO.S100PermitService.Common.Transformer;
+using UKHO.S100PermitService.Common.Transformers;
 
 namespace UKHO.S100PermitService.Common.Services
 {

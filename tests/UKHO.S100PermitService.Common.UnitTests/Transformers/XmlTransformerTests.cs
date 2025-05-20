@@ -6,9 +6,9 @@ using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 using UKHO.S100PermitService.Common.Providers;
-using UKHO.S100PermitService.Common.Transformer;
+using UKHO.S100PermitService.Common.Transformers;
 
-namespace UKHO.S100PermitService.Common.UnitTests.Transformer
+namespace UKHO.S100PermitService.Common.UnitTests.Transformers
 {
     [TestFixture]
     public class XmlTransformerTests

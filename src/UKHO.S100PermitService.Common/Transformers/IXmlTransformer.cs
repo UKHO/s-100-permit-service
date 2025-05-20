@@ -1,4 +1,4 @@
-﻿namespace UKHO.S100PermitService.Common.Transformer
+﻿namespace UKHO.S100PermitService.Common.Transformers
 {
     public interface IXmlTransformer
     {

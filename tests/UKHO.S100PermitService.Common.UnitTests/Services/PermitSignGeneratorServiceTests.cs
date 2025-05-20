@@ -7,7 +7,7 @@ using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Services;
-using UKHO.S100PermitService.Common.Transformer;
+using UKHO.S100PermitService.Common.Transformers;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Services
 {

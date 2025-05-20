@@ -9,7 +9,7 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Providers;
 
-namespace UKHO.S100PermitService.Common.Transformer
+namespace UKHO.S100PermitService.Common.Transformers
 {
     public class XmlTransformer : IXmlTransformer
     {
