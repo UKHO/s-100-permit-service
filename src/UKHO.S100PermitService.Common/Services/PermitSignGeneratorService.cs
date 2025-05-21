@@ -30,11 +30,8 @@ namespace UKHO.S100PermitService.Common.Services
             //Retrieved the data server's private key from the Key Vault.
             var privateKeySecret = _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
 
-            //Import the private key in ECDsa format from the Key Vault secrets.
-            var ecdsaPrivateKey = _digitalSignatureProvider.ImportEcdsaPrivateKey(privateKeySecret);
-
-            //Sign the hash using the private key and hash of the permit XML content.
-            var signatureBase64 = _digitalSignatureProvider.SignHash(ecdsaPrivateKey, permitXmlHash);
+            //Sign the hash using the private key in ECDsa format and hash of the permit XML content.
+            var signatureBase64 = _digitalSignatureProvider.SignHashWithPrivateKey(privateKeySecret, permitXmlHash);
 
             return string.Empty;
         }

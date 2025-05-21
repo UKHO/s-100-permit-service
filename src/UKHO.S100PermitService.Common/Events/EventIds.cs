@@ -206,9 +206,9 @@
         PermitHashGenerationFailed = 840040,
 
         /// <summary>
-        /// 840041 - An error occurred while importing the ECDsa private key.
+        /// 840041 - An error occurred while signing the hash with the ECDsa private key.
         /// </summary>
-        PermitPrivateKeyImportFailed = 840041,
+        PermitPrivateKeySigningFailed = 840041,
 
         /// <summary>
         /// 840042 - Certificate found in Cache.
