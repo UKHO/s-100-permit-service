@@ -39,15 +39,12 @@ namespace UKHO.S100PermitService.Common.Services
 
             var certificate = new X509Certificate2(certificateSecret);
 
-            //Import the private key in ECDsa format from the Key Vault secrets.
-            var ecdsaPrivateKey = _digitalSignatureProvider.ImportEcdsaPrivateKey(privateKeySecret);
-
-            //Sign the hash using the private key and hash of the permit XML content.
-            var signatureBase64 = _digitalSignatureProvider.SignHash(ecdsaPrivateKey, permitXmlHash);
+            //Sign the hash using the private key in ECDsa format and hash of the permit XML content.
+            var signatureBase64 = _digitalSignatureProvider.SignHashWithPrivateKey(privateKeySecret, permitXmlHash);
 
             // Create a StandaloneDigitalSignature object that encapsulates the certificate and the base64-encoded signature.
             var signature = _digitalSignatureProvider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
-           
+
             // Serialize the StandaloneDigitalSignature object to its XML representation.
             var signatureXml = await _xmlTransformer.SerializeToXml(signature);
 
