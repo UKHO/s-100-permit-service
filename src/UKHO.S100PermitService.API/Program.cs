@@ -31,7 +31,7 @@ namespace UKHO.S100PermitService.API
     {
         private const string EventHubLoggingConfiguration = "EventHubLoggingConfiguration";
         private const string ProductKeyServiceApiConfiguration = "ProductKeyServiceApiConfiguration";
-        private const string ManufacturerKeyVaultConfiguration = "ManufacturerKeyVault";
+        private const string DataKeyVaultConfiguration = "DataKeyVaultConfiguration";
         private const string WaitAndRetryConfiguration = "WaitAndRetryConfiguration";
         private const string PermitFileConfiguration = "PermitFileConfiguration";
         private const string AzureAdScheme = "AzureAd";
@@ -126,7 +126,7 @@ namespace UKHO.S100PermitService.API
 
             builder.Services.Configure<EventHubLoggingConfiguration>(configuration.GetSection(EventHubLoggingConfiguration));
             builder.Services.Configure<ProductKeyServiceApiConfiguration>(configuration.GetSection(ProductKeyServiceApiConfiguration));
-            builder.Services.Configure<ManufacturerKeyVaultConfiguration>(configuration.GetSection(ManufacturerKeyVaultConfiguration));
+            builder.Services.Configure<DataKeyVaultConfiguration>(configuration.GetSection(DataKeyVaultConfiguration));
             builder.Services.Configure<WaitAndRetryConfiguration>(configuration.GetSection(WaitAndRetryConfiguration));
             builder.Services.Configure<PermitFileConfiguration>(configuration.GetSection(PermitFileConfiguration));
 
@@ -168,8 +168,9 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();
             builder.Services.AddSingleton<ICacheProvider, MemoryCacheProvider>();
-            builder.Services.AddSingleton<IManufacturerKeyService, ManufacturerKeyService>();
+            builder.Services.AddSingleton<IKeyVaultService, KeyVaultService>();
             builder.Services.AddSingleton<ISecretClient, KeyVaultSecretClient>();
+            builder.Services.AddSingleton<ICertificateClient, KeyVaultCertificateClient>();
 
             builder.Services.AddScoped<IPermitService, PermitService>();
             builder.Services.AddScoped<IPermitReaderWriter, PermitReaderWriter>();
@@ -182,6 +183,8 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IUriFactory, UriFactory>();
             builder.Services.AddScoped<IPermitRequestValidator, PermitRequestValidator>();
             builder.Services.AddScoped<IProductValidator, ProductValidator>();
+            builder.Services.AddScoped<IPermitSignGeneratorService, PermitSignGeneratorService>();
+            builder.Services.AddScoped<IDigitalSignatureProvider, DigitalSignatureProvider>();
 
             builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
         }
