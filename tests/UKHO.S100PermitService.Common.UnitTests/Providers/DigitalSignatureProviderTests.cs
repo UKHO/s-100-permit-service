@@ -102,11 +102,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
             Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
             Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
-            Assert.That(signature, Has.Length.EqualTo(128)); 
+            Assert.That(signature, Has.Length.EqualTo(128));
         }
 
         [Test]
-        public void WhenCreateStandaloneDigitalSignatureHasValidCertificateAndSignature_ThenReturnsExpectedObject()
+        public void WhenCreateStandaloneDigitalSignatureHasValidCertificateAndSignature_ThenReturnsExpectedResult()
         {
             var certificate = CreateSelfSignedCertificate("CN=TestSubject", "CN=TestIssuer");
             var signatureBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes("signature"));
