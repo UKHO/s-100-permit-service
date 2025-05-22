@@ -44,36 +44,28 @@ namespace UKHO.S100PermitService.Common.Providers
         }
 
         /// <summary>
-        /// Imports an ECDsa private key from a Base64-encoded string.
+        /// Signs the specified hash using a Base64-encoded ECDsa private key.
         /// </summary>
         /// <param name="privateKeySecret">The Base64-encoded string containing the ECDsa private key.</param>
-        /// <returns>An <see cref="ECDsa"/> instance initialized with the provided private key.</returns>
+        /// <param name="hashContent">The hash content to sign.</param>
+        /// <returns>A base64-encoded string representing the digital signature.</returns>
         /// <exception cref="PermitServiceException">
-        /// Thrown when the private key import fails due to invalid input or other errors.
+        /// Thrown when the private key import or signing fails.
         /// </exception>
-        public ECDsa ImportEcdsaPrivateKey(string privateKeySecret)
+        public string SignHashWithPrivateKey(string privateKeySecret, byte[] hashContent)
         {
             try
             {
-                var ecdsaPrivateKey = ECDsa.Create();
-                ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
-                return ecdsaPrivateKey;
+                using(var ecdsaPrivateKey = ECDsa.Create())
+                {
+                    ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
+                    return Convert.ToBase64String(ecdsaPrivateKey.SignHash(hashContent));
+                }
             }
             catch(Exception ex)
             {
-                throw new PermitServiceException(EventIds.PermitPrivateKeyImportFailed.ToEventId(), "Permit private key import failed with Exception: {Message}", ex.Message);
+                throw new PermitServiceException(EventIds.PermitPrivateKeySigningFailed.ToEventId(), "An error occurred while signing the hash with the private key with exception: {Message}", ex.Message);
             }
-        }
-
-        /// <summary>
-        /// Signs the specified hash using the provided ECDsa private key.
-        /// </summary>
-        /// <param name="privateKey">The <see cref="ECDsa"/> private key used for signing.</param>
-        /// <param name="hashContent">The hash content to sign.</param>
-        /// <returns>A base64-encoded string representing the digital signature.</returns>
-        public string SignHash(ECDsa privateKey, byte[] hashContent)
-        {
-            return Convert.ToBase64String(privateKey.SignHash(hashContent));
         }
 
         /// <summary>
@@ -87,7 +79,7 @@ namespace UKHO.S100PermitService.Common.Providers
         public StandaloneDigitalSignature CreateStandaloneDigitalSignature(X509Certificate2 certificate, string signatureBase64)
         {
             _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(), "StandaloneDigitalSignature generation process started.");
-         
+
             var issuer = GetCnFromSubject(certificate.Issuer);
             var certificateValue = Convert.ToBase64String(certificate.RawData);
             var certificateDsId = GetCnFromSubject(certificate.Subject);

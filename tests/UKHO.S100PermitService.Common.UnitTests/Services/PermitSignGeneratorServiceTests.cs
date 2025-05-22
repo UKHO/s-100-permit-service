@@ -54,15 +54,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             const string PermitXmlContent = "<Permit>test</Permit>";
             var hash = new byte[] { 1, 2, 3 };
-            var privateKey = ECDsa.Create();
             const string Signature = "testBase64signature";
             const string PrivateKeySecret = "testPrivateKeySecret";
             const string XmlContent = "testXmlContent";
 
             A.CallTo(() => _fakeDigitalSignatureProvider.GeneratePermitXmlHash(PermitXmlContent)).Returns(hash);
             A.CallTo(() => _fakeKeyVaultService.GetSecretKeys(_fakeDataKeyVaultConfiguration.Value.DsPrivateKey)).Returns(PrivateKeySecret);
-            A.CallTo(() => _fakeDigitalSignatureProvider.ImportEcdsaPrivateKey(PrivateKeySecret)).Returns(privateKey);
-            A.CallTo(() => _fakeDigitalSignatureProvider.SignHash(privateKey, hash)).Returns(Signature);
+            A.CallTo(() => _fakeDigitalSignatureProvider.SignHashWithPrivateKey(PrivateKeySecret,hash)).Returns(Signature);
             A.CallTo(() => _fakeDigitalSignatureProvider.CreateStandaloneDigitalSignature(A<X509Certificate2>.Ignored, A<string>.Ignored)).Returns(new StandaloneDigitalSignature());
             A.CallTo(() => _fakeXmlTransformer.SerializeToXml(A<StandaloneDigitalSignature>.Ignored)).Returns(XmlContent);
 
@@ -70,11 +68,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeDigitalSignatureProvider.GeneratePermitXmlHash(PermitXmlContent)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeKeyVaultService.GetSecretKeys(_fakeDataKeyVaultConfiguration.Value.DsPrivateKey)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => _fakeDigitalSignatureProvider.ImportEcdsaPrivateKey(PrivateKeySecret)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => _fakeDigitalSignatureProvider.SignHash(privateKey, hash)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeDigitalSignatureProvider.SignHashWithPrivateKey(PrivateKeySecret, hash)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeDigitalSignatureProvider.CreateStandaloneDigitalSignature(A<X509Certificate2>.Ignored, A<string>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeXmlTransformer.SerializeToXml(A<StandaloneDigitalSignature>.Ignored)).MustHaveHappenedOnceExactly();
-            Assert.That(result, Is.EqualTo(XmlContent)); 
-        }      
+            Assert.That(result, Is.EqualTo(XmlContent));
+        }
     }
 }

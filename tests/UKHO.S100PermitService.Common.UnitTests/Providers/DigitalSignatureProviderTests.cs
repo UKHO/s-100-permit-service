@@ -39,6 +39,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             var result2 = _digitalSignatureProvider.GeneratePermitXmlHash(content2);
 
             Assert.That(result1.Length, Is.EqualTo(result2.Length), "The hash lengths for both inputs should be the same.");
+            Assert.That(result1.Length, Is.EqualTo(SHA384.HashSizeInBytes), "The hash length should be 48 bytes.");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -68,41 +69,44 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
              ).MustHaveHappenedOnceExactly();
 
         }
-
         [Test]
-        public void WhenImportEcdsaPrivateKeyIsCalledWithValidKey_ThenShouldReturnEcdsaInstance()
+        public void WhenSignHashWithPrivateKeyIsCalledWithValidInputs_ThenShouldReturnBase64EncodedSignature()
         {
             using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
             var privateKeyData = ecdsa.ExportECPrivateKey();
             var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
+            var hashContent = new byte[] { 1, 2, 3, 4, 5 };
 
-            var result = _digitalSignatureProvider.ImportEcdsaPrivateKey(validBase64PrivateKey);
+            var signature = _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, hashContent);
 
-            Assert.That(result, Is.Not.Null, "The returned ECDsa instance should not be null.");
-            Assert.That(result, Is.InstanceOf<ECDsa>(), "The returned object should be an instance of ECDsa.");
+            Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
+            Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
+            Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
         }
 
         [Test]
         [TestCase("InvalidBase64Key")]
         [TestCase("")]
-        public void WhenImportEcdsaPrivateKeyIsCalledWithInvalidInputs_ThenShouldThrowPermitServiceException(string privateKey)
+        public void WhenSignHashWithPrivateKeyIsCalledWithInvalidPrivateKey_ThenShouldThrowPermitServiceException(string privateKey)
         {
-            var exception = Assert.Throws<PermitServiceException>(() => _digitalSignatureProvider.ImportEcdsaPrivateKey(privateKey));
-            Assert.That(exception.Message, Does.Contain("Permit private key import failed with Exception"));
+            var hashContent = new byte[] { 1, 2, 3, 4, 5 };
+
+            var exception = Assert.Throws<PermitServiceException>(() =>
+                _digitalSignatureProvider.SignHashWithPrivateKey(privateKey, hashContent));
+            Assert.That(exception.Message, Does.Contain("An error occurred while signing the hash with the private key with exception: {Message}"));
         }
 
         [Test]
-        public void WhenSignHashIsCalledWithValidInputs_ThenShouldReturnBase64EncodedSignature()
+        public void WhenSignHashWithPrivateKeyIsCalledWithNullHashContent_ThenShouldThrowPermitServiceException()
         {
             using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
-            var hashContent = new byte[] { 1, 2, 3, 4, 5 };
+            var privateKeyData = ecdsa.ExportECPrivateKey();
+            var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
+            byte[]? nullHashContent = null;
 
-            var signature = _digitalSignatureProvider.SignHash(ecdsa, hashContent);
-
-            Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
-            Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
-            Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
-            Assert.That(signature, Has.Length.EqualTo(128));
+            var exception = Assert.Throws<PermitServiceException>(() =>
+                _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, nullHashContent));
+            Assert.That(exception.Message, Does.Contain("An error occurred while signing the hash with the private key with exception: {Message}"));
         }
 
         [Test]
