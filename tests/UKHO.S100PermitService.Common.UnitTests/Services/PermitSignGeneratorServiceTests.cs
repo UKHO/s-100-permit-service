@@ -1,8 +1,6 @@
 ﻿using FakeItEasy;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 using UKHO.S100PermitService.Common.Providers;
