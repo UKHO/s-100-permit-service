@@ -115,6 +115,10 @@ resource "azurerm_key_vault_access_policy" "datakv_read_access" {
     "Get"
   ]
 
+  certificate_permissions = [
+  "Get",
+ ]
+
   lifecycle {
        prevent_destroy = true
    }
