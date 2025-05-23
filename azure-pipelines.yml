@@ -7,8 +7,8 @@ parameters:
     type: boolean
     default: false
 
-  - name: DisableDependencyCheck
-    displayName: "Disable OWASP Dependency Checking"
+  - name: Snyk
+    displayName: "Disable Snyk Checking"
     type: boolean
     default: false
 
@@ -114,6 +114,7 @@ stages:
       - job: Snyk
         displayName: Run Snyk security scans
         pool: $(WindowsPool)
+        condition: eq('${{ parameters.Snyk }}', false)      
         steps:
           - task: UseDotNet@2
             displayName: Use .NET SDK $(SdkVersion)
