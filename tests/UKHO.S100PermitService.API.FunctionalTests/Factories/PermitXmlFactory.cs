@@ -331,6 +331,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         {
             var credential = new DefaultAzureCredential();
             var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
+            KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
+
+            secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
             KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
 
             const string Header = "-----BEGIN CERTIFICATE-----";
