@@ -1,4 +1,6 @@
-﻿using Azure.Identity;
+﻿using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,7 +23,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
             // Add Azure Key Vault as a configuration source if ServiceUri is present
             if(!string.IsNullOrEmpty(keyVaultUri))
             {
-                configBuilder.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+                var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential(new DefaultAzureCredentialOptions()));
+                configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
 
             var configurationRoot = configBuilder.Build();
