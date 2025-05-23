@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using Azure.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
@@ -13,6 +14,15 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
         {
             var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false);
+
+            var tempConfig = configBuilder.Build();
+            var keyVaultUri = tempConfig.GetSection("KeyVaultSettings")["ServiceUri"];
+
+            // Add Azure Key Vault as a configuration source if ServiceUri is present
+            if(!string.IsNullOrEmpty(keyVaultUri))
+            {
+                configBuilder.AddAzureKeyVault(new Uri(keyVaultUri), new DefaultAzureCredential());
+            }
 
             var configurationRoot = configBuilder.Build();
             return configurationRoot;
