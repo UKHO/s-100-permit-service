@@ -1,5 +1,4 @@
-﻿using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 
 namespace UKHO.S100PermitService.Common.Providers
