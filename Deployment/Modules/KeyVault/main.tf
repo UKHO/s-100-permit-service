@@ -93,9 +93,6 @@ resource "azurerm_key_vault_access_policy" "datakv_access_terraform" {
     "Purge"
   ]
 
-  lifecycle {
-       prevent_destroy = true
-   }
 }
 
 #access policy for read access (app service)
@@ -119,7 +116,4 @@ resource "azurerm_key_vault_access_policy" "datakv_read_access" {
   "Get",
  ]
 
-  lifecycle {
-       prevent_destroy = true
-   }
 }
