@@ -17,16 +17,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
             var configBuilder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false);
 
-            var tempConfig = configBuilder.Build();
-            var keyVaultUri = tempConfig.GetSection("KeyVaultSettings")["ServiceUri"];
-
-            // Add Azure Key Vault as a configuration source if ServiceUri is present
-            if(!string.IsNullOrEmpty(keyVaultUri))
-            {
-                var secretClient = new SecretClient(new Uri(keyVaultUri), new DefaultAzureCredential(new DefaultAzureCredentialOptions()));
-                configBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
-            }
-
             var configurationRoot = configBuilder.Build();
             return configurationRoot;
         }
