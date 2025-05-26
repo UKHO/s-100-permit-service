@@ -57,7 +57,8 @@ module "key_vault" {
   env_name            = local.env_name
   tenant_id           = module.webapp_service.web_app_tenant_id
   location            = azurerm_resource_group.rg.location
-   {
+   read_access_objects = merge(
+  {
     "webapp_service"  = module.webapp_service.web_app_object_id
   },
      locals.env_name       == "dev" ? {
