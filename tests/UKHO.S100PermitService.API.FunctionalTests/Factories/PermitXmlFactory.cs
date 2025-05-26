@@ -4,10 +4,7 @@ using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Linq;
 using Azure.Identity;
-using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Secrets;
-using UKHO.S100PermitService.API.FunctionalTests.Configuration;
-using System.Runtime.ConstrainedExecution;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
