@@ -77,6 +77,6 @@ variable "pe_rg" {
   type = string
 }
 
-variable "autotest_client_id" {
+variable "autotest_object_id" {
   type = string
 }
