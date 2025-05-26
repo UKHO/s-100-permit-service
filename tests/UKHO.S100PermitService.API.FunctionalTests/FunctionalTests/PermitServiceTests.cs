@@ -81,7 +81,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.Headers.GetValues("Origin").Should().Contain("PermitService");
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
-            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _dataKeyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!);
+            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!, _tokenConfiguration!.TenantId!);
             isSignatureValid.Should().BeTrue();
         }
 

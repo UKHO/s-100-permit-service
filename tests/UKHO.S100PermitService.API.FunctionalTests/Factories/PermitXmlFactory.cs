@@ -173,9 +173,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="keyVaultUrl">URL of the Azure Key Vault.</param>
         /// <param name="dsCertificateName">Name of the certificate secret in Key Vault.</param>
         /// <returns>True if all signatures verify correctly; otherwise, false.</returns>
-        public static async Task<bool> VerifySignatureTask(string generatedXmlFilePath, string keyVaultUrl, string dsCertificateName)
+        public static async Task<bool> VerifySignatureTask(string generatedXmlFilePath, string keyVaultUrl, string dsCertificateName, string clientId, string clientSecret, string tenantId)
         {
-            var certificateBytes = await GetCertificateFromKeyVaultTask(keyVaultUrl, dsCertificateName);
+            var certificateBytes = await GetCertificateFromKeyVaultTask(keyVaultUrl, dsCertificateName, clientId, clientSecret, tenantId);
             var dsCertificate = new X509Certificate2(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet);
 
             var saIdFromCert = ExtractSaId(dsCertificate);
@@ -327,11 +327,19 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="keyVaultUrl">The URL of the Azure Key Vault.</param>
         /// <param name="dsCertificateName">The name of the certificate secret.</param>
         /// <returns>Byte array of the decoded certificate.</returns>
-        private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName)
+        private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName, string clientId, string clientSecret, string tenantId)
         {
-            var credential = new DefaultAzureCredential();
-            var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
+            var secretClient = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+            KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
+            if(string.IsNullOrEmpty(dataKeyVaultUri.Value))
+            {
+                Console.WriteLine("Unable to fetch Data Key Vault URI");
+            }
+
+            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+            secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
             KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
+
             const string Header = "-----BEGIN CERTIFICATE-----";
             const string Footer = "-----END CERTIFICATE-----";
 
