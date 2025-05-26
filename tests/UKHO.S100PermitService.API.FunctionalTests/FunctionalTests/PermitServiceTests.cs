@@ -70,6 +70,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         // PBI 203803 : S-100 Permit Service Validations
         // PBI 203832 : S-100 Permit Service Request and Response
         // PBI 206666 : Adding Origin in Response Header for 200 status code
+        // PBI 220259 : Store the Permit.Sign File in a ZIP
         [Test]
         [TestCase("50ProductsPayload", "Permits", TestName = "WhenICallPermitServiceEndpointWith50ProductsAnd3UPNs_Then200OKResponseAndPERMITSZipIsReturned")]
         [TestCase("duplicateProductsPayload", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointWithDuplicateProducts_ThenProductWithHigherExpiryDateInPERMITIsReturned")]   
@@ -81,7 +82,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.Headers.GetValues("Origin").Should().Contain("PermitService");
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
-            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _dataKeyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!);
+            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
             isSignatureValid.Should().BeTrue();
         }
 
