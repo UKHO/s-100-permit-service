@@ -167,15 +167,25 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         }
 
         /// <summary>
-        /// Verifies the digital signatures of all folders within the specified path against the certificate stored in Azure Key Vault.
+        /// Verifies the digital signatures of XML files located within subdirectories of a given path
+        /// using an X.509 certificate retrieved from Azure Key Vault.
         /// </summary>
-        /// <param name="generatedXmlFilePath">Path containing folders with signature files to verify.</param>
-        /// <param name="keyVaultUrl">URL of the Azure Key Vault.</param>
-        /// <param name="dsCertificateName">Name of the certificate secret in Key Vault.</param>
-        /// <returns>True if all signatures verify correctly; otherwise, false.</returns>
-        public static async Task<bool> VerifySignatureTask(string generatedXmlFilePath, string keyVaultUrl, string dsCertificateName)
+        /// <param name="generatedXmlFilePath">The root directory containing subfolders with signed XML files.</param>
+        /// <param name="keyVaultUrl">The URI of the Azure Key Vault where the certificate reference is stored.</param>
+        /// <param name="dsCertificateName">The name of the certificate secret in Azure Key Vault.</param>
+        /// <param name="tenantId">The Azure Active Directory tenant ID used for authentication.</param>
+        /// <param name="clientId">The Azure AD application (client) ID.</param>
+        /// <param name="clientSecret">The Azure AD client secret.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result is <c>true</c> if all XML files are successfully verified; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// The method loads the certificate from Key Vault, extracts identifier values, and verifies the
+        /// signature of each XML file within subdirectories of the specified path.
+        /// </remarks>
+        public static async Task<bool> VerifySignatureTask(string generatedXmlFilePath, string keyVaultUrl, string dsCertificateName, string tenantId, string clientId, string clientSecret)
         {
-            var certificateBytes = await GetCertificateFromKeyVaultTask(keyVaultUrl, dsCertificateName);
+            var certificateBytes = await GetCertificateFromKeyVaultTask(keyVaultUrl, dsCertificateName, tenantId, clientId, clientSecret);
             var dsCertificate = new X509Certificate2(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet);
 
             var saIdFromCert = ExtractSaId(dsCertificate);
@@ -322,16 +332,30 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         }
 
         /// <summary>
-        /// Retrieves and decodes the certificate bytes from the Azure Key Vault secret.
+        /// Retrieves a PEM-encoded X.509 certificate from Azure Key Vault and returns it as a byte array.
         /// </summary>
-        /// <param name="keyVaultUrl">The URL of the Azure Key Vault.</param>
-        /// <param name="dsCertificateName">The name of the certificate secret.</param>
-        /// <returns>Byte array of the decoded certificate.</returns>
-        private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName)
+        /// <param name="keyVaultUrl">The URI of the initial Azure Key Vault that contains the configuration secret.</param>
+        /// <param name="dsCertificateName">The name of the secret containing the PEM-formatted certificate.</param>
+        /// <param name="tenantId">The Azure Active Directory tenant.</param>
+        /// <param name="clientId">The Azure AD application (client) ID.</param>
+        /// <param name="clientSecret">The Azure AD application secret.</param>
+        /// <returns>A task representing the asynchronous operation. The task result contains the certificate as a byte array.</returns>
+        /// <remarks>
+        /// The method first retrieves a secondary Key Vault URI from a secret named
+        /// "DataKeyVaultConfiguration--ServiceUri", then retrieves the actual certificate
+        /// secret from that secondary Key Vault. The certificate is expected to be in
+        /// PEM format and is base64-decoded before being returned.
+        /// </remarks>
+        private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName, string tenantId, string clientId, string clientSecret)
         {
-            var credential = new DefaultAzureCredential();
+            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
             var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
+
+            KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
+
+            secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
             KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
+
             const string Header = "-----BEGIN CERTIFICATE-----";
             const string Footer = "-----END CERTIFICATE-----";
 
@@ -339,7 +363,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             var start = pem.IndexOf(Header, StringComparison.Ordinal) + Header.Length;
             var end = pem.IndexOf(Footer, StringComparison.Ordinal);
             var base64 = pem.Substring(start, end - start).Replace("\r", "").Replace("\n", "").Trim();
-            
+
             return Convert.FromBase64String(base64);
         }
 
