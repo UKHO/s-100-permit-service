@@ -330,7 +330,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName, string clientId, string clientSecret, string tenantId)
         {
             var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+            Console.WriteLine("Credential created");
             var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
+            Console.WriteLine("Secret Client  created");
 
             KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
             if(string.IsNullOrEmpty(dataKeyVaultUri.Value))
