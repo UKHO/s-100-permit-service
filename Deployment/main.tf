@@ -59,6 +59,7 @@ module "key_vault" {
   location            = azurerm_resource_group.rg.location
   read_access_objects = {
      "webapp_service" = module.webapp_service.web_app_object_id
+     "autotest_service" = var.autotest_client_id
   }
   secrets = {
     "EventHubLoggingConfiguration--ConnectionString"            = module.eventhub.log_primary_connection_string

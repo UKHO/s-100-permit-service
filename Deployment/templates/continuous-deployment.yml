@@ -28,3 +28,4 @@ steps:
       TF_VAR_pe_vnet_name: $(peVnetName)
       TF_VAR_pe_subnet_name: $(peSubnetName)
       TF_VAR_pe_rg: $(peRG)
+      TF_VAR_autotest_client_id: $(AUTOTEST_CLIENT_ID)
