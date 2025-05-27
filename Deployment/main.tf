@@ -54,7 +54,7 @@ locals {
     {
       "webapp_service" = module.webapp_service.web_app_object_id
     },
-    local.env_name == "vni" ? {
+    local.env_name == "dev" ? {
       "autotest_service" = var.autotest_object_id
     } : {}
   )
