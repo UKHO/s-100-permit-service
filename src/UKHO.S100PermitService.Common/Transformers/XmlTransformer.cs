@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.Common.Transformers
         }
 
         /// <summary>
-        /// Serializes the specified object to an XML string with required namespaces and formatting,
+        /// Serializes the specified object to an XML string with required namespaces and formatting.
         /// </summary>
         /// <typeparam name="T">The type of the object to serialize.</typeparam>
         /// <param name="obj">The object instance to serialize to XML.</param>
