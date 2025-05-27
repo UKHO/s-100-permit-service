@@ -112,7 +112,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             return new StandaloneDigitalSignature()
             {
                 Filename = PermitServiceConstants.PermitXmlFileName,
-                Certificates = new Certificates
+                Certificate = new Certificate
                 {
                     SchemeAdministrator = new SchemeAdministrator { Id = "issuer" },
                     CertificateMetadata = new CertificateMetadata { Id = "certificateDsId", Issuer = "issuer", Value = "certificateValue" }
@@ -131,7 +131,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             return new StandaloneDigitalSignature()
             {
                 Filename = PermitServiceConstants.PermitXmlFileName,
-                Certificates = new Certificates
+                Certificate = new Certificate
                 {
                     SchemeAdministrator = new SchemeAdministrator { Id = "issuer" },
                     CertificateMetadata = new CertificateMetadata

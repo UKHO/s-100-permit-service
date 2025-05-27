@@ -87,7 +87,7 @@ namespace UKHO.S100PermitService.Common.Providers
             var standaloneSignature = new StandaloneDigitalSignature
             {
                 Filename = PermitServiceConstants.PermitXmlFileName,
-                Certificates = new Certificates
+                Certificate = new Certificate
                 {
                     SchemeAdministrator = new SchemeAdministrator
                     {
