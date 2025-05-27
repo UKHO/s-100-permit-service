@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Common.Models.PermitSign
         public string Filename { get; set; }
 
         [XmlElement("S100SE:certificates")]
-        public Certificates Certificates { get; set; }
+        public Certificate Certificate { get; set; }
 
         [XmlElement("S100SE:digitalSignature")]
         public DigitalSignatureInfo DigitalSignatureInfo { get; set; }

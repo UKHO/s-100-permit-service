@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Models.PermitSign
     [ExcludeFromCodeCoverage]
     [Serializable()]
     [System.ComponentModel.DesignerCategory("code")]
-    public class Certificates
+    public class Certificate
     {
         [XmlElement("S100SE:schemeAdministrator")]
         public SchemeAdministrator SchemeAdministrator { get; set; }
