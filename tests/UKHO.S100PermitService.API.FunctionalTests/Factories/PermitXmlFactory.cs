@@ -5,14 +5,12 @@ using System.Xml;
 using System.Xml.Linq;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
+using UKHO.S100PermitService.Common;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
     public class PermitXmlFactory
     {
-        private static readonly string _permitXml = "PERMIT.XML";
-        private static readonly string _permitSignFile = "PERMIT.SIGN";
-
         /// <summary>
         /// This method is used to verify the zip file structure and the PERMIT.XML file contents
         /// </summary>
@@ -31,13 +29,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 {
                     (folderName.Contains(invalidCharacter)).Should().BeFalse();
                 }
-                var permitFile = File.Exists(Path.Combine(folder, _permitXml));
+                var permitFile = File.Exists(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName));
                 permitFile.Should().Be(true);
                 permitHeadersValues[4] = userPermitNumbers[folderName];
 
-                VerifyPermitHeaderValues(Path.Combine(folder, _permitXml), permitHeadersValues);
-                VerifyPermitProductValues(Path.Combine(folder, _permitXml), Path.Combine($"./TestData/{permitFolderName}/", folderName, _permitXml)).Should().BeTrue();
-                VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, _permitXml)).Should().BeFalse();
+                VerifyPermitHeaderValues(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName), permitHeadersValues);
+                VerifyPermitProductValues(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName), Path.Combine($"./TestData/{permitFolderName}/", folderName, PermitServiceConstants.PermitXmlFileName)).Should().BeTrue();
+                VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName)).Should().BeFalse();
             }
         }
 
@@ -210,7 +208,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <returns>True if verification succeeds; otherwise, false.</returns>
         private static bool VerifyXmlAgainstCertificate(string folder, string saIdFromCert, string certIdFromCert, byte[] certificateBytes, X509Certificate2 dsCertificate)
         {
-            var signFilePath = Path.Combine(folder, _permitSignFile);
+            var signFilePath = Path.Combine(folder, PermitServiceConstants.PermitSignFileName);
             var signatureDoc = XDocument.Load(signFilePath);
             var ns = (XNamespace)"http://www.iho.int/s100/se/5.2";
 
@@ -277,8 +275,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             signature = null!;
             certFromXml = null!;
 
-            var signatureFile = Path.Combine(folder, _permitSignFile);
-            var dataFile = Path.Combine(folder, _permitXml);
+            var signatureFile = Path.Combine(folder, PermitServiceConstants.PermitSignFileName);
+            var dataFile = Path.Combine(folder, PermitServiceConstants.PermitXmlFileName);
 
             if(!File.Exists(signatureFile) || !File.Exists(dataFile))
             {
