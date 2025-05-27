@@ -12,6 +12,6 @@ namespace UKHO.S100PermitService.Common.Models.PermitSign
         public SchemeAdministrator SchemeAdministrator { get; set; }
 
         [XmlElement("S100SE:certificate")]
-        public Certificate Certificate { get; set; }
+        public CertificateMetadata CertificateMetadata { get; set; }
     }
 }

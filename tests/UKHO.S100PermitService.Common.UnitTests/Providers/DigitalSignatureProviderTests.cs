@@ -122,12 +122,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                 Assert.NotNull(result);
                 Assert.That(result.Filename, Does.Contain(PermitServiceConstants.PermitXmlFileName));
                 Assert.That(result.Certificates.SchemeAdministrator.Id, Does.Contain("TestIssuer"));
-                Assert.That(result.Certificates.Certificate.Id, Does.Contain("TestSubject"));
-                Assert.That(result.Certificates.Certificate.Issuer, Does.Contain("TestIssuer"));
-                Assert.That(result.Certificates.Certificate.Value, Does.Contain(Convert.ToBase64String(certificate.RawData)));
-                Assert.That(result.DigitalSignature.Id, Does.Contain(PermitServiceConstants.DigitalSignatureId));
-                Assert.That(result.DigitalSignature.CertificateRef, Does.Contain("TestSubject"));
-                Assert.That(result.DigitalSignature.Value, Does.Contain(signatureBase64));
+                Assert.That(result.Certificates.CertificateMetadata.Id, Does.Contain("TestSubject"));
+                Assert.That(result.Certificates.CertificateMetadata.Issuer, Does.Contain("TestIssuer"));
+                Assert.That(result.Certificates.CertificateMetadata.Value, Does.Contain(Convert.ToBase64String(certificate.RawData)));
+                Assert.That(result.DigitalSignatureInfo.Id, Does.Contain(PermitServiceConstants.DigitalSignatureId));
+                Assert.That(result.DigitalSignatureInfo.CertificateRef, Does.Contain("TestSubject"));
+                Assert.That(result.DigitalSignatureInfo.Value, Does.Contain(signatureBase64));
             });
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

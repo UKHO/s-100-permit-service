@@ -115,10 +115,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
                 Certificates = new Certificates
                 {
                     SchemeAdministrator = new SchemeAdministrator { Id = "issuer" },
-                    Certificate =
-                        new Certificate { Id = "certificateDsId", Issuer = "issuer", Value = "certificateValue" }
+                    CertificateMetadata = new CertificateMetadata { Id = "certificateDsId", Issuer = "issuer", Value = "certificateValue" }
                 },
-                DigitalSignature = new DigitalSignature
+                DigitalSignatureInfo = new DigitalSignatureInfo
                 {
                     Id = PermitServiceConstants.DigitalSignatureId,
                     CertificateRef = "certificateDsId",
@@ -135,14 +134,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
                 Certificates = new Certificates
                 {
                     SchemeAdministrator = new SchemeAdministrator { Id = "issuer" },
-                    Certificate = new Certificate
+                    CertificateMetadata = new CertificateMetadata
                     {
                         Id = "certificateDsId",
                         Issuer = "issuer",
                         Value = "certificateValue"
                     }
                 },
-                DigitalSignature = new DigitalSignature { }
+                DigitalSignatureInfo = new DigitalSignatureInfo { }
             };
         }
 
