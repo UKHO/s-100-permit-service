@@ -40,5 +40,9 @@ namespace UKHO.S100PermitService.Common
         public const string PermitXmlFileName = "PERMIT.XML";
 
         public const string SchemaFile = @"XmlSchema\Permit_Schema.xsd";
+
+        public const string DigitalSignatureId = "permit";
+
+        public const string PermitSignFileName = "PERMIT.SIGN";
     }
 }

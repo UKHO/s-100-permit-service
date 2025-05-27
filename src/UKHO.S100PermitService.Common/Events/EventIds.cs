@@ -224,5 +224,30 @@
         /// 840044 - New Certificate is added in Cache.
         /// </summary>
         AddingNewCertificateInCache = 840044,
+
+        /// <summary>
+        /// 840045 - Permit Sign Creation Completed.
+        /// </summary>
+        PermitSignCreationCompleted = 840045,
+
+        /// <summary>
+        /// 840046 - StandaloneDigitalSignature generation Started.
+        /// </summary>
+        StandaloneDigitalSignatureGenerationStarted = 840046,
+
+        /// <summary>
+        /// 840047 - StandaloneDigitalSignature generation completed.
+        /// </summary>
+        StandaloneDigitalSignatureGenerationCompleted = 840047,
+
+        /// <summary>
+        /// 840048 - Xml Serialization Started.
+        /// </summary>
+        XmlSerializationStarted = 840048,
+
+        /// <summary>
+        /// 840049 - Xml Serialization completed.
+        /// </summary>
+        XmlSerializationCompleted = 840049
     }
 }

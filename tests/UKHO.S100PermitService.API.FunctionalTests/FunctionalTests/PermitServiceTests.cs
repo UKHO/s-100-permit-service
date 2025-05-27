@@ -15,6 +15,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private AuthTokenProvider? _authTokenProvider;
         private TokenConfiguration? _tokenConfiguration;
         private PermitServiceApiConfiguration? _permitServiceApiConfiguration;
+        private DataKeyVaultConfiguration? _dataKeyVaultConfiguration;
+        private KeyVaultConfiguration? _keyVaultConfiguration;
         private string? _authToken;
         private RequestBodyModel? _payload;
 
@@ -25,6 +27,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var serviceProvider = GetServiceProvider();
             _tokenConfiguration = serviceProvider?.GetRequiredService<IOptions<TokenConfiguration>>().Value;
             _permitServiceApiConfiguration = serviceProvider!.GetRequiredService<IOptions<PermitServiceApiConfiguration>>().Value;
+            _dataKeyVaultConfiguration = serviceProvider?.GetRequiredService<IOptions<DataKeyVaultConfiguration>>().Value;
+            _keyVaultConfiguration = serviceProvider?.GetRequiredService<IOptions<KeyVaultConfiguration>>().Value;
             _authToken = await _authTokenProvider!.GetPermitServiceTokenAsync(_tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration.ClientSecret!);
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync("./TestData/Payload/validPayload.json");
             _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
@@ -66,6 +70,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         // PBI 203803 : S-100 Permit Service Validations
         // PBI 203832 : S-100 Permit Service Request and Response
         // PBI 206666 : Adding Origin in Response Header for 200 status code
+        // PBI 220259 : Store the Permit.Sign File in a ZIP
         [Test]
         [TestCase("50ProductsPayload", "Permits", TestName = "WhenICallPermitServiceEndpointWith50ProductsAnd3UPNs_Then200OKResponseAndPERMITSZipIsReturned")]
         [TestCase("duplicateProductsPayload", "DuplicatePermits", TestName = "WhenICallPermitServiceEndpointWithDuplicateProducts_ThenProductWithHigherExpiryDateInPERMITIsReturned")]   
@@ -77,6 +82,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             response.Headers.GetValues("Origin").Should().Contain("PermitService");
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
+            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
+            isSignatureValid.Should().BeTrue();
         }
 
         // PBI 203803 : S-100 Permit Service Validations

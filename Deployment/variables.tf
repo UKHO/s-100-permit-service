@@ -76,3 +76,7 @@ variable "pe_subnet_name" {
 variable "pe_rg" {
   type = string
 }
+
+variable "autotest_object_id" {
+  type = string
+}

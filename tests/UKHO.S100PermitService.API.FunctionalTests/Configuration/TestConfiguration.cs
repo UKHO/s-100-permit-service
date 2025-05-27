@@ -31,6 +31,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Configuration
 
             services.Configure<PermitServiceApiConfiguration>(configurationRoot.GetSection("PermitServiceApiConfiguration"));
             services.Configure<TokenConfiguration>(configurationRoot.GetSection("TokenConfiguration"));
+            services.Configure<DataKeyVaultConfiguration>(configurationRoot.GetSection("DataKeyVaultConfiguration"));
+            services.Configure<KeyVaultConfiguration>(configurationRoot.GetSection("KeyVaultSettings"));
             return services.BuildServiceProvider();
         }
     }
