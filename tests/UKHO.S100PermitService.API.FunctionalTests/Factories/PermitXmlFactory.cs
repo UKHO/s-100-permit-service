@@ -234,7 +234,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             if(!TryExtractSignatureArtifacts(folder, out var data, out var signature, out var certFromXml))
             {
                 Console.WriteLine($"[WARN] Skipping folder '{folder}' due to missing/invalid components.");
-                return true; // Skip instead of failing entire batch
+                return false; 
             }
 
             if(!certFromXml.SequenceEqual(certificateBytes))
@@ -289,9 +289,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 
             var certElement = signatureDoc.Descendants(ns + "certificate").FirstOrDefault();
             var signatureElement = signatureDoc.Descendants(ns + "digitalSignature").FirstOrDefault();
-            var saElement = signatureDoc.Descendants(ns + "schemeAdministrator").FirstOrDefault();
 
-            if(certElement == null || signatureElement == null || saElement == null)
+            if(certElement == null || signatureElement == null)
             {
                 Console.WriteLine("Error: One or more required XML elements missing.");
                 return false;
@@ -301,20 +300,16 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             {
                 var certBase64 = certElement.Value?.Trim();
                 var signatureBase64 = signatureElement.Value?.Trim();
-                var saId = saElement.Attribute("id")?.Value?.Trim() ?? string.Empty;
-                var certId = certElement.Attribute("id")?.Value?.Trim() ?? string.Empty;
 
                 if(string.IsNullOrWhiteSpace(certBase64) ||
-                    string.IsNullOrWhiteSpace(signatureBase64) ||
-                    string.IsNullOrWhiteSpace(saId) ||
-                    string.IsNullOrWhiteSpace(certId))
+                    string.IsNullOrWhiteSpace(signatureBase64))
                 {
                     Console.WriteLine("Error: One or more XML values are missing.");
                     return false;
                 }
 
                 certFromXml = Convert.FromBase64String(certBase64);
-                signature = Convert.FromBase64String(signatureBase64);
+                signature = ConvertFromDerFormat(signatureBase64);
                 data = File.ReadAllBytes(dataFile);
             }
             catch(Exception ex)
@@ -324,6 +319,78 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Converts a base64-encoded DER-encoded ECDSA signature to a raw (R || S) format.
+        /// </summary>
+        /// <param name="derSignatureBase64">Base64-encoded DER signature.</param>
+        /// <returns>Byte array of raw ECDSA signature in (R || S) format.</returns>
+        public static byte[] ConvertFromDerFormat(string derSignatureBase64)
+        {
+            var der = Convert.FromBase64String(derSignatureBase64);
+
+            if(der.Length < 2 || der[0] != 0x30)
+            {
+                throw new ArgumentException("Invalid DER signature format.");
+            }
+
+            var offset = 2; // Skip SEQUENCE tag and length
+
+            var r = ReadInteger(der, ref offset);
+            var s = ReadInteger(der, ref offset);
+
+            var length = Math.Max(r.Length, s.Length);
+            r = LeftPad(r, length);
+            s = LeftPad(s, length);
+
+            return r.Concat(s).ToArray();
+        }
+
+        /// <summary>
+        /// Reads an ASN.1 DER-encoded INTEGER from the byte array at the given offset.
+        /// Automatically skips the INTEGER tag and handles leading zero-padding if present.
+        /// </summary>
+        /// <param name="der">The full DER-encoded byte array.</param>
+        /// <param name="offset">Reference to the current offset; will be updated after reading.</param>
+        /// <returns>Byte array representing the unsigned INTEGER value.</returns>
+        private static byte[] ReadInteger(byte[] der, ref int offset)
+        {
+            if(der[offset++] != 0x02)
+            {
+                throw new ArgumentException("Invalid DER INTEGER.");
+            }
+
+            var length = der[offset++];
+            var start = offset;
+            offset += length;
+
+            // Skip leading 0x00 if present (positive integer)
+            if(der[start] == 0x00)
+            {
+                start++;
+                length--;
+            }
+
+            return der[start..(start + length)];
+        }
+
+        /// <summary>
+        /// Pads a byte array with leading zeros to reach a specified length.
+        /// </summary>
+        /// <param name="value">The original byte array.</param>
+        /// <param name="length">The desired total length after padding.</param>
+        /// <returns>A new byte array of the specified length with the input right-aligned.</returns>
+        private static byte[] LeftPad(byte[] value, int length)
+        {
+            if(value.Length == length)
+            {
+                return value;
+            }
+
+            var padded = new byte[length];
+            Buffer.BlockCopy(value, 0, padded, length - value.Length, value.Length);
+            return padded;
         }
 
         /// <summary>
