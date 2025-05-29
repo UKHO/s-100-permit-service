@@ -116,6 +116,6 @@ resource "azurerm_key_vault_access_policy" "datakv_read_access" {
   ]
 
   lifecycle {
-       prevent_destroy = true
+       prevent_destroy = false
    }
 }
