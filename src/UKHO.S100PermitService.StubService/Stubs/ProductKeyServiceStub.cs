@@ -36,12 +36,12 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
-                .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-50.json"))))
+                .WithBody(new WildcardMatcher("101GB4007900000CDNVD"))
                 .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200-50.json", HttpStatusCode.OK)));
 
-            server //200 for 50 Products scenario
+            server //200 for 20000 Products scenario
                 .Given(Request.Create()
                     .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                     .UsingPost()
