@@ -45,7 +45,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .Given(Request.Create()
                     .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                     .UsingPost()
-                    .WithBody(new WildcardMatcher("101GB4007900000CDNVD"))
+                    .WithBody(new RegexMatcher(".*101GB4007900000CDNVD.*"))
                     .WithHeader("Authorization", "Bearer *", MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                     .WithCallback(request => CreateResponse(request, "response-200-20000.json", HttpStatusCode.OK)));
