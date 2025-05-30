@@ -82,9 +82,9 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(), "StandaloneDigitalSignature generation process started.");
 
-            var issuer = GetCnFromSubject(certificate.Issuer);
+            var issuer = GetCnFromCertificate(certificate.Issuer);
             var certificateValue = Convert.ToBase64String(certificate.RawData);
-            var certificateDsId = GetCnFromSubject(certificate.Subject);
+            var certificateDsId = GetCnFromCertificate(certificate.Subject);
 
             var standaloneSignature = new StandaloneDigitalSignature
             {
@@ -171,14 +171,14 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <summary>
         /// Extracts the Common Name (CN) value from a certificate subject or issuer string.
         /// </summary>
-        /// <param name="subject">The subject or issuer string from an X509 certificate (e.g., "CN=Example, O=Org, C=GB").</param>
+        /// <param name="content">The subject or issuer string from an X509 certificate (e.g., "CN=Example, O=Org, C=GB").</param>
         /// <returns>
-        /// The value of the CN field if present; otherwise, returns "UnknownCN".
+        /// The value of the CN field".
         /// </returns>
-        private string GetCnFromSubject(string subject)
+        private string GetCnFromCertificate(string content)
         {
-            var match = Regex.Match(subject, @"CN=([^,]+)");
-            return match.Success ? match.Groups[1].Value : "UnknownCN";
+            var match = Regex.Match(content, @"CN=([^,]+)");
+            return match.Groups[1].Value;
         }
     }
 }
