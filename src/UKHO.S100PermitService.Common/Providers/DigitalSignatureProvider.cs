@@ -59,7 +59,9 @@ namespace UKHO.S100PermitService.Common.Providers
                 using(var ecdsaPrivateKey = ECDsa.Create())
                 {
                     ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
-                    return Convert.ToBase64String(ecdsaPrivateKey.SignHash(hashContent));
+                    var ecdsaSignature = ecdsaPrivateKey.SignHash(hashContent);
+
+                    return ConvertToDerFormat(ecdsaSignature);
                 }
             }
             catch(Exception ex)
@@ -111,6 +113,59 @@ namespace UKHO.S100PermitService.Common.Providers
             _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationCompleted.ToEventId(), "StandaloneDigitalSignature generation process completed.");
 
             return standaloneSignature;
+        }
+
+        /// <summary>
+        /// Converts a raw ECDSA signature (r || s) into DER format, which is required for 
+        /// compatibility with certain cryptographic standards. The method splits the signature 
+        /// into its r and s components, encodes them as ASN.1 INTEGERs, and combines them 
+        /// into an ASN.1 SEQUENCE.
+        /// </summary>
+        /// <param name="ecdsaSignature">The raw ECDSA signature as a byte array (concatenated r and s values).</param>
+        /// <returns>A Base64-encoded string representing the DER-encoded ECDSA signature.</returns>
+        private string ConvertToDerFormat(byte[] ecdsaSignature)
+        {
+            var halfLength = ecdsaSignature.Length / 2;
+            var r = ecdsaSignature[..halfLength];
+            var s = ecdsaSignature[halfLength..];
+
+            var derR = EncodeAsn1Integer(r);
+            var derS = EncodeAsn1Integer(s);
+
+            using(var stream = new MemoryStream())
+            {
+                stream.WriteByte(0x30);
+                stream.WriteByte((byte)(derR.Length + derS.Length));
+                stream.Write(derR, 0, derR.Length);
+                stream.Write(derS, 0, derS.Length);
+                return Convert.ToBase64String(stream.ToArray());
+            }
+        }
+
+        /// <summary>
+        /// Encodes a byte array as an ASN.1 INTEGER.
+        /// </summary>
+        /// <param name="integerValue"></param>
+        /// <returns>The ASN.1-encoded INTEGER as a byte array.</returns>
+        private byte[] EncodeAsn1Integer(byte[] integerValue)
+        {
+            using(var memoryStream = new MemoryStream())
+            {
+                memoryStream.WriteByte(0x02);
+
+                if(integerValue[0] >= 0x80)
+                {
+                    memoryStream.WriteByte((byte)(integerValue.Length + 1));
+                    memoryStream.WriteByte(0x00);
+                }
+                else
+                {
+                    memoryStream.WriteByte((byte)integerValue.Length);
+                }
+
+                memoryStream.Write(integerValue, 0, integerValue.Length);
+                return memoryStream.ToArray();
+            }
         }
 
         /// <summary>
