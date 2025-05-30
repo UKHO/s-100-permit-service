@@ -173,12 +173,12 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="content">The subject or issuer string from an X509 certificate (e.g., "CN=Example, O=Org, C=GB").</param>
         /// <returns>
-        /// The value of the CN field".
+        /// The value of the CN field if present; otherwise, returns "UnknownCN".
         /// </returns>
         private string GetCnFromCertificate(string content)
         {
             var match = Regex.Match(content, @"CN=([^,]+)");
-            return match.Groups[1].Value;
+            return match.Success ? match.Groups[1].Value : "UnknownCN";
         }
     }
 }
