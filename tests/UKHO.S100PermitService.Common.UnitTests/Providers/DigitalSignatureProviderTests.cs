@@ -82,6 +82,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
             Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
             Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
+
+            var derSignature = Convert.FromBase64String(signature);
+            Assert.That(derSignature[0], Is.EqualTo(0x30), "DER signature should start with ASN.1 SEQUENCE (0x30)");
         }
 
         [Test]
