@@ -411,8 +411,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </remarks>
         private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName, string tenantId, string clientId, string clientSecret)
         {
-            //var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-            var credential = new DefaultAzureCredential();
+            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
             var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
 
             KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
