@@ -104,17 +104,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                 var sLength = derSignature[sStartIndex + 1];
                 Assert.That(sLength, Is.GreaterThan(0), "The length of s should be greater than 0.");
                 Assert.That(sStartIndex + 2 + sLength, Is.EqualTo(derSignature.Length), "The s component should fit exactly within the DER signature.");
-
-                var integerValue = new byte[] { 0x80, 0x01 }; 
-
-                if(integerValue[0] >= 0x80)
-                {
-                    Assert.That(derSignature[sStartIndex + 2], Is.EqualTo(0x00), "The encoded integer should have a leading 0x00 byte when the first byte is >= 0x80.");
-                }
-                else
-                {
-                    Assert.That(derSignature[sStartIndex + 2], Is.Not.EqualTo(0x00), "The encoded integer should not have a leading 0x00 byte when the first byte is < 0x80.");
-                }
             });
         }
 
