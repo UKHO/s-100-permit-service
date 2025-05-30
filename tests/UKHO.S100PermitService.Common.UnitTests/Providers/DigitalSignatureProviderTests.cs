@@ -69,6 +69,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
              ).MustHaveHappenedOnceExactly();
 
         }
+
         [Test]
         public void WhenSignHashWithPrivateKeyIsCalledWithValidInputs_ThenShouldReturnBase64EncodedSignature()
         {
@@ -79,12 +80,31 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
 
             var signature = _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, hashContent);
 
-            Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
-            Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
-            Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
+            Assert.Multiple(() =>
+            {
+                Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
+                Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
+                Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
 
-            var derSignature = Convert.FromBase64String(signature);
-            Assert.That(derSignature[0], Is.EqualTo(0x30), "DER signature should start with ASN.1 SEQUENCE (0x30)");
+                var derSignature = Convert.FromBase64String(signature);
+
+                Assert.That(derSignature[0], Is.EqualTo(0x30), "DER signature should start with ASN.1 SEQUENCE (0x30).");
+                Assert.That(derSignature.Length, Is.GreaterThan(2), "DER signature should have a valid length.");
+
+                var sequenceLength = derSignature[1];
+                Assert.That(sequenceLength, Is.EqualTo(derSignature.Length - 2), "The SEQUENCE length should match the actual length of the DER signature.");
+
+                Assert.That(derSignature[2], Is.EqualTo(0x02), "The first component should be an ASN.1 INTEGER (0x02).");
+                var rLength = derSignature[3];
+                Assert.That(rLength, Is.GreaterThan(0), "The length of r should be greater than 0.");
+                Assert.That(rLength + 4, Is.LessThan(derSignature.Length), "The r component should fit within the DER signature.");
+
+                var sStartIndex = 4 + rLength;
+                Assert.That(derSignature[sStartIndex], Is.EqualTo(0x02), "The second component should be an ASN.1 INTEGER (0x02).");
+                var sLength = derSignature[sStartIndex + 1];
+                Assert.That(sLength, Is.GreaterThan(0), "The length of s should be greater than 0.");
+                Assert.That(sStartIndex + 2 + sLength, Is.EqualTo(derSignature.Length), "The s component should fit exactly within the DER signature.");
+            });
         }
 
         [Test]
