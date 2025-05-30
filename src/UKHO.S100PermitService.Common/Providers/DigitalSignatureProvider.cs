@@ -2,9 +2,9 @@
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
-using System.Text.RegularExpressions;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using UKHO.S100PermitService.Common.Extensions;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 
 namespace UKHO.S100PermitService.Common.Providers
@@ -82,9 +82,9 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(), "StandaloneDigitalSignature generation process started.");
 
-            var issuer = GetCnFromCertificate(certificate.Issuer);
+            var issuer = certificate.Issuer.GetCnFromCertificate();
             var certificateValue = Convert.ToBase64String(certificate.RawData);
-            var certificateDsId = GetCnFromCertificate(certificate.Subject);
+            var certificateDsId = certificate.Subject.GetCnFromCertificate();
 
             var standaloneSignature = new StandaloneDigitalSignature
             {
@@ -166,19 +166,6 @@ namespace UKHO.S100PermitService.Common.Providers
                 memoryStream.Write(integerValue, 0, integerValue.Length);
                 return memoryStream.ToArray();
             }
-        }
-
-        /// <summary>
-        /// Extracts the Common Name (CN) value from a certificate subject or issuer string.
-        /// </summary>
-        /// <param name="content">The subject or issuer string from an X509 certificate (e.g., "CN=Example, O=Org, C=GB").</param>
-        /// <returns>
-        /// The value of the CN field if present; otherwise, returns "UnknownCN".
-        /// </returns>
-        private string GetCnFromCertificate(string content)
-        {
-            var match = Regex.Match(content, @"CN=([^,]+)");
-            return match.Success ? match.Groups[1].Value : "UnknownCN";
         }
     }
 }
