@@ -109,6 +109,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>Zip stream containing PERMIT.XML.</returns>
         private async Task<Stream> BuildPermitsAsync(IEnumerable<Product> productsDetails, IEnumerable<ProductKey> decryptedProductKeys, IEnumerable<UpnInfo> upnInfos)
         {
+            _logger.LogInformation(EventIds.BuildPermitsAsyncMethodStarted.ToEventId(), "BuildPermitsAsync Method Started");
             var permitDictionary = new Dictionary<string, Permit>();
             var xsdVersion = _permitReaderWriter.ReadXsdVersion();
 
@@ -130,6 +131,8 @@ namespace UKHO.S100PermitService.Common.Services
                 };
                 permitDictionary.Add(upnInfo.Title, permit);
             }
+            _logger.LogInformation(EventIds.BuildPermitsAsyncMethodCompleted.ToEventId(), "BuildPermitsAsync Method Completed Without Zip");
+
             var permitDetails = await _permitReaderWriter.CreatePermitZipAsync(permitDictionary);
             return permitDetails;
         }
@@ -195,9 +198,11 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>EncryptedKey</returns>
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
+            _logger.LogInformation(EventIds.GetEncryptedKeyStarted.ToEventId(), "GetEncryptedKeyAsync Method Started");
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
-
-            return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
+            var encryptedKeys = await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
+            _logger.LogInformation(EventIds.GetEncryptedKeyCompleted.ToEventId(), "GetEncryptedKeyAsync Method Completed");
+            return encryptedKeys;
         }
 
         /// <summary>

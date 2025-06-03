@@ -28,7 +28,7 @@ namespace UKHO.S100PermitService.Common.Validations
 
         public async Task<ValidationResult> ValidateAsync(PermitRequest permitRequest)
         {
-            return await ValidateAsync(permitRequest);
+            return await base.ValidateAsync(permitRequest);
         }
     }
 }

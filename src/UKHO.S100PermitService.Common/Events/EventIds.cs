@@ -248,6 +248,26 @@
         /// <summary>
         /// 840049 - Xml Serialization completed.
         /// </summary>
-        XmlSerializationCompleted = 840049
+        XmlSerializationCompleted = 840049,
+
+        /// <summary>
+        /// 840050 - Get EncryptedKey Method Started.
+        /// </summary>
+        GetEncryptedKeyStarted = 840050,
+
+        /// <summary>
+        /// 840051 - Get EncryptedKey Method Completed.
+        /// </summary>
+        GetEncryptedKeyCompleted = 840051,
+
+        /// <summary>
+        /// 840052 - Build Permits Method Started.
+        /// </summary>
+        BuildPermitsAsyncMethodStarted = 840052,
+
+        /// <summary>
+        /// 840053 - Build Permits Method Completed.
+        /// </summary>
+        BuildPermitsAsyncMethodCompleted = 840053,
     }
 }
