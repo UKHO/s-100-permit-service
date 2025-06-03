@@ -5,6 +5,6 @@ namespace UKHO.S100PermitService.Common.Validations
 {
     public interface IPermitRequestValidator
     {
-        ValidationResult Validate(PermitRequest permitRequest);
+        Task<ValidationResult> ValidateAsync(PermitRequest permitRequest);
     }
 }
