@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using UKHO.S100PermitService.Common;
+using UKHO.S100PermitService.Common.Extensions;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
@@ -183,12 +184,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             var certificateBytes = await GetCertificateFromKeyVaultTask(keyVaultUrl, dsCertificateName, tenantId, clientId, clientSecret);
             var dsCertificate = new X509Certificate2(certificateBytes, (string?)null, X509KeyStorageFlags.MachineKeySet);
 
-            var saIdFromCert = ExtractSaId(dsCertificate);
-            var certIdFromCert = ExtractCertId(dsCertificate);
+            var saIdFromCert = dsCertificate.Issuer.GetCnFromCertificate();
+            var certIdFromCert = dsCertificate.Subject.GetCnFromCertificate();
 
-            foreach(var folder in Directory.GetDirectories(generatedXmlFilePath))
+            foreach (var folder in Directory.GetDirectories(generatedXmlFilePath))
             {
-                if(!VerifyXmlAgainstCertificate(folder, saIdFromCert, certIdFromCert, certificateBytes, dsCertificate))
+                if (!VerifyXmlAgainstCertificate(folder, saIdFromCert, certIdFromCert, certificateBytes, dsCertificate))
                 {
                     return false;
                 }
@@ -309,7 +310,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 }
 
                 certFromXml = Convert.FromBase64String(certBase64);
-                signature = ConvertFromDerFormat(signatureBase64);
+                signature = ConvertFromDerToRawFormat(signatureBase64);
                 data = File.ReadAllBytes(dataFile);
             }
             catch(Exception ex)
@@ -326,7 +327,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </summary>
         /// <param name="derSignatureBase64">Base64-encoded DER signature.</param>
         /// <returns>Byte array of raw ECDSA signature in (R || S) format.</returns>
-        public static byte[] ConvertFromDerFormat(string derSignatureBase64)
+        public static byte[] ConvertFromDerToRawFormat(string derSignatureBase64)
         {
             var der = Convert.FromBase64String(derSignatureBase64);
 
@@ -427,41 +428,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             var base64 = pem.Substring(start, end - start).Replace("\r", "").Replace("\n", "").Trim();
 
             return Convert.FromBase64String(base64);
-        }
-
-        /// <summary>
-        /// Extracts the Scheme Administrator ID (Common Name - CN) from the certificate's subject.
-        /// </summary>
-        /// <param name="cert">The X509 certificate.</param>
-        /// <returns>The Scheme Administrator ID or empty string if not found.</returns>
-        private static string ExtractCertId(X509Certificate2 cert) =>
-            GetSubjectPart(cert.Subject, "CN") ?? string.Empty;
-
-        /// <summary>
-        /// Extracts the Certificate ID (Organizational Unit - OU) from the certificate's subject, or falls back to serial number.
-        /// </summary>
-        /// <param name="cert">The X509 certificate.</param>
-        /// <returns>The Certificate ID or serial number if OU not found.</returns>
-        private static string ExtractSaId(X509Certificate2 cert) =>
-            GetSubjectPart(cert.Issuer, "CN") ?? cert.SerialNumber;
-
-        /// <summary>
-        /// Retrieves a specified part (e.g. CN, OU) from the certificate subject string.
-        /// </summary>
-        /// <param name="cert">The X509 certificate.</param>
-        /// <param name="key">The key to find in the subject (e.g., "CN", "OU").</param>
-        /// <returns>The extracted part value, or null if not found.</returns>
-        private static string? GetSubjectPart(string distinguishedName, string key)
-        {
-            var parts = distinguishedName.Split(", ");
-            foreach(var part in parts)
-            {
-                if(part.StartsWith($"{key}=", StringComparison.OrdinalIgnoreCase))
-                {
-                    return part.Substring(key.Length + 1);
-                }
-            }
-            return null;
         }
 
         /// <summary>
