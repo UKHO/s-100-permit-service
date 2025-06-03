@@ -60,7 +60,7 @@ namespace UKHO.S100PermitService.Common.Services
         {
             _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", PermitServiceConstants.ProductType);
 
-            var validationResult = await _permitRequestValidator.ValidateAsync(permitRequest);
+            var validationResult = _permitRequestValidator.Validate(permitRequest);
 
             if(!validationResult.IsValid)
             {

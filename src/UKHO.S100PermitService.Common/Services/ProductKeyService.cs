@@ -54,14 +54,8 @@ namespace UKHO.S100PermitService.Common.Services
                 _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, correlationId, cancellationToken)
             );
 
-            var bodyJson = string.Empty;
-            using(var stream = await httpResponseMessage.Content.ReadAsStreamAsync(cancellationToken))
-            {
-                using(var reader = new StreamReader(stream))
-                {
-                    bodyJson = await reader.ReadToEndAsync();
-                }
-            }
+            var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);
+
             if(httpResponseMessage.IsSuccessStatusCode)
             {
                 _logger.LogInformation(EventIds.GetProductKeysRequestCompletedWithStatus200Ok.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} completed. | StatusCode : {StatusCode}", uri.AbsolutePath, httpResponseMessage.StatusCode);

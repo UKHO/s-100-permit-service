@@ -26,9 +26,9 @@ namespace UKHO.S100PermitService.Common.Validations
             RuleForEach(x => x.UserPermits).SetValidator(new UserPermitValidator());
         }
 
-        public async Task<ValidationResult> ValidateAsync(PermitRequest permitRequest)
+        ValidationResult IPermitRequestValidator.Validate(PermitRequest permitRequest)
         {
-            return await base.ValidateAsync(permitRequest);
+            return Validate(permitRequest);
         }
     }
 }
