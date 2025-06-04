@@ -198,11 +198,8 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>EncryptedKey</returns>
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
-            _logger.LogInformation(EventIds.GetEncryptedKeyStarted.ToEventId(), "GetEncryptedKeyAsync Method Started");
             var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
-            var encryptedKeys = await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
-            _logger.LogInformation(EventIds.GetEncryptedKeyCompleted.ToEventId(), "GetEncryptedKeyAsync Method Completed");
-            return encryptedKeys;
+            return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }
 
         /// <summary>
