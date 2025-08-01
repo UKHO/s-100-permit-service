@@ -607,7 +607,7 @@ stages:
   - stage: IATDeploy
     dependsOn:  Devdeploy
     displayName: "IATdeploy (inc terraform, webapp deploy)"
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     variables:
       - group: "S-100-PG-IAT"
       - group: "S-100-PG-IAT-TF"
@@ -654,3 +654,54 @@ stages:
                 - template: Deployment/templates/continuous-deployment-app.yml
                   parameters:
                     AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+
+  - stage: PreProdDeploy
+    dependsOn:  Devdeploy
+    displayName: "PreProdDeploy (inc terraform, webapp deploy)"
+    # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    variables:
+      - group: "S-100-PG-IAT"
+      - group: "S-100-PG-IAT-TF"
+      - group: "S-100-PG-IAT-KV"
+      - name: "AzureAdConfiguration.TenantId"
+        value: $(EntraID.TenantId)
+      - name: "AzureAdConfiguration.ClientId"
+        value: $(EntraID.ApplicationId)        
+    jobs:
+      - deployment: PreProdDeployTerraform
+        displayName: "PreProd - Deploy Terraform"
+        environment: "S100PG-PreProd"
+        pool: $(DeploymentPool)
+        container: ${{variables.Container}}
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment.yml
+                  parameters:
+                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+                    AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+
+      - deployment: PreProdDeployApp
+        dependsOn: PreProdDeployTerraform
+        displayName: "PreProd - Deploy Dotnet App"
+        environment: "S100PG-PreProd"
+        pool: $(DeploymentPoolPE)
+        variables:
+          - name : WEB_APP_NAME
+            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.WEB_APP'] ]
+          - name : STUB_WEB_APP_NAME
+            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.stubWebApp'] ]
+          - name : KeyVaultSettings.ServiceUri
+            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+        workspace:
+          clean: all
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - template: Deployment/templates/continuous-deployment-app.yml
+                  parameters:
+                    AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
