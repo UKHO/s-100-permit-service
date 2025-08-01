@@ -656,13 +656,13 @@ stages:
                     AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
 
   - stage: PreProdDeploy
-    dependsOn:  Devdeploy
+    dependsOn:  IATDeploy
     displayName: "PreProdDeploy (inc terraform, webapp deploy)"
     # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     variables:
-      - group: "S-100-PG-IAT"
-      - group: "S-100-PG-IAT-TF"
-      - group: "S-100-PG-IAT-KV"
+      - group: "S-100-PG-PreProd"
+      - group: "S-100-PG-PreProd-TF"
+      - group: "S-100-PG-PreProd-KV"
       - name: "AzureAdConfiguration.TenantId"
         value: $(EntraID.TenantId)
       - name: "AzureAdConfiguration.ClientId"
