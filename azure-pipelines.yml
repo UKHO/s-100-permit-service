@@ -656,7 +656,7 @@ stages:
                     AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
 
   - stage: PreProdDeploy
-    dependsOn:  DevDeployTerraform
+    # dependsOn:  DevDeployTerraform
     displayName: "PreProdDeploy (inc terraform, webapp deploy)"
     # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     variables:
