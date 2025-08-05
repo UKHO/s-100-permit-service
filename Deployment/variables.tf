@@ -8,6 +8,10 @@ variable "resource_group_name" {
   default = "ps"
 }
 
+variable "dns_zone_rg" {
+  type = string  
+}
+
 locals {
   env_name                     = lower(terraform.workspace)
   service_name                 = "ps"  
@@ -18,7 +22,7 @@ locals {
   pe_identity                  = "${local.service_name}${local.env_name}"
   vnet_link                    = "${local.service_name}${local.env_name}"
   private_connection           = "/subscriptions/${var.subscription_id}/resourceGroups/ps-${local.env_name}-rg/providers/Microsoft.Web/sites/ps-${local.env_name}-api"
-  dns_resource_group           = "engineering-rg"
+  dns_resource_group           = "${var.dns_zone_rg}"
   zone_group                   = "${local.service_name}${local.env_name}zone"
   dns_zones                    = "privatelink.azurewebsites.net"
   tags = {
