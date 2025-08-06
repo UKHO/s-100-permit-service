@@ -51,6 +51,8 @@ variables:
     value: "90"
   - name: DeploymentPoolPE
     value: "Private Link Deployments (ENG)"
+  - name: DeploymentPoolPD
+    value: "Private Link Deployments (BUS)"
   - name: snykAbzuOrganizationId
     value: "aeb7543b-8394-457c-8334-a31493d8910d"
 
@@ -688,7 +690,7 @@ stages:
         dependsOn: PreProdDeployTerraform
         displayName: "PreProd - Deploy Dotnet App"
         environment: "S100PG-PreProd"
-        pool: $(DeploymentPoolPE)
+        pool: $(DeploymentPoolPD)
         variables:
           - name : WEB_APP_NAME
             value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.WEB_APP'] ]
