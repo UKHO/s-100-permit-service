@@ -14,9 +14,6 @@ parameters:
   - name: RunFunctionalTests
     type: boolean
     default: false
-  - name: ContinueEvenIfResourcesAreGettingDestroyed
-    type: boolean
-    default: false
   - name: AppPool
     type: string
   - name: Container
