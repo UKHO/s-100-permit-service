@@ -129,7 +129,7 @@ jobs:
       workspace:
         clean: all
       steps:
-        - template: Deployment/templates/continuous-testing.yml
+        - template: continuous-testing.yml
           parameters:
             AzureSubscription: "${{ parameters.AzureSubscription }}"
 
