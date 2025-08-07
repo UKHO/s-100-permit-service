@@ -109,9 +109,12 @@ jobs:
       runOnce:
         deploy:
           steps:
-            - template: Deployment/templates/continuous-deployment-app.yml
-              parameters:
-                AzureSubscription: "${{ parameters.AzureSubscription }}"
+            - checkout: self
+              clean: true
+                          
+            - download: current
+              displayName: Download terraformartifact
+              artifact: terraformartifact
   - ${{ if eq(parameters.RunFunctionalTests, true) }}:   
     - job: FunctionalTests
       dependsOn:
