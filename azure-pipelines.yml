@@ -7,8 +7,8 @@ parameters:
     type: boolean
     default: false
 
-  - name: Snyk
-    displayName: "Disable Snyk Checking"
+  - name: SnykOnlyFailIfFixable
+    displayName: "Snyk - fail only if an issue has an available fix"
     type: boolean
     default: false
 
@@ -16,6 +16,7 @@ parameters:
     displayName: "Disable Stryker Test Mutation"
     type: boolean
     default: false
+
     
 trigger:
   - main
