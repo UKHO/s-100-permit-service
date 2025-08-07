@@ -56,7 +56,23 @@ variables:
   - name: snykAbzuOrganizationId
     value: "aeb7543b-8394-457c-8334-a31493d8910d"
 
+resources:
+  repositories:
+  - repository: UKHOTemplates
+    type: github
+    name: UKHO/devops-pipelinetemplates
+    endpoint: UKHO
+    ref: refs/heads/main
+
 stages:
+  - stage: VulnerabilityChecks
+    displayName: Snyk checks
+    dependsOn: []
+    jobs:
+    - template: Deployment/templates/vulnerability-checks.yml    
+      parameters:
+        SnykOnlyFailIfFixable: ${{ parameters.SnykOnlyFailIfFixable }}
+        SnykPassOnIssues: ${{ parameters.SnykPassOnIssues }}
 
   - stage: Stryker_Mutator
     displayName: "Stryker Mutator"
@@ -113,597 +129,392 @@ stages:
     displayName: "Snyk Check ,Build, Test and Publish"
     dependsOn: []
     jobs:
-      - job: Snyk
-        displayName: Run Snyk security scans
-        pool: $(WindowsPool)
-        condition: eq('${{ parameters.Snyk }}', false)      
-        steps:
-          - task: UseDotNet@2
-            displayName: Use .NET SDK $(SdkVersion)
-            inputs:
-              packageType: sdk             
-
-          - task: DotNetCoreCLI@2
-            displayName: .NET - NuGet restore
-            inputs:
-              command: restore
-              projects: |
-                **/*.csproj
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)'
-
-          - task: UkhoSnykScanTask@0
-            displayName: Snyk SAST scan
-            condition: succeededOrFailed()
-            inputs:
-              failOnIssues: true
-              failOnThreshold: high
-              organization: $(snykAbzuOrganizationId)
-              serviceConnectionEndpoint: Snyk
-              codeSeverityThreshold: low
-              testType: code
-              monitorwhen: never
-
-          - task: UkhoSnykScanTask@0
-            displayName: Snyk SCA scan
-            condition: succeededOrFailed()
-            inputs:
-              failOnIssues: true
-              failOnThreshold: high
-              organization: $(snykAbzuOrganizationId)
-              serviceConnectionEndpoint: Snyk
-              codeSeverityThreshold: low
-              testType: app
-              monitorwhen: never
-              severityThreshold: low
-              additionalArguments: --all-projects
-
-          - task: UkhoSnykScanTask@0
-            displayName: Snyk Iac scan
-            condition: succeededOrFailed()
-            inputs:
-              failOnIssues: true
-              failOnThreshold: high
-              organization: $(snykAbzuOrganizationId)
-              serviceConnectionEndpoint: Snyk
-              codeSeverityThreshold: low
-              testType: iac
-              monitorwhen: never
-              severityThreshold: low
-              workingDirectory: '$(Build.SourcesDirectory)/Deployment'
-
-      - job: UnitTestsAndCodeCoverage
-        workspace:
-          clean: all
-        displayName: "Dotnet Test and Publish Code Coverage"
-        steps:
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packagetype: sdk
-              useglobaljson: true
-              workingdirectory: '$(build.sourcesdirectory)\src'
-
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore test projects only"
-            inputs:
-              command: "restore"
-              projects: "**/*Tests.csproj"
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)'
-              packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
-
-          - task: DotNetCoreCLI@2
-            displayName: 'Dotnet test - Stub Service Unit Tests'
-            inputs:
-              command: test
-              projects: '**/UKHO.S100PermitService.StubService.UnitTests.csproj'
-              publishTestResults: true 
-
-          - task: DotNetCoreCLI@2
-            displayName: "Dotnet test - PermitService API Unit Tests"
-            inputs:
-              command: "test"
-              projects: |
-                **/*.UnitTests.csproj
-                !**/*StubService.UnitTests.csproj
-              arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
-              publishTestResults: true
-              testRunTitle: "UnitTests"
-
-          - task: publishcodecoverageresults@2
-            displayName: "publish code coverage report for build quality checks"
-            inputs:
-              summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
-              failIfCoverageEmpty: true
-
-          - task: PowerShell@2
-            displayName: "Generate code coverage report"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
-              arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Code coverage"
-            inputs:
-              PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
-              ArtifactName: codecoveragereport
-
-          - task: BuildQualityChecks@9
-            displayName: "Code coverage fails if threshold not meet"            
-            inputs:
-              checkCoverage: true
-              coverageFailOption: 'fixed'
-              coverageType: 'lines'
-              coverageThreshold: '$(CoverageThresholdLimit)'
-
-      - job: BuildAndPublishAPI
-        workspace:
-          clean: all
-        displayName: "Dotnet Build And Publish S-100 Permit Service API"
-        steps:
-
-          - task: PowerShell@2
-            displayName: "Set assembly version numbers based on build ID"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
-              arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.API\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
-
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packageType: sdk
-              useGlobalJson: true
-              workingDirectory: '$(Build.SourcesDirectory)\src'
-              
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore for non test projects only"
-            inputs:
-              command: "restore"
-              projects: |
-                **/*.csproj
-                !**/UKHO.S100PermitService.StubService.csproj
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)\src'
-              packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
-
-          - task: DotNetCoreCLI@2
-            displayName: "dotnet build task"
-            inputs:
-              command: "build"
-              projects: |
-                **/*.csproj
-                !**/UKHO.S100PermitService.StubService.csproj
-              arguments: '--configuration $(BuildConfiguration)'
-
-          - task: DotNetCoreCLI@2
-            displayName: "Publish S-100 Permit Service API "
-            inputs:
-              command: "publish"
-              publishWebProjects: false
-              projects: '**/*UKHO.S100PermitService.API.csproj'
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API'
-              zipAfterPublish: false
-              modifyOutputPath: false
-
-          - task: ArchiveFiles@2
-            displayName: "Zip S-100 Permit Service"
-            inputs:
-              rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/UKHO.S100PermitService.API/'
-              includeRootFolder: false
-              archiveType: "zip"
-              archiveFile: '$(Build.ArtifactStagingDirectory)/UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip'
-              replaceExistingArchive: true
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish WebAPI Artifact"
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip'
-              ArtifactName: UKHOS100PermitServiceAPI
-
-          - task: PowerShell@2
-            displayName: "Generate event id runbook"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\Utility\XmlToRtfTransformation.ps1'
-              arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
-          
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish event id runbook"
-            inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)\Utility\Runbook-EventId.rtf'
-              ArtifactName: Runbook
-
-      - job: BuildAndPublishS100PermitServiceStubService
-        workspace:
-          clean: all
-        displayName: "Dotnet Build And Publish S-100 Permit Service StubService"
-        steps:
-
-          - task: PowerShell@2
-            displayName: "Set assembly version numbers based on build ID"
-            inputs:
-              targetType: filePath
-              filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
-              arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.StubService\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$(UKHOAssemblyProduct) StubService"'
-
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packageType: sdk
-              useGlobalJson: true
-              workingDirectory: '$(Build.SourcesDirectory)\src'
-              
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore for s-100 permit service StubService project"
-            inputs:
-              command: "restore"
-              projects: |
-                **/UKHO.S100PermitService.StubService.csproj
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)\UKHO.S100PermitService.StubService'
-              packagesDirectory: '$(Build.SourcesDirectory)\UKHO.S100PermitService.StubService\packages'
-
-          - task: DotNetCoreCLI@2
-            displayName: "Build S-100 Permit Service StubService Project"
-            inputs:
-              command: "build"
-              projects: |
-                **/UKHO.S100PermitService.StubService.csproj
-              arguments: '--configuration $(BuildConfiguration)'
-
-          - task: DotNetCoreCLI@2
-            displayName: "Publish S-100 Permit Service StubService"
-            inputs:
-              command: "publish"
-              publishWebProjects: false
-              projects: '**/UKHO.S100PermitService.StubService.csproj'
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
-              zipAfterPublish: true
-              modifyOutputPath: true
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish S-100 Permit Service StubService Artifact"
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
-              ArtifactName: UKHOS100PermitServiceStubService         
-              
-      - job: PublishFunctionalTestsAndTerraform
-        workspace:
-          clean: all
-        displayName: "Publish FunctionalTests and Terraform Artifact"
-        steps:
-
-          - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
-            inputs:
-              packageType: sdk
-              useGlobalJson: true
-              workingDirectory: '$(Build.SourcesDirectory)\src'
-              
-          - task: DotNetCoreCLI@2
-            displayName: ".Net Core - NuGet restore for non test projects only"
-            inputs:
-              command: "restore"
-              projects: |
-                **/*.csproj
-                **/UKHO.S100PermitService.StubService.csproj                
-              feedsToUse: config
-              noCache: true
-              nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
-              workingDirectory: '$(Build.SourcesDirectory)\src'
-              packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
-
-          - task: DotNetCoreCLI@2
-            displayName: "Publish Functional Test Code "
-            inputs:
-              command: "publish"
-              publishWebProjects: false
-              projects: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj'
-              arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
-              workingDirectory: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests'
-              zipAfterPublish: false
-              modifyOutputPath: true
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish Functional test Artifact"
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
-              ArtifactName: functionaltests
-
-          - task: PublishBuildArtifacts@1
-            displayName: "Publish terraform Artifacts"
-            inputs:
-              PathtoPublish: '$(Build.SourcesDirectory)\Deployment'
-              ArtifactName: terraformartifact
-
+      - template: Deployment/templates/build-test-publish.yml
+    
   - stage: Devdeploy
     displayName: "Devdeploy (inc terraform, webapp deploy)"
-    variables:
-      - group: "S-100-PG-Dev"
-      - group: "S-100-PG-Dev-TF"
-      - group: "S-100-PG-Dev-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)      
+    # variables:
+    #   - group: "S-100-PG-Dev"
+    #   - group: "S-100-PG-Dev-TF"
+    #   - group: "S-100-PG-Dev-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)      
     jobs:
-      - deployment: DevDeployTerraform
-        displayName: "Dev - Deploy Terraform"
-        environment: "S100PG-DEV"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+      - template: Deployment/templates/continuous-deployment.yml
+        parameters:
+          AzureDevOpsEnvironment: "S100PG-DEV"
+          ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+          AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+          ShortName: "Dev"
+          AppPool: $(DeploymentPoolPE)
+          Container: ${{variables.Container}}          
+          RunFunctionalTests: true 
 
-      - deployment: DevDeployApp
-        dependsOn: DevDeployTerraform
-        displayName: "Dev - Deploy Dotnet App"
-        environment: "S100PG-DEV"
-        pool: $(DeploymentPoolPE)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+      # - deployment: DevDeployTerraform
+      #   displayName: "Dev - Deploy Terraform"
+      #   environment: "S100PG-DEV"
+      #   pool: $(DeploymentPool)
+      #   container: ${{variables.Container}}
+      #   workspace:
+      #     clean: all
+      #   strategy:
+      #     runOnce:
+      #       deploy:
+      #         steps:
+      #           - template: Deployment/templates/continuous-deployment.yml
+      #             parameters:
+      #               ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+      #               AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+
+      # - deployment: DevDeployApp
+      #   dependsOn: DevDeployTerraform
+      #   displayName: "Dev - Deploy Dotnet App"
+      #   environment: "S100PG-DEV"
+      #   pool: $(DeploymentPoolPE)
+      #   variables:
+      #     - name : WEB_APP_NAME
+      #       value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
+      #     - name : STUB_WEB_APP_NAME
+      #       value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
+      #     - name : KeyVaultSettings.ServiceUri
+      #       value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      #   workspace:
+      #     clean: all
+      #   strategy:
+      #     runOnce:
+      #       deploy:
+      #         steps:
+      #           - template: Deployment/templates/continuous-deployment-app.yml
+      #             parameters:
+      #               AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
   
-      - job: FunctionalTests
-        dependsOn:
-        - DevDeployTerraform
-        - DevDeployApp
-        pool: $(DeploymentPoolPE)
-        variables:
-          - name: "TokenConfiguration.TenantId"
-            value: $(EntraID.TenantId)
-          - name: "TokenConfiguration.ClientId"
-            value: $(EntraID.ApplicationId)
-          - name: "TokenConfiguration.ClientIdWithAuth"
-            value: $(EntraID.AutoTest.ApplicationId)
-          - name: "TokenConfiguration.ClientIdNoAuth"
-            value: $(EntraID.AutoTestNoAuth.ApplicationId)
-          - name: "TokenConfiguration.ClientSecret"
-            value: $(TokenConfiguration--ClientSecret)
-          - name: "TokenConfiguration.ClientSecretNoAuth"
-            value: $(TokenConfiguration--ClientSecretNoAuth)
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        displayName: "Dev Functional Automated Tests"
-        workspace:
-         clean: all
-        steps:
-          - template: Deployment/templates/continuous-testing.yml
-            parameters:
-              AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+      # - job: FunctionalTests
+      #   dependsOn:
+      #   - DevDeployTerraform
+      #   - DevDeployApp
+      #   pool: $(DeploymentPoolPE)
+      #   variables:
+      #     - name: "TokenConfiguration.TenantId"
+      #       value: $(EntraID.TenantId)
+      #     - name: "TokenConfiguration.ClientId"
+      #       value: $(EntraID.ApplicationId)
+      #     - name: "TokenConfiguration.ClientIdWithAuth"
+      #       value: $(EntraID.AutoTest.ApplicationId)
+      #     - name: "TokenConfiguration.ClientIdNoAuth"
+      #       value: $(EntraID.AutoTestNoAuth.ApplicationId)
+      #     - name: "TokenConfiguration.ClientSecret"
+      #       value: $(TokenConfiguration--ClientSecret)
+      #     - name: "TokenConfiguration.ClientSecretNoAuth"
+      #       value: $(TokenConfiguration--ClientSecretNoAuth)
+      #     - name : KeyVaultSettings.ServiceUri
+      #       value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      #   displayName: "Dev Functional Automated Tests"
+      #   workspace:
+      #    clean: all
+      #   steps:
+      #     - template: Deployment/templates/continuous-testing.yml
+      #       parameters:
+      #         AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
-    variables:
-      - group: "S-100-PG-vNextIAT"
-      - group: "S-100-PG-vNextIAT-TF"
-      - group: "S-100-PG-vNextIAT-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)      
+    # variables:
+    #   - group: "S-100-PG-vNextIAT"
+    #   - group: "S-100-PG-vNextIAT-TF"
+    #   - group: "S-100-PG-vNextIAT-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)      
+    # jobs:
+    #   - deployment: vNextIATDeployTerraform
+    #     displayName: "vNextIAT - Deploy Terraform"
+    #     environment: "S100PG-VNEXTIAT"
+    #     pool: $(DeploymentPool)
+    #     container: ${{variables.Container}}
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment.yml
+    #               parameters:
+    #                 ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+    #                 AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
     jobs:
-      - deployment: vNextIATDeployTerraform
-        displayName: "vNextIAT - Deploy Terraform"
-        environment: "S100PG-VNEXTIAT"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
-
-      - deployment: vNextIATDeployApp
-        dependsOn: vNextIATDeployTerraform
-        displayName: "vNextIAT - Deploy Dotnet App"
-        environment: "S100PG-VNEXTIAT"
-        pool: $(DeploymentPoolPE)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-VNEXTIAT"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
+        ShortName: "vNextIAT"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}}         
+      
+      # - deployment: vNextIATDeployApp
+      #   dependsOn: vNextIATDeployTerraform
+      #   displayName: "vNextIAT - Deploy Dotnet App"
+      #   environment: "S100PG-VNEXTIAT"
+      #   pool: $(DeploymentPoolPE)
+      #   variables:
+      #     - name : WEB_APP_NAME
+      #       value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+      #     - name : STUB_WEB_APP_NAME
+      #       value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.stubWebApp'] ]
+      #     - name : KeyVaultSettings.ServiceUri
+      #       value : $[ dependencies.vNextIATDeployTerraform.outputs['vNextIATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      #   workspace:
+      #     clean: all
+      #   strategy:
+      #     runOnce:
+      #       deploy:
+      #         steps:
+      #           - template: Deployment/templates/continuous-deployment-app.yml
+      #             parameters:
+      #               AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
   
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
-    variables:
-      - group: "S-100-PG-vNextE2E"
-      - group: "S-100-PG-vNextE2E-TF"
-      - group: "S-100-PG-vNextE2E-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)      
     jobs:
-      - deployment: vNextE2EDeployTerraform
-        displayName: "vNextE2E - Deploy Terraform"
-        environment: "S100PG-VNEXTE2E"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-VNEXTE2E"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+        ShortName: "VNEXTE2E"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}}
+    # variables:
+    #   - group: "S-100-PG-vNextE2E"
+    #   - group: "S-100-PG-vNextE2E-TF"
+    #   - group: "S-100-PG-vNextE2E-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)      
+    # jobs:
+    #   - deployment: vNextE2EDeployTerraform
+    #     displayName: "vNextE2E - Deploy Terraform"
+    #     environment: "S100PG-VNEXTE2E"
+    #     pool: $(DeploymentPool)
+    #     container: ${{variables.Container}}
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment.yml
+    #               parameters:
+    #                 ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+    #                 AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
 
-      - deployment: vNextE2EDeployApp
-        dependsOn: vNextE2EDeployTerraform
-        displayName: "vNextE2E - Deploy Dotnet App"
-        environment: "S100PG-VNEXTE2E"
-        pool: $(DeploymentPoolPE)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+    #   - deployment: vNextE2EDeployApp
+    #     dependsOn: vNextE2EDeployTerraform
+    #     displayName: "vNextE2E - Deploy Dotnet App"
+    #     environment: "S100PG-VNEXTE2E"
+    #     pool: $(DeploymentPoolPE)
+    #     variables:
+    #       - name : WEB_APP_NAME
+    #         value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.WEB_APP'] ]
+    #       - name : STUB_WEB_APP_NAME
+    #         value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.stubWebApp'] ]
+    #       - name : KeyVaultSettings.ServiceUri
+    #         value : $[ dependencies.vNextE2EDeployTerraform.outputs['vNextE2EDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment-app.yml
+    #               parameters:
+    #                 AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
   
   - stage: IATDeploy
     dependsOn:  Devdeploy
     displayName: "IATdeploy (inc terraform, webapp deploy)"
-    # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
-    variables:
-      - group: "S-100-PG-IAT"
-      - group: "S-100-PG-IAT-TF"
-      - group: "S-100-PG-IAT-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)        
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
-      - deployment: IATDeployTerraform
-        displayName: "IAT - Deploy Terraform"
-        environment: "S100PG-IAT"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-IAT"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+        ShortName: "IAT"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}}
+        RunFunctionalTests: true 
+    # variables:
+    #   - group: "S-100-PG-IAT"
+    #   - group: "S-100-PG-IAT-TF"
+    #   - group: "S-100-PG-IAT-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)        
+    # jobs:
+    #   - deployment: IATDeployTerraform
+    #     displayName: "IAT - Deploy Terraform"
+    #     environment: "S100PG-IAT"
+    #     pool: $(DeploymentPool)
+    #     container: ${{variables.Container}}
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment.yml
+    #               parameters:
+    #                 ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+    #                 AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
 
-      - deployment: IATDeployApp
-        dependsOn: IATDeployTerraform
-        displayName: "IAT - Deploy Dotnet App"
-        environment: "S100PG-IAT"
-        pool: $(DeploymentPoolPE)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+      # - deployment: IATDeployApp
+      #   dependsOn: IATDeployTerraform
+      #   displayName: "IAT - Deploy Dotnet App"
+      #   environment: "S100PG-IAT"
+      #   pool: $(DeploymentPoolPE)
+      #   variables:
+      #     - name : WEB_APP_NAME
+      #       value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.WEB_APP'] ]
+      #     - name : STUB_WEB_APP_NAME
+      #       value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.stubWebApp'] ]
+      #     - name : KeyVaultSettings.ServiceUri
+      #       value : $[ dependencies.IATDeployTerraform.outputs['IATDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      #   workspace:
+      #     clean: all
+      #   strategy:
+      #     runOnce:
+      #       deploy:
+      #         steps:
+      #           - template: Deployment/templates/continuous-deployment-app.yml
+      #             parameters:
+      #               AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy
     displayName: "PreProdDeploy (inc terraform, webapp deploy)"
-    # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
-    variables:
-      - group: "S-100-PG-PreProd"
-      - group: "S-100-PG-PreProd-TF"
-      - group: "S-100-PG-PreProd-KV"
-      - name: "AzureAdConfiguration.TenantId"
-        value: $(EntraID.TenantId)
-      - name: "AzureAdConfiguration.ClientId"
-        value: $(EntraID.ApplicationId)        
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
-      - deployment: PreProdDeployTerraform
-        displayName: "PreProd - Deploy Terraform"
-        environment: "S100PG-PreProd"
-        pool: $(DeploymentPool)
-        container: ${{variables.Container}}
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment.yml
-                  parameters:
-                    ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
-                    AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-PreProd"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+        ShortName: "PreProd"
+        AppPool: $(DeploymentPoolPD)
+        Container: ${{variables.Container}}
 
-      - deployment: PreProdDeployApp
-        dependsOn: PreProdDeployTerraform
-        displayName: "PreProd - Deploy Dotnet App"
-        environment: "S100PG-PreProd"
-        pool: $(DeploymentPoolPD)
-        variables:
-          - name : WEB_APP_NAME
-            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.WEB_APP'] ]
-          - name : STUB_WEB_APP_NAME
-            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.stubWebApp'] ]
-          - name : KeyVaultSettings.ServiceUri
-            value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
-        workspace:
-          clean: all
-        strategy:
-          runOnce:
-            deploy:
-              steps:
-                - template: Deployment/templates/continuous-deployment-app.yml
-                  parameters:
-                    AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+    # variables:
+    #   - group: "S-100-PG-PreProd"
+    #   - group: "S-100-PG-PreProd-TF"
+    #   - group: "S-100-PG-PreProd-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)        
+    # jobs:
+    #   - deployment: PreProdDeployTerraform
+    #     displayName: "PreProd - Deploy Terraform"
+    #     environment: "S100PG-PreProd"
+    #     pool: $(DeploymentPool)
+    #     container: ${{variables.Container}}
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment.yml
+    #               parameters:
+    #                 ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+    #                 AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+
+    #   - deployment: PreProdDeployApp
+    #     dependsOn: PreProdDeployTerraform
+    #     displayName: "PreProd - Deploy Dotnet App"
+    #     environment: "S100PG-PreProd"
+    #     pool: $(DeploymentPoolPD)
+    #     variables:
+    #       - name : WEB_APP_NAME
+    #         value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.WEB_APP'] ]
+    #       - name : STUB_WEB_APP_NAME
+    #         value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.stubWebApp'] ]
+    #       - name : KeyVaultSettings.ServiceUri
+    #         value : $[ dependencies.PreProdDeployTerraform.outputs['PreProdDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment-app.yml
+    #               parameters:
+    #                 AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+  - stage: LiveDeploy
+    dependsOn:  PreProdDeploy
+    displayName: "LiveDeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-Live"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator Live - A.011.15.5"
+        ShortName: "Live"
+        AppPool: $(DeploymentPoolPD)
+        Container: ${{variables.Container}}
+    # variables:
+    #   - group: "S-100-PG-Live"
+    #   - group: "S-100-PG-Live-TF"
+    #   - group: "S-100-PG-Live-KV"
+    #   - name: "AzureAdConfiguration.TenantId"
+    #     value: $(EntraID.TenantId)
+    #   - name: "AzureAdConfiguration.ClientId"
+    #     value: $(EntraID.ApplicationId)        
+    # jobs:
+    #   - deployment: LiveDeployTerraform
+    #     displayName: "Live - Deploy Terraform"
+    #     environment: "S100PG-Live"
+    #     pool: $(DeploymentPool)
+    #     container: ${{variables.Container}}
+    #     workspace:
+    #       clean: all
+    #     strategy:
+    #       runOnce:
+    #         deploy:
+    #           steps:
+    #             - template: Deployment/templates/continuous-deployment.yml
+    #               parameters:
+    #                 ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+    #                 AzureSubscription: "S-100 Permit Generator Live - A.011.15.5"
+
+      # - deployment: LiveDeployApp
+      #   dependsOn: LiveDeployTerraform
+      #   displayName: "Live - Deploy Dotnet App"
+      #   environment: "S100PG-Live"
+      #   pool: $(DeploymentPoolPD)
+      #   variables:
+      #     - name : WEB_APP_NAME
+      #       value : $[ dependencies.LiveDeployTerraform.outputs['LiveDeployTerraform.TerraformDeploy.WEB_APP'] ]
+      #     - name : STUB_WEB_APP_NAME
+      #       value : $[ dependencies.LiveDeployTerraform.outputs['LiveDeployTerraform.TerraformDeploy.stubWebApp'] ]
+      #     - name : KeyVaultSettings.ServiceUri
+      #       value : $[ dependencies.LiveDeployTerraform.outputs['LiveDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      #   workspace:
+      #     clean: all
+      #   strategy:
+      #     runOnce:
+      #       deploy:
+      #         steps:
+      #           - template: Deployment/templates/continuous-deployment-app.yml
+      #             parameters:
+      #               AzureSubscription: "S-100 Permit Generator Live - A.011.15.5"
