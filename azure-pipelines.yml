@@ -11,11 +11,17 @@ parameters:
     displayName: "Snyk - fail only if an issue has an available fix"
     type: boolean
     default: false
+    
+  - name: SnykPassOnIssues
+    displayName: "Snyk - don't fail if issues found"
+    type: boolean
+    default: false
 
   - name: DisableStryker
     displayName: "Disable Stryker Test Mutation"
     type: boolean
     default: false
+
 
     
 trigger:
