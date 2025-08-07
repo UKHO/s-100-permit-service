@@ -26,52 +26,71 @@ parameters:
     default: false
 
 jobs:
-  - task: PowerShell@2
-    displayName: "terraform $(Environment)deploy"
-    name: TerraformDeploy
-    inputs:
-      targetType: filePath
-      filePath: '$(Pipeline.Workspace)/terraformartifact/terraform_conditional_run.ps1'
-      arguments: '-deploymentResourceGroupName $(DeploymentResourceGroupName) -deploymentStorageAccountName $(DeploymentStorageAccountName) -workSpace $(Environment) -continueEvenIfResourcesAreGettingDestroyed $${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }} -terraformJsonOutputFile $(Pipeline.Workspace)/terraformartifact/terraform_output.json'
-    env:
-      ARM_CLIENT_ID: $(TERRAFORM-CLIENT-ID)
-      ARM_CLIENT_SECRET: $(TERRAFORM-CLIENT-SECRET)
-      ARM_TENANT_ID: $(TERRAFORM-TENANT-ID)
-      ARM_SUBSCRIPTION_ID: $(TERRAFORM-SUBSCRIPTION-ID)
-      TF_VAR_spoke_rg: $(spokeRG)
-      TF_VAR_spoke_vnet_name: $(spokeVnetName)
-      TF_VAR_spoke_subnet_name: $(spokeSubnetName)
-      TF_VAR_hardwareid: $(HardwareId)
-      TF_VAR_subscription_id: $(subscriptionId)
-      TF_VAR_hub_subscription_id: $(hubSubscriptionId)
-      TF_VAR_pe_vnet_name: $(peVnetName)
-      TF_VAR_pe_subnet_name: $(peSubnetName)
-      TF_VAR_pe_rg: $(peRG)
-      TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
-      TF_VAR_dns_zone_rg: $(dnsZoneRG)
-  
-  - task: AzureWebApp@1
-    displayName: "Azure App Deploy: S100-Permit-StubService"
-    inputs:
-      azureSubscription: "${{ parameters.AzureSubscription }}"
-      appType: webApp
-      appName: "$(STUB_WEB_APP_NAME)"
-      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
-          
-  - task: FileTransform@2
-    displayName: "File Transform: API Service Application Settings"
-    inputs:
-      folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
-      xmlTransformationRules:
-      jsonTargetFiles: '**/appsettings.json'
+  - deployment: ${{parameters.ShortName}}DeployTerraform
+    displayName: "${{parameters.ShortName}} - Deploy Terraform"
+    environment: ${{parameters.AzureDevOpsEnvironment}}
+    pool: $(DeploymentPool)
+    container: ${{parameters.Container}}
+    workspace:
+      clean: all
+    variables:
+    - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+              clean: true
+                          
+            - download: current
+              displayName: Download terraformartifact
+              artifact: terraformartifact
+            - task: PowerShell@2
+              displayName: "terraform $(Environment)deploy"
+              name: TerraformDeploy
+              inputs:
+                targetType: filePath
+                filePath: '$(Pipeline.Workspace)/terraformartifact/terraform_conditional_run.ps1'
+                arguments: '-deploymentResourceGroupName $(DeploymentResourceGroupName) -deploymentStorageAccountName $(DeploymentStorageAccountName) -workSpace $(Environment) -continueEvenIfResourcesAreGettingDestroyed $${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }} -terraformJsonOutputFile $(Pipeline.Workspace)/terraformartifact/terraform_output.json'
+              env:
+                ARM_CLIENT_ID: $(TERRAFORM-CLIENT-ID)
+                ARM_CLIENT_SECRET: $(TERRAFORM-CLIENT-SECRET)
+                ARM_TENANT_ID: $(TERRAFORM-TENANT-ID)
+                ARM_SUBSCRIPTION_ID: $(TERRAFORM-SUBSCRIPTION-ID)
+                TF_VAR_spoke_rg: $(spokeRG)
+                TF_VAR_spoke_vnet_name: $(spokeVnetName)
+                TF_VAR_spoke_subnet_name: $(spokeSubnetName)
+                TF_VAR_hardwareid: $(HardwareId)
+                TF_VAR_subscription_id: $(subscriptionId)
+                TF_VAR_hub_subscription_id: $(hubSubscriptionId)
+                TF_VAR_pe_vnet_name: $(peVnetName)
+                TF_VAR_pe_subnet_name: $(peSubnetName)
+                TF_VAR_pe_rg: $(peRG)
+                TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
+                TF_VAR_dns_zone_rg: $(dnsZoneRG)
+            
+            - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-StubService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(STUB_WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
+                    
+            - task: FileTransform@2
+              displayName: "File Transform: API Service Application Settings"
+              inputs:
+                folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
+                xmlTransformationRules:
+                jsonTargetFiles: '**/appsettings.json'
 
-  - task: AzureWebApp@1
-    displayName: "Azure App Deploy: S100-Permit-ApiService"
-    inputs:
-      azureSubscription: "${{ parameters.AzureSubscription }}"
-      appType: webApp
-      appName: "$(WEB_APP_NAME)"
-      package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
+            - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-ApiService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
 
   - deployment: ${{parameters.ShortName}}DeployApp
     dependsOn: ${{parameters.ShortName}}DeployTerraform
