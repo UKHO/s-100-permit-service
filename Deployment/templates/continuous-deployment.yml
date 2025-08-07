@@ -32,6 +32,12 @@ jobs:
       clean: all
     variables:
     - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
+    - name : WEB_APP_NAME
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
+    - name : STUB_WEB_APP_NAME
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.stubWebApp'] ]
+    - name : KeyVaultSettings.ServiceUri
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
     strategy:
       runOnce:
         deploy:
