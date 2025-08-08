@@ -112,9 +112,6 @@ jobs:
                 appType: webApp
                 appName: "$(WEB_APP_NAME)"
                 package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
-
-              parameters:
-                AzureSubscription: "${{ parameters.AzureSubscription }}" 
   
   - ${{ if eq(parameters.RunFunctionalTests, true) }}:   
     - job: FunctionalTests
