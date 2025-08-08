@@ -98,7 +98,8 @@ jobs:
             - download: current
               displayName: Download terraformartifact
               artifact: terraformartifact
-                          - task: AzureWebApp@1
+              
+            - task: AzureWebApp@1
               displayName: "Azure App Deploy: S100-Permit-StubService"
               inputs:
                 azureSubscription: "${{ parameters.AzureSubscription }}"
