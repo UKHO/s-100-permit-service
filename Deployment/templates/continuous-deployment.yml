@@ -72,33 +72,24 @@ jobs:
                 TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
                 TF_VAR_dns_zone_rg: $(dnsZoneRG)            
 
-  - deployment: ${{parameters.ShortName}}DeployApp
-    dependsOn: ${{parameters.ShortName}}DeployTerraform
-    displayName: "${{parameters.ShortName}} - Deploy Dotnet App"
-    environment: ${{parameters.AzureDevOpsEnvironment}}
-    pool: ${{ parameters.AppPool }}
-    container: ${{parameters.Container}}
+  - deployment: DevDeployApp
+    dependsOn: DevDeployTerraform
+    displayName: "Dev - Deploy Dotnet App"
+    environment: "S100PG-DEV"
+    pool: $(DeploymentPoolPE)
     variables:
-      - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
       - name : WEB_APP_NAME
-        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
+        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
       - name : STUB_WEB_APP_NAME
-        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.stubWebApp'] ]
+        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
       - name : KeyVaultSettings.ServiceUri
-        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
     workspace:
       clean: all
     strategy:
       runOnce:
         deploy:
           steps:
-            - checkout: self
-              clean: true
-                          
-            - download: current
-              displayName: Download terraformartifact
-              artifact: terraformartifact
-              
             - task: AzureWebApp@1
               displayName: "Azure App Deploy: S100-Permit-StubService"
               inputs:
@@ -106,7 +97,7 @@ jobs:
                 appType: webApp
                 appName: "$(STUB_WEB_APP_NAME)"
                 package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
-                    
+           
             - task: FileTransform@2
               displayName: "File Transform: API Service Application Settings"
               inputs:
@@ -121,7 +112,10 @@ jobs:
                 appType: webApp
                 appName: "$(WEB_APP_NAME)"
                 package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
- 
+
+              parameters:
+                AzureSubscription: "${{ parameters.AzureSubscription }}" 
+  
   - ${{ if eq(parameters.RunFunctionalTests, true) }}:   
     - job: FunctionalTests
       dependsOn:
