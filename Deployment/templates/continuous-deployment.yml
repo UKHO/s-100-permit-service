@@ -74,16 +74,16 @@ jobs:
 
   - deployment: ${{parameters.ShortName}}DeployApp
     dependsOn: ${{parameters.ShortName}}DeployTerraform
-    displayName: "Dev - Deploy Dotnet App"
-    environment: "S100PG-DEV"
-    pool: $(DeploymentPoolPE)
+    displayName: "${{parameters.ShortName}} - Deploy Dotnet App"
+    environment: "S100PG-${{parameters.ShortName}}"
+    pool: ${{parameters.AppPool}}
     variables:
       - name : WEB_APP_NAME
-        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.WEB_APP'] ]
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
       - name : STUB_WEB_APP_NAME
-        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.stubWebApp'] ]
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.stubWebApp'] ]
       - name : KeyVaultSettings.ServiceUri
-        value : $[ dependencies.DevDeployTerraform.outputs['DevDeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
     workspace:
       clean: all
     strategy:
