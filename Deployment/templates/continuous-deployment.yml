@@ -70,30 +70,7 @@ jobs:
                 TF_VAR_pe_subnet_name: $(peSubnetName)
                 TF_VAR_pe_rg: $(peRG)
                 TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
-                TF_VAR_dns_zone_rg: $(dnsZoneRG)
-            
-            - task: AzureWebApp@1
-              displayName: "Azure App Deploy: S100-Permit-StubService"
-              inputs:
-                azureSubscription: "${{ parameters.AzureSubscription }}"
-                appType: webApp
-                appName: "$(STUB_WEB_APP_NAME)"
-                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
-                    
-            - task: FileTransform@2
-              displayName: "File Transform: API Service Application Settings"
-              inputs:
-                folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
-                xmlTransformationRules:
-                jsonTargetFiles: '**/appsettings.json'
-
-            - task: AzureWebApp@1
-              displayName: "Azure App Deploy: S100-Permit-ApiService"
-              inputs:
-                azureSubscription: "${{ parameters.AzureSubscription }}"
-                appType: webApp
-                appName: "$(WEB_APP_NAME)"
-                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
+                TF_VAR_dns_zone_rg: $(dnsZoneRG)            
 
   - deployment: ${{parameters.ShortName}}DeployApp
     dependsOn: ${{parameters.ShortName}}DeployTerraform
@@ -121,6 +98,29 @@ jobs:
             - download: current
               displayName: Download terraformartifact
               artifact: terraformartifact
+                          - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-StubService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(STUB_WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
+                    
+            - task: FileTransform@2
+              displayName: "File Transform: API Service Application Settings"
+              inputs:
+                folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
+                xmlTransformationRules:
+                jsonTargetFiles: '**/appsettings.json'
+
+            - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-ApiService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
+ 
   - ${{ if eq(parameters.RunFunctionalTests, true) }}:   
     - job: FunctionalTests
       dependsOn:
