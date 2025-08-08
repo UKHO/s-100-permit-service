@@ -72,8 +72,8 @@ jobs:
                 TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
                 TF_VAR_dns_zone_rg: $(dnsZoneRG)            
 
-  - deployment: DevDeployApp
-    dependsOn: DevDeployTerraform
+  - deployment: ${{parameters.ShortName}}DeployApp
+    dependsOn: ${{parameters.ShortName}}DeployTerraform
     displayName: "Dev - Deploy Dotnet App"
     environment: "S100PG-DEV"
     pool: $(DeploymentPoolPE)
