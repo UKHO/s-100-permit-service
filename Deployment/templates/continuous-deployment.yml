@@ -78,6 +78,7 @@ jobs:
     environment: "S100PG-${{parameters.ShortName}}"
     pool: ${{parameters.AppPool}}
     variables:
+      - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
       - name : WEB_APP_NAME
         value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
       - name : STUB_WEB_APP_NAME
