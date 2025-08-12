@@ -1,6 +1,0 @@
-parameters:
-  - name: AzureSubscription
-    type: string
-
-steps:
-
