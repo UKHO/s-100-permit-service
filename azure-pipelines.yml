@@ -139,6 +139,9 @@ stages:
       - template: Deployment/templates/build-test-publish.yml
     
   - stage: Devdeploy
+    dependsOn:
+    - VulnerabilityChecks
+    - BuildTestPublish
     displayName: "Devdeploy (inc terraform, webapp deploy)"    
     jobs:
       - template: Deployment/templates/continuous-deployment.yml
