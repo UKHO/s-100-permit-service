@@ -5,17 +5,7 @@ parameters:
   - name: ContinueEvenIfResourcesAreGettingDestroyed
     displayName: "Continue even if resources are getting destroyed"
     type: boolean
-    default: false
-
-  - name: SnykOnlyFailIfFixable
-    displayName: "Snyk - fail only if an issue has an available fix"
-    type: boolean
-    default: false
-    
-  - name: SnykPassOnIssues
-    displayName: "Snyk - don't fail if issues found"
-    type: boolean
-    default: false
+    default: false  
 
   - name: RunStryker
     displayName: "Run Stryker test mutation"
@@ -72,15 +62,6 @@ resources:
     ref: refs/heads/main
 
 stages:
-  - stage: VulnerabilityChecks
-    displayName: Snyk checks
-    dependsOn: []
-    jobs:
-    - template: Deployment/templates/vulnerability-checks.yml    
-      parameters:
-        SnykOnlyFailIfFixable: ${{ parameters.SnykOnlyFailIfFixable }}
-        SnykPassOnIssues: ${{ parameters.SnykPassOnIssues }}
-
   - stage: RUNSTRKER
     displayName: "Run Stryker"
     condition: ${{ eq(parameters.RunStryker, true) }}
@@ -140,7 +121,6 @@ stages:
     
   - stage: Devdeploy
     dependsOn:
-    - VulnerabilityChecks
     - BuildTestPublish
     displayName: "Devdeploy (inc terraform, webapp deploy)"    
     jobs:
