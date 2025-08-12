@@ -17,10 +17,10 @@ parameters:
     type: boolean
     default: false
 
-  - name: DisableStryker
-    displayName: "Disable Stryker Test Mutation"
+  - name: RunStryker
+    displayName: "Run Stryker test mutation"
     type: boolean
-    default: false
+    default: true
 
 
     
@@ -81,9 +81,9 @@ stages:
         SnykOnlyFailIfFixable: ${{ parameters.SnykOnlyFailIfFixable }}
         SnykPassOnIssues: ${{ parameters.SnykPassOnIssues }}
 
-  - stage: Stryker_Mutator
-    displayName: "Stryker Mutator"
-    condition: ${{ eq(parameters.DisableStryker, false) }}
+  - stage: RUNSTRKER
+    displayName: "Run Stryker"
+    condition: ${{ eq(parameters.RunStryker, true) }}
     dependsOn: []
     jobs:
       - job: Stryker      
@@ -132,8 +132,8 @@ stages:
               reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
               reportDisplayName: 'Permit Service Common Mutation Report'
 
-  - stage: SnykCheck_Build_Test_Publish
-    displayName: "Snyk Check ,Build, Test and Publish"
+  - stage: BuildTestPublish
+    displayName: "Build, Test and Publish"
     dependsOn: []
     jobs:
       - template: Deployment/templates/build-test-publish.yml
