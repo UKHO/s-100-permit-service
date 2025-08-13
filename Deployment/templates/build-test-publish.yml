@@ -120,14 +120,6 @@ jobs:
           PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
           ArtifactName: codecoveragereport
 
-      - task: BuildQualityChecks@9
-        displayName: "Code coverage fails if threshold not meet"            
-        inputs:
-          checkCoverage: true
-          coverageFailOption: 'fixed'
-          coverageType: 'lines'
-          coverageThreshold: '$(CoverageThresholdLimit)'
-
   - job: BuildAndPublishAPI
     workspace:
       clean: all

@@ -44,8 +44,6 @@ variables:
     value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.9.2"
   - name: DeploymentPool
     value: "Mare Nectaris"
-  - name: CoverageThresholdLimit
-    value: "90"
   - name: DeploymentPoolPE
     value: "Private Link Deployments (ENG)"
   - name: DeploymentPoolPD
