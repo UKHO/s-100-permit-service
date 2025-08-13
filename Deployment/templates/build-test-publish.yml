@@ -1,0 +1,306 @@
+jobs:
+  - job: Snyk
+    displayName: Run Snyk security scans
+    pool: $(WindowsPool)
+    condition: eq('${{ parameters.Snyk }}', false)      
+    steps:
+      - task: UseDotNet@2
+        displayName: Use .NET SDK $(SdkVersion)
+        inputs:
+          packageType: sdk             
+
+      - task: DotNetCoreCLI@2
+        displayName: .NET - NuGet restore
+        inputs:
+          command: restore
+          projects: |
+            **/*.csproj
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)'
+
+      - task: UkhoSnykScanTask@0
+        displayName: Snyk SAST scan
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true
+          failOnThreshold: high
+          organization: $(snykAbzuOrganizationId)
+          serviceConnectionEndpoint: Snyk
+          codeSeverityThreshold: low
+          testType: code
+          monitorwhen: never
+
+      - task: UkhoSnykScanTask@0
+        displayName: Snyk SCA scan
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true
+          failOnThreshold: high
+          organization: $(snykAbzuOrganizationId)
+          serviceConnectionEndpoint: Snyk
+          codeSeverityThreshold: low
+          testType: app
+          monitorwhen: never
+          severityThreshold: low
+          additionalArguments: --all-projects
+
+      - task: UkhoSnykScanTask@0
+        displayName: Snyk Iac scan
+        condition: succeededOrFailed()
+        inputs:
+          failOnIssues: true
+          failOnThreshold: high
+          organization: $(snykAbzuOrganizationId)
+          serviceConnectionEndpoint: Snyk
+          codeSeverityThreshold: low
+          testType: iac
+          monitorwhen: never
+          severityThreshold: low
+          workingDirectory: '$(Build.SourcesDirectory)/Deployment'
+
+  - job: UnitTestsAndCodeCoverage
+    workspace:
+      clean: all
+    displayName: "Dotnet Test and Publish Code Coverage"
+    steps:
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8.0.x sdk'
+        inputs:
+          packagetype: sdk
+          useglobaljson: true
+          workingdirectory: '$(build.sourcesdirectory)\src'
+
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore test projects only"
+        inputs:
+          command: "restore"
+          projects: "**/*Tests.csproj"
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)'
+          packagesDirectory: '$(Build.SourcesDirectory)\packagesForTests'
+
+      - task: DotNetCoreCLI@2
+        displayName: 'Dotnet test - Stub Service Unit Tests'
+        inputs:
+          command: test
+          projects: '**/UKHO.S100PermitService.StubService.UnitTests.csproj'
+          publishTestResults: true 
+
+      - task: DotNetCoreCLI@2
+        displayName: "Dotnet test - PermitService API Unit Tests"
+        inputs:
+          command: "test"
+          projects: |
+            **/*.UnitTests.csproj
+            !**/*StubService.UnitTests.csproj
+          arguments: '--configuration $(BuildConfiguration) --settings "$(Build.SourcesDirectory)\test.runsettings" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura'
+          publishTestResults: true
+          testRunTitle: "UnitTests"
+
+      - task: publishcodecoverageresults@2
+        displayName: "publish code coverage report for build quality checks"
+        inputs:
+          summaryfilelocation: '$(Build.SourcesDirectory)/**/coverage.cobertura.xml'              
+          failIfCoverageEmpty: true
+
+      - task: PowerShell@2
+        displayName: "Generate code coverage report"
+        inputs:
+          targetType: filePath
+          filePath: '$(Build.SourcesDirectory)\CodeCoverageReport.ps1'
+          arguments: '-source "$(Build.SourcesDirectory)" -reportFolder "$(Build.ArtifactStagingDirectory)"'
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Code coverage"
+        inputs:
+          PathtoPublish: "$(Build.ArtifactStagingDirectory)/codecoveragereport"
+          ArtifactName: codecoveragereport
+
+  - job: BuildAndPublishAPI
+    workspace:
+      clean: all
+    displayName: "Dotnet Build And Publish S-100 Permit Service API"
+    steps:
+
+      - task: PowerShell@2
+        displayName: "Set assembly version numbers based on build ID"
+        inputs:
+          targetType: filePath
+          filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
+          arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.API\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8.0.x sdk'
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+          workingDirectory: '$(Build.SourcesDirectory)\src'
+          
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore for non test projects only"
+        inputs:
+          command: "restore"
+          projects: |
+            **/*.csproj
+            !**/UKHO.S100PermitService.StubService.csproj
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)\src'
+          packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
+
+      - task: DotNetCoreCLI@2
+        displayName: "dotnet build task"
+        inputs:
+          command: "build"
+          projects: |
+            **/*.csproj
+            !**/UKHO.S100PermitService.StubService.csproj
+          arguments: '--configuration $(BuildConfiguration)'
+
+      - task: DotNetCoreCLI@2
+        displayName: "Publish S-100 Permit Service API "
+        inputs:
+          command: "publish"
+          publishWebProjects: false
+          projects: '**/*UKHO.S100PermitService.API.csproj'
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API'
+          zipAfterPublish: false
+          modifyOutputPath: false
+
+      - task: ArchiveFiles@2
+        displayName: "Zip S-100 Permit Service"
+        inputs:
+          rootFolderOrFile: '$(Build.ArtifactStagingDirectory)/UKHO.S100PermitService.API/'
+          includeRootFolder: false
+          archiveType: "zip"
+          archiveFile: '$(Build.ArtifactStagingDirectory)/UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip'
+          replaceExistingArchive: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish WebAPI Artifact"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API/UKHOS100PermitServiceAPI.zip'
+          ArtifactName: UKHOS100PermitServiceAPI
+
+      - task: PowerShell@2
+        displayName: "Generate event id runbook"
+        inputs:
+          targetType: filePath
+          filePath: '$(Build.SourcesDirectory)\Utility\XmlToRtfTransformation.ps1'
+          arguments: '-xmlFilePath $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API\UKHO.S100PermitService.Common.xml -xsltFilePath $(Build.SourcesDirectory)\Utility\EventIdXmlTransformation.xslt -outputFileName Runbook-EventId'
+      
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish event id runbook"
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)\Utility\Runbook-EventId.rtf'
+          ArtifactName: Runbook
+
+  - job: BuildAndPublishS100PermitServiceStubService
+    workspace:
+      clean: all
+    displayName: "Dotnet Build And Publish S-100 Permit Service StubService"
+    steps:
+
+      - task: PowerShell@2
+        displayName: "Set assembly version numbers based on build ID"
+        inputs:
+          targetType: filePath
+          filePath: '$(Build.SourcesDirectory)\Apply-AssemblyVersionAndDefaults.ps1'
+          arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.StubService\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$(UKHOAssemblyProduct) StubService"'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8.0.x sdk'
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+          workingDirectory: '$(Build.SourcesDirectory)\src'
+          
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore for s-100 permit service StubService project"
+        inputs:
+          command: "restore"
+          projects: |
+            **/UKHO.S100PermitService.StubService.csproj
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)\UKHO.S100PermitService.StubService'
+          packagesDirectory: '$(Build.SourcesDirectory)\UKHO.S100PermitService.StubService\packages'
+
+      - task: DotNetCoreCLI@2
+        displayName: "Build S-100 Permit Service StubService Project"
+        inputs:
+          command: "build"
+          projects: |
+            **/UKHO.S100PermitService.StubService.csproj
+          arguments: '--configuration $(BuildConfiguration)'
+
+      - task: DotNetCoreCLI@2
+        displayName: "Publish S-100 Permit Service StubService"
+        inputs:
+          command: "publish"
+          publishWebProjects: false
+          projects: '**/UKHO.S100PermitService.StubService.csproj'
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
+          zipAfterPublish: true
+          modifyOutputPath: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish S-100 Permit Service StubService Artifact"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)\S100PermitServiceStubService'
+          ArtifactName: UKHOS100PermitServiceStubService         
+          
+  - job: PublishFunctionalTestsAndTerraform
+    workspace:
+      clean: all
+    displayName: "Publish FunctionalTests and Terraform Artifact"
+    steps:
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8.0.x sdk'
+        inputs:
+          packageType: sdk
+          useGlobalJson: true
+          workingDirectory: '$(Build.SourcesDirectory)\src'
+          
+      - task: DotNetCoreCLI@2
+        displayName: ".Net Core - NuGet restore for non test projects only"
+        inputs:
+          command: "restore"
+          projects: |
+            **/*.csproj
+            **/UKHO.S100PermitService.StubService.csproj                
+          feedsToUse: config
+          noCache: true
+          nugetConfigPath: '$(Build.SourcesDirectory)\BuildNuget.config'
+          workingDirectory: '$(Build.SourcesDirectory)\src'
+          packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
+
+      - task: DotNetCoreCLI@2
+        displayName: "Publish Functional Test Code "
+        inputs:
+          command: "publish"
+          publishWebProjects: false
+          projects: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj'
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
+          workingDirectory: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests'
+          zipAfterPublish: false
+          modifyOutputPath: true
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish Functional test Artifact"
+        inputs:
+          PathtoPublish: '$(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
+          ArtifactName: functionaltests
+
+      - task: PublishBuildArtifacts@1
+        displayName: "Publish terraform Artifacts"
+        inputs:
+          PathtoPublish: '$(Build.SourcesDirectory)\Deployment'
+          ArtifactName: terraformartifact

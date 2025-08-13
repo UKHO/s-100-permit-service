@@ -1,0 +1,24 @@
+variables:
+# Common across all environments.
+- group: "S-100-PG-Dev"
+- group: "S-100-PG-Dev-TF"
+- group: "S-100-PG-Dev-KV"
+
+- name: AzureAdConfiguration.TenantId
+  value: $(EntraID.TenantId)
+- name: "AzureAdConfiguration.ClientId"
+  value: $(EntraID.ApplicationId)
+
+- name: "TokenConfiguration.TenantId"
+  value: $(EntraID.TenantId)
+- name: "TokenConfiguration.ClientId"
+  value: $(EntraID.ApplicationId)
+- name: "TokenConfiguration.ClientIdWithAuth"
+  value: $(EntraID.AutoTest.ApplicationId)
+- name: "TokenConfiguration.ClientIdNoAuth"
+  value: $(EntraID.AutoTestNoAuth.ApplicationId)
+- name: "TokenConfiguration.ClientSecret"
+  value: $(TokenConfiguration--ClientSecret)
+- name: "TokenConfiguration.ClientSecretNoAuth"
+  value: $(TokenConfiguration--ClientSecretNoAuth)
+
