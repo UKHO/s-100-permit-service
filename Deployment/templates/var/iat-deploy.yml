@@ -9,6 +9,7 @@ variables:
 - name: "AzureAdConfiguration.ClientId"
   value: $(EntraID.ApplicationId)
 
+# variable to run functional tests environments.
 - name: "TokenConfiguration.TenantId"
   value: $(EntraID.TenantId)
 - name: "TokenConfiguration.ClientId"

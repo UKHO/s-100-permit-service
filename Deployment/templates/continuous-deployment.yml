@@ -43,8 +43,7 @@ jobs:
         deploy:
           steps:
             - checkout: self
-              clean: true
-                          
+              clean: true                          
             - download: current
               displayName: Download terraformartifact
               artifact: terraformartifact
