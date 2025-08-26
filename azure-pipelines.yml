@@ -134,7 +134,7 @@ stages:
     
 
   - stage: vNextIATDeploy
-    dependsOn: BuildTestPublish
+    dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
@@ -149,7 +149,7 @@ stages:
     
   
   - stage: vNextE2EDeploy
-    dependsOn: BuildTestPublish
+    dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     jobs:
@@ -163,7 +163,7 @@ stages:
         Container: ${{variables.Container}} 
   
   - stage: IATDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  Devdeploy
     displayName: "IATdeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
@@ -179,7 +179,7 @@ stages:
       
 
   - stage: PreProdDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  IATDeploy
     displayName: "PreProdDeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
@@ -193,7 +193,7 @@ stages:
         Container: ${{variables.Container}}
   
   - stage: LiveDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  PreProdDeploy
     displayName: "LiveDeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
