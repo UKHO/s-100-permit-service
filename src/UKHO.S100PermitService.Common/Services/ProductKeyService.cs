@@ -9,6 +9,9 @@ using UKHO.S100PermitService.Common.Handlers;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.ProductKeyService;
 using UKHO.S100PermitService.Common.Providers;
+using System.Net.Mime;
+using System.Net.Http.Headers;
+using System.Text;
 
 namespace UKHO.S100PermitService.Common.Services
 {
@@ -65,7 +68,12 @@ namespace UKHO.S100PermitService.Common.Services
             }
 
             var origin = httpResponseMessage.Headers.TryGetValues(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.ProductKeyService;
-            var errorResponse = !string.IsNullOrEmpty(bodyJson) ? JsonSerializer.Deserialize<ErrorResponse>(bodyJson) : new ErrorResponse();
+
+            var errorResponse = new ErrorResponse();
+            if(httpResponseMessage.Content.Headers.ContentType.MediaType.ToLower().Contains("json"))
+            {
+                errorResponse = !string.IsNullOrEmpty(bodyJson) ? JsonSerializer.Deserialize<ErrorResponse>(bodyJson) : new ErrorResponse();
+            }
 
             _logger.LogError(EventIds.GetProductKeysRequestFailed.ToEventId(), "Request to ProductKeyService POST Uri : {RequestUri} failed. | StatusCode : {StatusCode} | Error Details : {Errors}", uri.AbsolutePath, httpResponseMessage.StatusCode, bodyJson);
 

@@ -134,7 +134,7 @@ stages:
     
 
   - stage: vNextIATDeploy
-    dependsOn:  Devdeploy
+    dependsOn:  BuildTestPublish
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
@@ -148,7 +148,7 @@ stages:
       
       
   - stage: vNextE2EDeploy
-    dependsOn: vNextIATDeploy
+    dependsOn: BuildTestPublish
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     jobs:
