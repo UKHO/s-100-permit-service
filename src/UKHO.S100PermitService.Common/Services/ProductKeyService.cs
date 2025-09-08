@@ -70,7 +70,8 @@ namespace UKHO.S100PermitService.Common.Services
             var origin = httpResponseMessage.Headers.TryGetValues(PermitServiceConstants.OriginHeaderKey, out var value) ? value.FirstOrDefault() : PermitServiceConstants.ProductKeyService;
 
             var errorResponse = new ErrorResponse();
-            if(httpResponseMessage.Content.Headers.ContentType.MediaType.ToLower().Contains("json"))
+            var contentCheck = httpResponseMessage.Content?.Headers?.ContentType?.MediaType?.Contains("json", StringComparison.CurrentCultureIgnoreCase);
+            if(contentCheck.HasValue && contentCheck.Value)
             {
                 errorResponse = !string.IsNullOrEmpty(bodyJson) ? JsonSerializer.Deserialize<ErrorResponse>(bodyJson) : new ErrorResponse();
             }
