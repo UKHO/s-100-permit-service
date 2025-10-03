@@ -15,11 +15,11 @@ parameters:
 
     
 trigger:
-- main
+  - main
   - release/*
   - develop 
 
-pool:
+pool: 
     name: NautilusBuild
     demands: vs_16 -equals 1 #exclude agents 13 and 14 as code coverage report fails 
 
@@ -37,7 +37,7 @@ variables:
   - name: UKHOAssemblyProduct
     value: "S-100 Permit Service"
   - name: UKHOAssemblyCopyright
-    value: "Copyright � UK Hydrographic Office"
+    value: "Copyright © UK Hydrographic Office"
   - name: WindowsPool
     value: "NautilusBuild"
   - name: Container
@@ -68,7 +68,7 @@ stages:
       - job: Stryker      
         workspace:
           clean: all        
-steps:
+        steps:
           - task: UseDotNet@2
             displayName: 'Use .NET 8.0.x sdk'
             inputs:
@@ -134,7 +134,7 @@ steps:
     
 
   - stage: vNextIATDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  Devdeploy
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
@@ -146,9 +146,10 @@ steps:
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}        
       
-      
+    
+  
   - stage: vNextE2EDeploy
-    dependsOn: BuildTestPublish
+    dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
     jobs:
@@ -162,7 +163,7 @@ steps:
         Container: ${{variables.Container}} 
   
   - stage: IATDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  Devdeploy
     displayName: "IATdeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
@@ -178,7 +179,7 @@ steps:
       
 
   - stage: PreProdDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  IATDeploy
     displayName: "PreProdDeploy (inc terraform, webapp deploy)"
     condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
@@ -192,9 +193,9 @@ steps:
         Container: ${{variables.Container}}
   
   - stage: LiveDeploy
-    dependsOn:  BuildTestPublish
+    dependsOn:  PreProdDeploy
     displayName: "LiveDeploy (inc terraform, webapp deploy)"
-    # condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
       parameters:
@@ -205,8 +206,4 @@ steps:
         AppPool: $(DeploymentPoolPD)
         Container: ${{variables.Container}}
         RetainPipeline: true
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+ 
