@@ -15,11 +15,11 @@ parameters:
 
     
 trigger:
-  - main
+- main
   - release/*
   - develop 
 
-pool: 
+pool:
     name: NautilusBuild
     demands: vs_16 -equals 1 #exclude agents 13 and 14 as code coverage report fails 
 
@@ -37,7 +37,7 @@ variables:
   - name: UKHOAssemblyProduct
     value: "S-100 Permit Service"
   - name: UKHOAssemblyCopyright
-    value: "Copyright © UK Hydrographic Office"
+    value: "Copyright � UK Hydrographic Office"
   - name: WindowsPool
     value: "NautilusBuild"
   - name: Container
@@ -68,7 +68,7 @@ stages:
       - job: Stryker      
         workspace:
           clean: all        
-        steps:
+steps:
           - task: UseDotNet@2
             displayName: 'Use .NET 8.0.x sdk'
             inputs:
@@ -205,4 +205,8 @@ stages:
         AppPool: $(DeploymentPoolPD)
         Container: ${{variables.Container}}
         RetainPipeline: true
- 
+
+- script: |
+    echo Add other tasks to build, test, and deploy your project.
+    echo See https://aka.ms/yaml
+  displayName: 'Run a multi-line script'
