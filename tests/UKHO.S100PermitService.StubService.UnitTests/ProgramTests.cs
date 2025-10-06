@@ -46,7 +46,6 @@ namespace UKHO.S100PermitService.StubService.UnitTests
                 ReadStaticMappings = true,
                 WatchStaticMappings = true,
                 WatchStaticMappingsInSubdirectories = true,
-                UseSSL = true
             });
 
             var isRunning = server.IsStarted;
