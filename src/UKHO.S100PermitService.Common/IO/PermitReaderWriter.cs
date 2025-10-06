@@ -109,7 +109,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="upnTitle">User permit title.</param>
         /// <param name="fileName">File name.</param>
         /// <returns>Formatted file name.</returns>
-        private string GetFileName(string upnTitle, string fileName)
+        private static string GetFileName(string upnTitle, string fileName)
         {
             return $"{upnTitle}/{fileName}";
         }
@@ -120,7 +120,7 @@ namespace UKHO.S100PermitService.Common.IO
         /// <param name="zipArchive">Zip object.</param>
         /// <param name="fileName">File name for the entry.</param>
         /// <param name="content">Content to write.</param>
-        private async Task AddEntryToZipAsync(ZipArchive zipArchive, string fileName, string content)
+        private static async Task AddEntryToZipAsync(ZipArchive zipArchive, string fileName, string content)
         {
             var zipEntry = zipArchive.CreateEntry(fileName);
 

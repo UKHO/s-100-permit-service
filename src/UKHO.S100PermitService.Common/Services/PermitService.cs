@@ -161,7 +161,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 if(productsList.Any(x => x.Id == products.Id))
                 {
-                    productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
+                    productsList?.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
                 }
                 else
                 {
@@ -195,7 +195,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>EncryptedKey</returns>
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
-            var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
+            var decryptedProductKey = decryptedProductKeys?.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
 
             return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }

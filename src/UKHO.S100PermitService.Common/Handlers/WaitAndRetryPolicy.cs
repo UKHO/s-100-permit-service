@@ -14,6 +14,7 @@ namespace UKHO.S100PermitService.Common.Handlers
 
         public WaitAndRetryPolicy(IOptions<WaitAndRetryConfiguration> waitAndRetryConfiguration)
         {
+            ArgumentNullException.ThrowIfNull(waitAndRetryConfiguration, nameof(waitAndRetryConfiguration));
             _waitAndRetryConfiguration = waitAndRetryConfiguration ?? throw new ArgumentNullException(nameof(waitAndRetryConfiguration));
         }
 
@@ -35,7 +36,7 @@ namespace UKHO.S100PermitService.Common.Handlers
                                  var correlationId = response.Result.RequestMessage!.Headers.FirstOrDefault(h => h.Key.ToLowerInvariant() == PermitServiceConstants.XCorrelationIdHeaderKey);
                                  var retryAfter = 0;
                                  logger
-                                 .LogInformation(eventId.ToEventId(), "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}.",
+                                 .LogInformation(eventId.ToEventId(), "Re-trying service request for Uri: {RequestUri} with delay: {Delay}ms and retry attempt {Retry} with _X-Correlation-ID:{CorrelationId} as previous request was responded with {StatusCode}.",
                                   response.Result.RequestMessage.RequestUri, timespan.Add(TimeSpan.FromMilliseconds(retryAfter)).TotalMilliseconds, retryAttempt, correlationId.Value, response.Result.StatusCode);
                              });
         }

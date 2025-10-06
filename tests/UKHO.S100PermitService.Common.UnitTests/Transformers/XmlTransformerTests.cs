@@ -14,14 +14,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
     public class XmlTransformerTests
     {
         private ISchemaValidator _fakeSchemaValidator;
-        private ILogger<DigitalSignatureProvider> _fakeLogger;
+        private ILogger<XmlTransformer> _fakeLogger;
         private XmlTransformer _xmlTransformer;
 
         [SetUp]
         public void Setup()
         {
             _fakeSchemaValidator = A.Fake<ISchemaValidator>();
-            _fakeLogger = A.Fake<ILogger<DigitalSignatureProvider>>();
+            _fakeLogger = A.Fake<ILogger<XmlTransformer>>();
             _xmlTransformer = new XmlTransformer(_fakeLogger, _fakeSchemaValidator);
         }
 

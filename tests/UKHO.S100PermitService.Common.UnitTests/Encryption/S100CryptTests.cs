@@ -114,7 +114,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             var result = await _s100Crypt.CreateEncryptedKeyAsync(FakeKey, FakeHardwareId);
 
-            result.Equals(FakeEncryptedKey);
+            Assert.True(result.Equals(FakeEncryptedKey));
         }
 
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()

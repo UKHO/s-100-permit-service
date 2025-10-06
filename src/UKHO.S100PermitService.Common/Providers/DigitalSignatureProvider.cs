@@ -147,7 +147,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="integerValue"></param>
         /// <returns>The ASN.1-encoded INTEGER as a byte array.</returns>
-        private byte[] EncodeAsn1Integer(byte[] integerValue)
+        private static byte[] EncodeAsn1Integer(byte[] integerValue)
         {
             using(var memoryStream = new MemoryStream())
             {
