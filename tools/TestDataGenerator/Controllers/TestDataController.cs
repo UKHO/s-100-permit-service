@@ -7,6 +7,7 @@ using UKHO.S100PermitService.Common.Encryption;
 
 namespace TestDataGenerator.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
     public class TestDataController : ControllerBase
     {
