@@ -10,12 +10,12 @@ namespace UKHO.S100PermitService.Common.Clients
     public class KeyVaultCertificateClient : ICertificateClient
     {
         private readonly CertificateClient _certificateClient;
-        private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;
 
         public KeyVaultCertificateClient(IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
         {
-            _dataKeyVaultConfiguration = dataKeyVaultConfiguration ?? throw new ArgumentNullException(nameof(dataKeyVaultConfiguration));
-            _certificateClient = new CertificateClient(new Uri(_dataKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
+            ArgumentNullException.ThrowIfNull(dataKeyVaultConfiguration, nameof(dataKeyVaultConfiguration));
+
+            _certificateClient = new CertificateClient(new Uri(dataKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
         }
 
         /// <summary>

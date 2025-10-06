@@ -7,7 +7,7 @@ using UKHO.S100PermitService.Common.Models;
 namespace UKHO.S100PermitService.API.Controllers
 {
     [ExcludeFromCodeCoverage]
-    public abstract class BaseController<T> : ControllerBase
+    public abstract class BaseController : ControllerBase
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
@@ -16,18 +16,9 @@ namespace UKHO.S100PermitService.API.Controllers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        /// <summary>
-        /// Get Correlation Id.
-        /// </summary>
-        /// <remarks>
-        /// Correlation Id is Guid based id to track request.
-        /// Correlation Id can be found in request headers.
-        /// </remarks>
-        /// <returns>Correlation Id</returns>
-        protected string GetCorrelationId()
-        {
-            return _httpContextAccessor.HttpContext!.Request.Headers[PermitServiceConstants.XCorrelationIdHeaderKey].FirstOrDefault()!;
-        }
+        // Bound from the X-Correlation-ID header by the MVC model binder.
+        [FromHeader(Name = PermitServiceConstants.XCorrelationIdHeaderKey)]
+        public string CorrelationId { get; set; }
 
         /// <summary>
         /// Get Request Cancellation Token.

@@ -9,10 +9,9 @@ using UKHO.S100PermitService.Common.Services;
 
 namespace UKHO.S100PermitService.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     [Authorize]
-    public class PermitController : BaseController<PermitController>
+    public class PermitController : BaseController
     {
         private readonly ILogger<PermitController> _logger;
         private readonly IPermitService _permitService;
@@ -39,8 +38,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <response code="403">Forbidden - you have been authorized, but you are not allowed to access this resource.</response>
         /// <response code="429">Too Many Requests - You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        [HttpPost]
-        [Route("/v1/permits/s100")]
+        [HttpPost("/v1/permits/s100")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]      
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate unsigned PERMIT.XML files for all the products and User Permit Numbers (UPNs) and returns a compressed zip file containing all these PERMIT.XML files.</p>")]
@@ -52,11 +50,11 @@ namespace UKHO.S100PermitService.API.Controllers
         [SwaggerResponse(statusCode: (int)HttpStatusCode.InternalServerError, type: typeof(IDictionary<string, string>), description: "<p>Internal Server Error - An error occurred on the server.</p>")]
         public virtual async Task<IActionResult> GenerateS100Permits([FromBody] PermitRequest permitRequest)
         {
-            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {productType}.", PermitServiceConstants.ProductType);
+            _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 
-            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(permitRequest, GetCorrelationId(), GetRequestCancellationToken());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(permitRequest, CorrelationId, GetRequestCancellationToken());
 
-            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {productType}.", PermitServiceConstants.ProductType);
+            _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 
             return ToActionResult(permitServiceResult);
         }
