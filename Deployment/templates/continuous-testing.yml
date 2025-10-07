@@ -43,6 +43,4 @@ steps:
       testRunTitle: "$(Environment)-AutomationTests"
       workingDirectory: '$(Build.SourcesDirectory)/functionaltests'
       arguments: >
-        --logger "console;verbosity=detailed"
-        --logger "trx;LogFileName=$(Build.ArtifactStagingDirectory)/TestResults/FunctionalTestResults.trx"
-        --results-directory "$(Build.ArtifactStagingDirectory)/TestResults"
+        --logger "console;verbosity=detailed" --logger "trx;LogFileName=$(Build.ArtifactStagingDirectory)/TestResults/FunctionalTestResults.trx" --results-directory "$(Build.ArtifactStagingDirectory)/TestResults"
