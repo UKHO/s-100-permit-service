@@ -45,4 +45,4 @@ steps:
       arguments: >
         --logger "console;verbosity=detailed"
         --logger "trx;LogFileName=$(Build.ArtifactStagingDirectory)/TestResults/FunctionalTestResults.trx"
-        --results-directory $(Build.ArtifactStagingDirectory)/TestResults
+        --results-directory "$(Build.ArtifactStagingDirectory)/TestResults"

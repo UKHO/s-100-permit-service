@@ -52,7 +52,7 @@ namespace UKHO.S100PermitService.API.Controllers
         {
             _logger.LogInformation(EventIds.GeneratePermitStarted.ToEventId(), "GeneratePermit API call started for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 
-            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(permitRequest, CorrelationId, GetRequestCancellationToken());
+            var permitServiceResult = await _permitService.ProcessPermitRequestAsync(permitRequest, CorrelationId!, GetRequestCancellationToken());
 
             _logger.LogInformation(EventIds.GeneratePermitCompleted.ToEventId(), "GeneratePermit API call completed for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 

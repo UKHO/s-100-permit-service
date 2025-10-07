@@ -157,7 +157,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndPointWithInvalidUrl_Then404NotFoundIsReturned()
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndPointWithInvalidUrl_Then404NotFoundIsReturned));
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload, false);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload!, false);
             _logger.LogInformation("Response {Status}", (int)response.StatusCode);
             response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }

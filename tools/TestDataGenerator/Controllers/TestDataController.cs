@@ -43,7 +43,7 @@ namespace TestDataGenerator.Controllers
             {
                 Key = encryptedProductKey,
                 DecryptedKey = dataKey,
-                HardwareId = _configuration["HardwareId"]
+                HardwareId = _configuration["HardwareId"]!
             };
 
             await Task.CompletedTask;
