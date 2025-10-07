@@ -18,7 +18,7 @@ namespace UKHO.S100PermitService.API.Controllers
 
         // Bound from the X-Correlation-ID header by the MVC model binder.
         [FromHeader(Name = PermitServiceConstants.XCorrelationIdHeaderKey)]
-        public string CorrelationId { get; set; }
+        public string? CorrelationId { get; set; }
 
         /// <summary>
         /// Get Request Cancellation Token.

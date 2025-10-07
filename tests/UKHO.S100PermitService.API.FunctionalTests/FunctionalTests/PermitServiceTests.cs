@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         private RequestBodyModel? _payload;
 
         private ILoggerFactory? _loggerFactory;
-        private ILogger? _logger;
+        private ILogger _logger;
 
         [OneTimeSetUp]
         public async Task OneTimeSetup()
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [Test]
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
-            _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned));
+            _logger.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned));
             var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload!);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));

@@ -19,7 +19,7 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// For S-100 size of data and secret key is fixed to 128 bits (32 characters) hexadecimal digits, if validation fails then AesEncryptionException exception will be thrown.
         /// </remarks>
         /// <param name="hexString">Data to be decrypt.</param>
-        /// <param name="hexKey">Secret Key.</param>
+        /// <param name="keyHexEncoded">Secret Key.</param>
         /// <returns>Decrypted data.</returns>
         /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
         public async Task<string> DecryptAsync(string hexString, string keyHexEncoded)

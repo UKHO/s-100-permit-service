@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Text;
@@ -11,7 +12,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         private static readonly HttpClient _httpClient = new();
         private static string? _uri;
         private static readonly string _zipFileName = "Permits.zip";
-        private static ILogger _logger;
+        private static ILogger _logger = NullLogger.Instance;
 
         /// <summary>
         /// This method is used to interact with permits endpoint
