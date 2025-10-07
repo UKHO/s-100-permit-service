@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using System.IO.Compression;
 using System.Text;
 using static UKHO.S100PermitService.API.FunctionalTests.Models.S100PermitServiceRequestModel;
@@ -10,6 +11,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         private static readonly HttpClient _httpClient = new();
         private static string? _uri;
         private static readonly string _zipFileName = "Permits.zip";
+        private static ILogger _logger;
 
         /// <summary>
         /// This method is used to interact with permits endpoint
@@ -26,8 +28,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             {
                 _uri = $"{baseUrl}/permits/s100";
             }
+
+            _logger.LogInformation("Calling S-100 Permit Service Endpoint: {uri}", _uri);
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
             var payloadJson = JsonConvert.SerializeObject(payload);
+            _logger.LogInformation("Request Payload: {payloadJson}", payloadJson);
             httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             if(!string.IsNullOrEmpty(accessToken))
             {
@@ -93,6 +98,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 var payload = await reader.ReadToEndAsync();
                 return JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
             }
+        }
+
+        public static void SetLogger(ILogger logger)
+        {
+            _logger = logger;
         }
     }
 }
