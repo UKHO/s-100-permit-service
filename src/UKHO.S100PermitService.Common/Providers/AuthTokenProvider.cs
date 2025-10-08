@@ -12,19 +12,17 @@ using UKHO.S100PermitService.Common.Events;
 namespace UKHO.S100PermitService.Common.Providers
 {
     [ExcludeFromCodeCoverage]
-    public class AuthTokenProvider : IProductKeyServiceAuthTokenProvider
+    public class AuthTokenProvider(
+        IOptions<PermitServiceManagedIdentityConfiguration> permitServiceManagedIdentityConfiguration,
+        IDistributedCache distributedCache,
+        ILogger<AuthTokenProvider> logger,
+        TokenCredential tokenCredential) : IProductKeyServiceAuthTokenProvider
     {
         private static readonly object _lock = new();
-        private readonly IOptions<PermitServiceManagedIdentityConfiguration> _permitServiceManagedIdentityConfiguration;
-        private readonly IDistributedCache _distributedCache;
-        private readonly ILogger<AuthTokenProvider> _logger;
-
-        public AuthTokenProvider(IOptions<PermitServiceManagedIdentityConfiguration> permitServiceManagedIdentityConfiguration, IDistributedCache distributedCache, ILogger<AuthTokenProvider> logger)
-        {
-            _permitServiceManagedIdentityConfiguration = permitServiceManagedIdentityConfiguration ?? throw new ArgumentNullException(nameof(permitServiceManagedIdentityConfiguration));
-            _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        }
+        private readonly IOptions<PermitServiceManagedIdentityConfiguration> _permitServiceManagedIdentityConfiguration = permitServiceManagedIdentityConfiguration ?? throw new ArgumentNullException(nameof(permitServiceManagedIdentityConfiguration));
+        private readonly IDistributedCache _distributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
+        private readonly ILogger<AuthTokenProvider> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        private readonly TokenCredential _tokenCredential = tokenCredential;
 
         /// <summary>
         /// Generate managed identity authorization token and add into cache.
@@ -59,8 +57,7 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started.");
 
-            var tokenCredential = new DefaultAzureCredential();
-            var accessToken = await tokenCredential.GetTokenAsync(new TokenRequestContext(scopes: new string[] { resource + "/.default" }) { });
+            var accessToken = await _tokenCredential.GetTokenAsync(new TokenRequestContext(scopes: new string[] { resource + "/.default" }) { }, new CancellationToken());
 
             _logger.LogInformation(EventIds.GetNewAccessTokenCompleted.ToEventId(), "New access token to call external endpoint generated successfully.");
 

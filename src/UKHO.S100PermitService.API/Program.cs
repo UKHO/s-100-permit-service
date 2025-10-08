@@ -1,3 +1,4 @@
+using Azure.Core;
 using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
@@ -5,6 +6,7 @@ using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -43,8 +45,11 @@ namespace UKHO.S100PermitService.API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            ConfigureConfiguration(builder);
-            ConfigureServices(builder);
+            TokenCredential sharedCredential = new DefaultAzureCredential();
+
+            ConfigureConfiguration(builder, sharedCredential);
+            ConfigureServices(builder, sharedCredential);
+
             ConfigureSwagger(builder);
 
             var app = builder.Build();
@@ -76,7 +81,7 @@ namespace UKHO.S100PermitService.API
             app.Run();
         }
 
-        private static void ConfigureConfiguration(WebApplicationBuilder builder)
+        private static void ConfigureConfiguration(WebApplicationBuilder builder, TokenCredential tokenCredential)
         {
             builder.Configuration.AddJsonFile("appsettings.json", false, true);
 #if DEBUG
@@ -89,12 +94,12 @@ namespace UKHO.S100PermitService.API
 
             if(!string.IsNullOrWhiteSpace(kvServiceUri))
             {
-                var secretClient = new SecretClient(new Uri(kvServiceUri), new DefaultAzureCredential(new DefaultAzureCredentialOptions()));
+                var secretClient = new SecretClient(new Uri(kvServiceUri), tokenCredential);
                 builder.Configuration.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
             }
         }
 
-        private static void ConfigureServices(WebApplicationBuilder builder)
+        private static void ConfigureServices(WebApplicationBuilder builder, TokenCredential tokenCredential)
         {
             var configuration = builder.Configuration;
 
@@ -119,6 +124,9 @@ namespace UKHO.S100PermitService.API
             });
 
             var options = new ApplicationInsightsServiceOptions { ConnectionString = configuration.GetValue<string>("ApplicationInsights:ConnectionString") };
+
+            builder.Services.AddSingleton(tokenCredential);
+
             builder.Services.AddApplicationInsightsTelemetry(options);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
