@@ -51,7 +51,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// <returns>The cached certificate data as a byte array, or null if the key does not exist.</returns>
         public byte[] GetCertificateCacheValue(string key)
         {
-            return _memoryCache.TryGetValue(key, out byte[]? value) ? value : [];
+            return _memoryCache.TryGetValue(key, out byte[]? value) ? value : null;
         }
     }
 }
