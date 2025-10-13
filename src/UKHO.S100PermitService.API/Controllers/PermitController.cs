@@ -11,6 +11,7 @@ namespace UKHO.S100PermitService.API.Controllers
 {
     [ApiController]
     [Authorize]
+    [Route("v1/permits")]
     public class PermitController : BaseController
     {
         private readonly ILogger<PermitController> _logger;
@@ -38,7 +39,7 @@ namespace UKHO.S100PermitService.API.Controllers
         /// <response code="403">Forbidden - you have been authorized, but you are not allowed to access this resource.</response>
         /// <response code="429">Too Many Requests - You have sent too many requests in a given amount of time. Please back-off for the time in the Retry-After header (in seconds) and try again.</response>
         /// <response code="500">InternalServerError - exception occurred.</response>
-        [HttpPost("/v1/permits/s100")]
+        [HttpPost("s100")]
         [Authorize(Policy = PermitServiceConstants.PermitServicePolicy)]
         [Produces("application/json")]      
         [SwaggerOperation(Description = "<p>It uses the S-100 Part 15 data protection scheme to generate unsigned PERMIT.XML files for all the products and User Permit Numbers (UPNs) and returns a compressed zip file containing all these PERMIT.XML files.</p>")]

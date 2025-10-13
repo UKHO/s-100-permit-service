@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.Common.Clients
 
         public KeyVaultCertificateClient(IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration, TokenCredential tokenCredential)
         {
-            ArgumentNullException.ThrowIfNull(dataKeyVaultConfiguration, nameof(dataKeyVaultConfiguration));
+            ArgumentNullException.ThrowIfNull(dataKeyVaultConfiguration);
 
             _certificateClient = new CertificateClient(new Uri(dataKeyVaultConfiguration.Value.ServiceUri), tokenCredential);
         }

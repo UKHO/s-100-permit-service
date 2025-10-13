@@ -13,7 +13,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
     public class ProductKeyServiceStub : IStub
     {
         private const string ResponseFileDirectory = @"StubData\ProductKeyService";
-        private const string AuthorisationHeaderKey = "Authorization";
+        private const string AuthorisationHeader = "Authorization";
         private const string AuthoristationPattern = "Bearer *";
         private readonly ProductKeyServiceConfiguration _productKeyServiceConfiguration;
 
@@ -29,7 +29,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200.json"))))
-                .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200.json", HttpStatusCode.OK)));
 
@@ -38,7 +38,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-50.json"))))
-                .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200-50.json", HttpStatusCode.OK)));
 
@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-200-12-DuplicateCell.json"))))
-                .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-200-12-DuplicateCell.json", HttpStatusCode.OK)));
 
@@ -55,7 +55,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
-                .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-400-data_not_found.json", HttpStatusCode.BadRequest)));
 
@@ -64,7 +64,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                 .UsingPost()
                 .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-400.json"))))
-                .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                 .RespondWith(Response.Create()
                 .WithCallback(request => CreateResponse(request, "response-400.json", HttpStatusCode.BadRequest)));
 
@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
                  .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
                  .UsingPost()
                  .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-401.json"))))
-                 .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+                 .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
                  .RespondWith(Response.Create()
                  .WithStatusCode(HttpStatusCode.Unauthorized));
 
@@ -82,7 +82,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
               .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
               .UsingPost()
               .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-403.json"))))
-              .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+              .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
               .RespondWith(Response.Create()
               .WithStatusCode(HttpStatusCode.Forbidden));
 
@@ -91,7 +91,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
               .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))
               .UsingPost()
               .WithBody(new JsonMatcher(GetJsonData(Path.Combine(ResponseFileDirectory, "request-500.json"))))
-              .WithHeader(AuthorisationHeaderKey, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
+              .WithHeader(AuthorisationHeader, AuthoristationPattern, MatchBehaviour.AcceptOnMatch))
               .RespondWith(Response.Create()
               .WithCallback(request => CreateResponse(request, "response-500.json", HttpStatusCode.InternalServerError)));
         }
