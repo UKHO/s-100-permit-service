@@ -53,14 +53,7 @@ namespace UKHO.S100PermitService.Common.IO
                 foreach(var permit in permits)
                 {
                     var permitXmlContent = await CreatePermitXmlAndAddToZipAsync(archive, permit.Key, permit.Value);
-                    try
-                    {
-                        await CreatePermitSignAndAddToZipAsync(archive, permit.Key, permitXmlContent);
-                    }
-                    catch(Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
+                    await CreatePermitSignAndAddToZipAsync(archive, permit.Key, permitXmlContent);
                 }
             }
 

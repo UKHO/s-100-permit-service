@@ -197,7 +197,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Error
                 && call.GetArgument<EventId>(1) == EventIds.PermitRequestValidationFailed.ToEventId()
-                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit request validation failed for ProductType {ProductType}. Error Details: {errorMessage}"
+                && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2)!.ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Permit request validation failed for ProductType {ProductType}. Error Details: {ErrorMessage}"
             ).MustHaveHappenedOnceExactly();
 
             A.CallTo(_fakeLogger).Where(call =>
