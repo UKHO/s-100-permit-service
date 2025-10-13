@@ -1,4 +1,5 @@
-﻿using Azure.Identity;
+﻿using Azure.Core;
+using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
@@ -10,12 +11,12 @@ namespace UKHO.S100PermitService.Common.Clients
     public class KeyVaultSecretClient : ISecretClient
     {
         private readonly SecretClient _secretClient;
-        private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;
 
-        public KeyVaultSecretClient(IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
+        public KeyVaultSecretClient(IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration, TokenCredential tokenCredential)
         {
-            _dataKeyVaultConfiguration = dataKeyVaultConfiguration ?? throw new ArgumentNullException(nameof(dataKeyVaultConfiguration));
-            _secretClient = new SecretClient(new Uri(_dataKeyVaultConfiguration.Value.ServiceUri), new DefaultAzureCredential());
+            ArgumentNullException.ThrowIfNull(dataKeyVaultConfiguration);
+
+            _secretClient = new SecretClient(new Uri(dataKeyVaultConfiguration.Value.ServiceUri), tokenCredential);
         }
 
         /// <summary>

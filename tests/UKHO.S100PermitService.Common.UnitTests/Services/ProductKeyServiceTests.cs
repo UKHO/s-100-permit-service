@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
@@ -125,6 +126,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                         RequestUri = new Uri("http://test.com")
                                     },
                                     Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Errors = [new() { Source = "GetProductKey", Description = content }] }))))
+                                    {
+                                        Headers =
+                                            {
+                                                ContentType = new MediaTypeHeaderValue("application/json")
+                                            }
+                                    }
                                 });
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
@@ -168,8 +175,17 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     {
                                         RequestUri = new Uri("http://test.com")
                                     },
-                                    Content = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(new ErrorResponse { CorrelationId = _fakeCorrelationId, Errors = [new() { Source = "GetProductKey", Description = content }] }))))
-                                });
+                                    Content = new StreamContent(
+                                        new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(
+                                            new ErrorResponse { CorrelationId = _fakeCorrelationId, Errors = [new() { Source = "GetProductKey", Description = content }] })
+                                        )))
+                                    {
+                                        Headers =
+                                            {
+                                                ContentType = new MediaTypeHeaderValue("application/json")
+                                            }
+                                                                            }
+                                    });
 
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
@@ -192,7 +208,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
               && call.GetArgument<LogLevel>(0) == LogLevel.Information
               && call.GetArgument<EventId>(1) == EventIds.RetryHttpClientProductKeyServiceRequest.ToEventId()
               && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)
-                  ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {delay}ms and retry attempt {retry} with _X-Correlation-ID:{correlationId} as previous request was responded with {StatusCode}."
+                  ["{OriginalFormat}"].ToString() == "Re-trying service request for Uri: {RequestUri} with delay: {Delay}ms and retry attempt {Retry} with _X-Correlation-ID:{CorrelationId} as previous request was responded with {StatusCode}."
               ).MustHaveHappened();
         }
 
@@ -200,7 +216,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [TestCase(HttpStatusCode.Forbidden)]
         [TestCase(HttpStatusCode.Unauthorized)]
         public async Task WhenProductKeyServiceResponseUnauthorizedOrForbiddenWithNoContent_ThenServiceReturnsFailureResponse(HttpStatusCode httpStatusCode)
-        {           
+        {
             A.CallTo(() => _fakeProductKeyServiceApiClient.GetProductKeysAsync
                     (A<string>.Ignored, A<IEnumerable<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored))
                                 .Returns(new HttpResponseMessage()
@@ -209,7 +225,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                     RequestMessage = new HttpRequestMessage()
                                     {
                                         RequestUri = new Uri("http://test.com")
-                                    },                                    
+                                    },
                                 });
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);

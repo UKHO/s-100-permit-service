@@ -7,33 +7,10 @@ namespace UKHO.S100PermitService.Common.Models.Permits
     [System.ComponentModel.DesignerCategory("code")]
     public partial class Products
     {
-        private List<ProductsProductDatasetPermit> _datasetPermitField;
-        private string _idField;
-
         [System.Xml.Serialization.XmlElement("S100SE:datasetPermit")]
-        public List<ProductsProductDatasetPermit> DatasetPermit
-        {
-            get
-            {
-                return _datasetPermitField;
-            }
-            set
-            {
-                _datasetPermitField = value;
-            }
-        }
+        public List<ProductsProductDatasetPermit> DatasetPermit { get; set; }
 
         [System.Xml.Serialization.XmlAttribute("id")]
-        public string Id
-        {
-            get
-            {
-                return _idField;
-            }
-            set
-            {
-                _idField = value;
-            }
-        }
+        public string Id { get; set; }
     }
 }

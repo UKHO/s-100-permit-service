@@ -22,7 +22,7 @@ namespace UKHO.S100PermitService.Common.Services
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
             _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
-            _certificateSecretClient = certificateSecretClient ?? throw new ArgumentNullException(nameof(certificateSecretClient)); ;
+            _certificateSecretClient = certificateSecretClient ?? throw new ArgumentNullException(nameof(certificateSecretClient));
         }
 
         /// <summary>
