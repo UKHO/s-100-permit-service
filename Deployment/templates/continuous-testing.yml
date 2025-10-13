@@ -42,3 +42,4 @@ steps:
           !**/obj/**
       testRunTitle: "$(Environment)-AutomationTests"
       workingDirectory: '$(Build.SourcesDirectory)/functionaltests'
+      arguments: --logger "console;verbosity=detailed"

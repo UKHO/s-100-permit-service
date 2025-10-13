@@ -27,7 +27,7 @@ namespace UKHO.S100PermitService.StubService.Stubs
         {
             if(request.Headers!.TryGetValue(HttpHeaderConstants.CorrelationId, out var correlationId) && correlationId?.FirstOrDefault() != null)
             {
-                return correlationId.First();
+                return correlationId[0];
             }
             return Guid.NewGuid().ToString();
         }

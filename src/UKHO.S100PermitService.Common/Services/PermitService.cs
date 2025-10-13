@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <response code="500">InternalServerError - exception occurred.</response>
         public async Task<PermitServiceResult> ProcessPermitRequestAsync(PermitRequest permitRequest, string correlationId, CancellationToken cancellationToken)
         {
-            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {productType}.", PermitServiceConstants.ProductType);
+            _logger.LogInformation(EventIds.ProcessPermitRequestStarted.ToEventId(), "Process permit request started for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 
             var validationResult = _permitRequestValidator.Validate(permitRequest);
 
@@ -70,7 +70,7 @@ namespace UKHO.S100PermitService.Common.Services
                     Errors = validationResult.Errors.Select(e => new ErrorDetail { Description = e.ErrorMessage, Source = e.PropertyName }).ToList(),
                 };
 
-                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {productType}. Error Details: {errorMessage}", PermitServiceConstants.ProductType, JsonSerializer.Serialize(errorResponse.Errors));
+                _logger.LogError(EventIds.PermitRequestValidationFailed.ToEventId(), "Permit request validation failed for ProductType {ProductType}. Error Details: {ErrorMessage}", PermitServiceConstants.ProductType, JsonSerializer.Serialize(errorResponse.Errors));
                 return PermitServiceResult.Failure(HttpStatusCode.BadRequest, PermitServiceConstants.PermitService, errorResponse);
             }
 
@@ -88,7 +88,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var permitDetails = await BuildPermitsAsync(productsWithLatestExpiry, decryptedProductKeys, listOfUpnInfo);
 
-                _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {productType}.", PermitServiceConstants.ProductType);
+                _logger.LogInformation(EventIds.ProcessPermitRequestCompleted.ToEventId(), "Process permit request completed for ProductType {ProductType}.", PermitServiceConstants.ProductType);
 
                 return PermitServiceResult.Success(permitDetails);
             }
@@ -161,7 +161,7 @@ namespace UKHO.S100PermitService.Common.Services
 
                 if(productsList.Any(x => x.Id == products.Id))
                 {
-                    productsList.FirstOrDefault(x => x.Id == products.Id).DatasetPermit.Add(dataPermit);
+                    productsList.FirstOrDefault(x => x.Id == products.Id)?.DatasetPermit.Add(dataPermit);
                 }
                 else
                 {
@@ -195,7 +195,7 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>EncryptedKey</returns>
         private async Task<string> GetEncryptedKeyAsync(IEnumerable<ProductKey> decryptedProductKeys, string hardwareId, string cellCode)
         {
-            var decryptedProductKey = decryptedProductKeys.FirstOrDefault(pk => pk.ProductName == cellCode).DecryptedKey;
+            var decryptedProductKey = decryptedProductKeys?.FirstOrDefault(pk => pk.ProductName == cellCode)?.DecryptedKey;
 
             return await _s100Crypt.CreateEncryptedKeyAsync(decryptedProductKey, hardwareId);
         }

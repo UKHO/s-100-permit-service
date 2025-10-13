@@ -64,9 +64,11 @@ namespace UKHO.S100PermitService.Common.Providers
                     return ConvertToDerFormat(ecdsaSignature);
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                throw new PermitServiceException(EventIds.PermitPrivateKeySigningFailed.ToEventId(), "An error occurred while signing the hash with the private key with exception: {Message}", ex.Message);
+                _logger.LogError(ex, "An error occurred while signing the hash with the private key.");
+                throw new PermitServiceException(EventIds.PermitPrivateKeySigningFailed.ToEventId(),
+                    "An error occurred while signing the hash with the private key with exception: {Message}", ex.Message);
             }
         }
 
@@ -80,8 +82,9 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </returns>
         public StandaloneDigitalSignature CreateStandaloneDigitalSignature(X509Certificate2 certificate, string signatureBase64)
         {
-            _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(), "StandaloneDigitalSignature generation process started.");
-
+            _logger.LogInformation(EventIds.StandaloneDigitalSignatureGenerationStarted.ToEventId(),
+                "StandaloneDigitalSignature generation process started.");
+    
             var issuer = certificate.Issuer.GetCnFromCertificate();
             var certificateValue = Convert.ToBase64String(certificate.RawData);
             var certificateDsId = certificate.Subject.GetCnFromCertificate();
@@ -147,7 +150,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="integerValue"></param>
         /// <returns>The ASN.1-encoded INTEGER as a byte array.</returns>
-        private byte[] EncodeAsn1Integer(byte[] integerValue)
+        private static byte[] EncodeAsn1Integer(byte[] integerValue)
         {
             using(var memoryStream = new MemoryStream())
             {

@@ -7,7 +7,6 @@ using UKHO.S100PermitService.Common.Encryption;
 
 namespace TestDataGenerator.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
     public class TestDataController : ControllerBase
     {
@@ -44,7 +43,7 @@ namespace TestDataGenerator.Controllers
             {
                 Key = encryptedProductKey,
                 DecryptedKey = dataKey,
-                HardwareId = _configuration["HardwareId"]
+                HardwareId = _configuration["HardwareId"]!
             };
 
             await Task.CompletedTask;

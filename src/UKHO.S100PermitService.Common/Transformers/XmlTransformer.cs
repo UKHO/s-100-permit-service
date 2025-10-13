@@ -16,9 +16,9 @@ namespace UKHO.S100PermitService.Common.Transformers
         private readonly string _xsdPath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, PermitServiceConstants.SchemaFile);
 
         private readonly ISchemaValidator _schemaValidator;
-        private readonly ILogger<DigitalSignatureProvider> _logger;
+        private readonly ILogger<XmlTransformer> _logger;
 
-        public XmlTransformer(ILogger<DigitalSignatureProvider> logger, ISchemaValidator schemaValidator)
+        public XmlTransformer(ILogger<XmlTransformer> logger, ISchemaValidator schemaValidator)
         {
             _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
