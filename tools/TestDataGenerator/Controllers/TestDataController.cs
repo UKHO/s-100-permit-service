@@ -8,6 +8,7 @@ using UKHO.S100PermitService.Common.Encryption;
 namespace TestDataGenerator.Controllers
 {
     [ApiController]
+    [Route("")]
     public class TestDataController : ControllerBase
     {
         private const int EncryptedHardwareIdLength = 32;
@@ -21,8 +22,7 @@ namespace TestDataGenerator.Controllers
             _configuration = configuration;
         }
 
-        [HttpGet]
-        [Route("/GenerateUserPermit")]
+        [HttpGet("GenerateUserPermit")]
         public virtual async Task<IActionResult> GenerateUserPermit()
         {
             var upn = CreateUserPermit();
@@ -32,8 +32,7 @@ namespace TestDataGenerator.Controllers
             return new JsonResult(upn);
         }
 
-        [HttpGet]
-        [Route("/GenerateProductKey")]
+        [HttpGet("GenerateProductKey")]
         public virtual async Task<IActionResult> GenerateProductKey()
         {
             var dataKey = CreateRandomHex32String();
@@ -51,8 +50,7 @@ namespace TestDataGenerator.Controllers
             return new JsonResult(productKey);
         }
 
-        [HttpGet]
-        [Route("/ExtractHwIdFromUPN")]
+        [HttpGet("ExtractHwIdFromUPN")]
         public virtual async Task<IActionResult> ExtractHwIdFromUPN(string upn, string mKey)
         {
             var decryptedHardwareId = await _aesEncryption.DecryptAsync(upn[..EncryptedHardwareIdLength], mKey);
@@ -62,8 +60,7 @@ namespace TestDataGenerator.Controllers
             return new JsonResult(decryptedHardwareId);
         }
 
-        [HttpGet]
-        [Route("/DecryptProductKey")]
+        [HttpGet("DecryptProductKey")]
         public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
             var decryptedProductKey = await _aesEncryption.DecryptAsync(productKey, _configuration["HardwareId"]);
@@ -73,8 +70,7 @@ namespace TestDataGenerator.Controllers
             return new JsonResult(decryptedProductKey);
         }
 
-        [HttpGet]
-        [Route("/CreateEncryptedKey")]
+        [HttpGet("CreateEncryptedKey")]
         public virtual async Task<IActionResult> CreateEncryptedKey(string decryptedProductKey, string hwId)
         {
             var encryptedKey = await _aesEncryption.EncryptAsync(decryptedProductKey, hwId);
