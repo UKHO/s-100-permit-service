@@ -132,7 +132,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             var keyVaultCertificate = A.Fake<KeyVaultCertificate>();
 
-            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns((byte[]?)null);
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
             A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Returns(keyVaultCertificate);
 
             _keyVaultService.GetCertificate(CertificateName);
