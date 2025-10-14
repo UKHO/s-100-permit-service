@@ -35,9 +35,15 @@ export default function FourRequestPerSecond() {
     });
 }
 export function handleSummary(data) {
+    const iso = new Date().toISOString().slice(0, 19); // YYYY-MM-DDTHH:mm:ss
+    const timestamp = iso
+        .replace('T', '_')      // single occurrence
+        .replaceAll(':', '')    // remove all colons
+        .replaceAll('-', '');   // remove all dashes
+
     return {
-        ["./../Summary/FourRequestPerSecond" + new Date().toISOString().substr(0, 19).replace(/(:|-)/g, "").replace("T", "_") + ".html"]: htmlReport(data),
+        [`./../Summary/FourRequestPerSecond${timestamp}.html`]: htmlReport(data),
         stdout: textSummary(data, { indent: " ", enableColors: true }),
-        ["./../Summary/FourRequestPerSecond" + new Date().toISOString().substr(0, 19).replace(/(:|-)/g, "").replace("T", "_") + ".json"]: JSON.stringify(data),
+        [`./../Summary/FourRequestPerSecond${timestamp}.json`]: JSON.stringify(data),
     }
 }

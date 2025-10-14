@@ -15,7 +15,7 @@ namespace UKHO.S100PermitService.Common.Handlers
         public WaitAndRetryPolicy(IOptions<WaitAndRetryConfiguration> waitAndRetryConfiguration)
         {
             ArgumentNullException.ThrowIfNull(waitAndRetryConfiguration);
-            _waitAndRetryConfiguration = waitAndRetryConfiguration ?? throw new ArgumentNullException(nameof(waitAndRetryConfiguration));
+            _waitAndRetryConfiguration = waitAndRetryConfiguration;
         }
 
         /// <summary>
