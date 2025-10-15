@@ -2,6 +2,8 @@ import http from 'k6/http';
 import { check } from 'k6';
 import { htmlReport } from "https://raw.githubusercontent.com/benc-uk/k6-reporter/main/dist/bundle.js";
 import { textSummary } from "https://jslib.k6.io/k6-summary/0.0.1/index.js";
+import { createSummaryArtifacts } from './utils/summaryHelper.js';
+
 const Config = JSON.parse(open('./../config.json'));
 const payload = JSON.parse(open('./../Data/Payload.json')); 
 
@@ -35,15 +37,10 @@ export default function TwoRequestPerSecond() {
     });
 }
 export function handleSummary(data) {
-    const iso = new Date().toISOString().slice(0, 19); // YYYY-MM-DDTHH:mm:ss
-    const timestamp = iso
-        .replace('T', '_')      // single occurrence
-        .replaceAll(':', '')    // remove all colons
-        .replaceAll('-', '');   // remove all dashes
-
-    return {
-        [`./../Summary/TwoRequestPerSecond${timestamp}.html`]: htmlReport(data),
-        stdout: textSummary(data, { indent: " ", enableColors: true }),
-        [`./../Summary/TwoRequestPerSecond${timestamp}.json`]: JSON.stringify(data),
-    }
+    return createSummaryArtifacts(
+        data,
+        "TwoRequestPerSecond",
+        htmlReport,
+        textSummary
+    );
 }
