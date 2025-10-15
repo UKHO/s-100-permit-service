@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.Common.Services
             try
             {
                 var certValue = _cacheProvider.GetCertificateCacheValue(certificateName);
-                if(certValue == null)
+                if(certValue.Length == 0)
                 {
                     certValue = GetSetCertificateValue(certificateName);
                 }

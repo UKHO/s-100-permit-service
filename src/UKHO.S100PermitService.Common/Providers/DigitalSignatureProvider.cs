@@ -56,13 +56,11 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             try
             {
-                using(var ecdsaPrivateKey = ECDsa.Create())
-                {
-                    ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
-                    var ecdsaSignature = ecdsaPrivateKey.SignHash(hashContent);
+                using var ecdsaPrivateKey = ECDsa.Create();
+                ecdsaPrivateKey.ImportECPrivateKey(Convert.FromBase64String(privateKeySecret), out _);
+                var ecdsaSignature = ecdsaPrivateKey.SignHash(hashContent);
 
-                    return ConvertToDerFormat(ecdsaSignature);
-                }
+                return ConvertToDerFormat(ecdsaSignature);
             }
             catch (Exception ex)
             {
@@ -126,7 +124,7 @@ namespace UKHO.S100PermitService.Common.Providers
         /// </summary>
         /// <param name="ecdsaSignature">The raw ECDSA signature as a byte array (concatenated r and s values).</param>
         /// <returns>A Base64-encoded string representing the DER-encoded ECDSA signature.</returns>
-        private string ConvertToDerFormat(byte[] ecdsaSignature)
+        private static string ConvertToDerFormat(byte[] ecdsaSignature)
         {
             var halfLength = ecdsaSignature.Length / 2;
             var r = ecdsaSignature[..halfLength];
