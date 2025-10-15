@@ -31,7 +31,7 @@ export default function TwoRequestPerSecond() {
     };  
     
     const res = http.post(url, JSON.stringify(payload), params);
-    console.log(res.status);2
+    console.log(res.status);
     check(res, {
         'status is 200': (r) => r.status === 200,
     });
