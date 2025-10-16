@@ -1,0 +1,143 @@
+parameters:
+  - name: ContinueEvenIfResourcesAreGettingDestroyed
+    type: boolean
+    default: false
+  - name: AzureSubscription
+    type: string
+  # The name of the environment to be used in Azure DevOps.
+  - name: AzureDevOpsEnvironment
+    type: string
+  # The name of the Terraform workspace to use. Will also be used to generate job names and, in lower case, used to select the correct var/x-deploy.yml variable file.
+  - name: ShortName
+    type: string
+  # Run functional tests.
+  - name: RunFunctionalTests
+    type: boolean
+    default: false
+  - name: AppPool
+    type: string
+  - name: Container
+    type: string
+  - name: RetainPipeline
+    type: boolean
+    default: false
+
+jobs:
+  - deployment: ${{parameters.ShortName}}DeployTerraform
+    displayName: "${{parameters.ShortName}} - Deploy Terraform"
+    environment: ${{parameters.AzureDevOpsEnvironment}}
+    pool: $(DeploymentPool)
+    container: ${{parameters.Container}}
+    workspace:
+      clean: all
+    variables:
+    - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
+    - name : WEB_APP_NAME
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
+    - name : STUB_WEB_APP_NAME
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.stubWebApp'] ]
+    - name : KeyVaultSettings.ServiceUri
+      value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+              clean: true                          
+            - download: current
+              displayName: Download terraformartifact
+              artifact: terraformartifact
+            - task: PowerShell@2
+              displayName: "terraform $(Environment)deploy"
+              name: TerraformDeploy
+              inputs:
+                targetType: filePath
+                filePath: '$(Pipeline.Workspace)/terraformartifact/terraform_conditional_run.ps1'
+                arguments: '-deploymentResourceGroupName $(DeploymentResourceGroupName) -deploymentStorageAccountName $(DeploymentStorageAccountName) -workSpace $(Environment) -continueEvenIfResourcesAreGettingDestroyed $${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }} -terraformJsonOutputFile $(Pipeline.Workspace)/terraformartifact/terraform_output.json'
+              env:
+                ARM_CLIENT_ID: $(TERRAFORM-CLIENT-ID)
+                ARM_CLIENT_SECRET: $(TERRAFORM-CLIENT-SECRET)
+                ARM_TENANT_ID: $(TERRAFORM-TENANT-ID)
+                ARM_SUBSCRIPTION_ID: $(TERRAFORM-SUBSCRIPTION-ID)
+                TF_VAR_spoke_rg: $(spokeRG)
+                TF_VAR_spoke_vnet_name: $(spokeVnetName)
+                TF_VAR_spoke_subnet_name: $(spokeSubnetName)
+                TF_VAR_hardwareid: $(HardwareId)
+                TF_VAR_subscription_id: $(subscriptionId)
+                TF_VAR_hub_subscription_id: $(hubSubscriptionId)
+                TF_VAR_pe_vnet_name: $(peVnetName)
+                TF_VAR_pe_subnet_name: $(peSubnetName)
+                TF_VAR_pe_rg: $(peRG)
+                TF_VAR_autotest_object_id: $(EntraID.AutoTest.ObjectIdentifier)
+                TF_VAR_dns_zone_rg: $(dnsZoneRG)            
+
+  - deployment: ${{parameters.ShortName}}DeployApp
+    dependsOn: ${{parameters.ShortName}}DeployTerraform
+    displayName: "${{parameters.ShortName}} - Deploy Dotnet App"
+    environment: "S100PG-${{parameters.ShortName}}"
+    pool: ${{parameters.AppPool}}
+    variables:
+      - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
+      - name : WEB_APP_NAME
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.WEB_APP'] ]
+      - name : STUB_WEB_APP_NAME
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.stubWebApp'] ]
+      - name : KeyVaultSettings.ServiceUri
+        value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+    workspace:
+      clean: all
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-StubService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(STUB_WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceStubService/UKHO.S100PermitService.StubService.zip"
+           
+            - task: FileTransform@2
+              displayName: "File Transform: API Service Application Settings"
+              inputs:
+                folderPath: '$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/*.zip'
+                xmlTransformationRules:
+                jsonTargetFiles: '**/appsettings.json'
+
+            - task: AzureWebApp@1
+              displayName: "Azure App Deploy: S100-Permit-ApiService"
+              inputs:
+                azureSubscription: "${{ parameters.AzureSubscription }}"
+                appType: webApp
+                appName: "$(WEB_APP_NAME)"
+                package: "$(Pipeline.Workspace)/UKHOS100PermitServiceAPI/UKHOS100PermitServiceAPI.zip"
+  
+  - ${{ if eq(parameters.RunFunctionalTests, true) }}:   
+    - job: FunctionalTests
+      dependsOn:
+      - ${{parameters.ShortName}}DeployTerraform
+      - ${{parameters.ShortName}}DeployApp
+      pool: ${{ parameters.AppPool }}
+      variables:
+        - template: var/${{ lower(parameters.ShortName) }}-deploy.yml
+        - name : KeyVaultSettings.ServiceUri
+          value : $[ dependencies.${{parameters.ShortName}}DeployTerraform.outputs['${{parameters.ShortName}}DeployTerraform.TerraformDeploy.KeyVaultServiceUri'] ]
+      displayName: "${{parameters.ShortName}} Functional Automated Tests"
+      workspace:
+        clean: all
+      steps:
+        - template: continuous-testing.yml
+          parameters:
+            AzureSubscription: "${{ parameters.AzureSubscription }}"
+
+  - ${{ if eq(parameters.RetainPipeline, true) }}:
+    - job: ${{ parameters.ShortName }}RetainPipeline
+      displayName: ${{ upper(parameters.ShortName) }} - retain pipeline
+      dependsOn:
+      - ${{ parameters.ShortName }}DeployApp
+      steps:
+      - checkout: UKHOTemplates
+      - template: retain-pipelinerun/retain-pipelinerun.yml@UKHOTemplates
+        parameters:
+          DaysValid: 365

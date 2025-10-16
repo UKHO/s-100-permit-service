@@ -1,4 +1,4 @@
-# S-100 Permit Generator
+# S-100 Permit Service
 
 ## Notes on branching and repository layout
 

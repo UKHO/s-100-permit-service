@@ -1,0 +1,247 @@
+openapi: 3.0.1
+info:
+  title: UKHO S100 Permit Service API
+  description: |
+    This API provides functionality to generate signed PERMIT.XML files 
+    using the S-100 Part 15 data protection scheme. It enables users to request permits 
+    for specific products and retrieve them as a compressed ZIP file.
+  contact:
+    name: UKHO
+    email: abzudeliveryteam@ukho.gov.uk
+  version: 0.0.1
+  
+externalDocs:
+  url: https://github.com/UKHO/s-100-permit-service
+  
+servers:
+  - url: https://{environment}.s100.permit-service.com
+    description: UKHO Permit Service API Environment
+    variables:
+      environment:
+        default: local
+        enum:
+          - local
+          - dev
+          - vnextiat
+          - vnexte2e
+          - iat
+          - preProd
+          - live
+
+security:
+  - jwtBearerAuth: []
+  
+paths:
+  /v1/permits/s100:
+    post:
+      description: |
+        Generates signed PERMIT.XML files for requested products and user permits (UPNs),
+        returning them in a compressed ZIP file.
+      operationId: generateS100Permits
+      parameters:
+        - name: Authorisation
+          in: header
+          required: true
+          schema:
+            type: string
+          description: "Bearer token, where token is a valid JWT token"
+        - name: X-Correlation-ID
+          in: header
+          required: false
+          schema:
+            type: string
+          description: Request tracing identifier      
+      requestBody:
+        description: |
+          The JSON body containing products and user permits, for which the permits are to be generated.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                products:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/product'
+                  minItems: 1
+                userPermits:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/userPermit'
+                  minItems: 1
+            example: { 
+                        "products": 
+                        [
+                            {
+                                "productName": "101GB40304A",
+                                "editionNumber": 3,
+                                "permitExpiryDate": "2025-01-31"
+                            },
+                            {
+                                "productName": "102GB40304B",
+                                "editionNumber": 3,
+                                "permitExpiryDate": "2025-01-31"
+                            }
+                        ],
+                        "userPermits": 
+                        [
+                            {
+                                "title": "IHO Test System",
+                                "upn": "869D4E0E902FA2E1B934A3685E5D0E85C1FDEC8BD4E5F6"
+                            },
+                            {
+                                "title": "OeM Test 1",
+                                "upn": "7B5CED73389DECDB110E6E803F957253F0DE13D1G7H8I9"
+                            }
+                         ],
+                    }
+      responses:
+        "200":
+          $ref: '#/components/responses/OkResponse'
+        "400":
+          $ref: '#/components/responses/BadRequestResponse'
+        "401":
+          $ref: '#/components/responses/UnauthorizedResponse'
+        "403":
+          $ref: '#/components/responses/ForbiddenResponse'
+        "429":
+          $ref: '#/components/responses/TooManyRequestsResponse'
+        "500":
+          $ref: '#/components/responses/InternalServerErrorResponse'
+
+components:
+  schemas:
+    product:
+      type: object
+      properties:
+        productName:
+          type: string
+          maxLength: 255
+        editionNumber:
+          type: integer
+          minimum: 1
+        permitExpiryDate:
+          type: string
+          format: date
+    userPermit:
+      type: object
+      properties:
+        title:
+          type: string
+        upn:
+          type: string
+    exceptionDescription:
+      type: object
+      properties:
+        correlationId:
+          type: string
+    errorDescription:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: '#/components/schemas/fieldError'
+    fieldError:
+      type: object
+      properties:
+        source:
+          type: string
+        description:
+          type: string
+  securitySchemes:
+    jwtBearerAuth: # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  headers:
+    X-Correlation-ID:
+      description: GUID for the request for logging/tracing
+      schema:
+        type: string
+    Origin:
+      description: The original API or service which has returned the response
+      schema:
+        type: string
+        example: PKS
+  responses:
+    OkResponse:
+      description: OK - Returns permit files in a compressed ZIP file.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Content-Disposition:
+          schema:
+            type: string
+            format: filename=permits.zip; filename*=UTF-8''Permits.zip
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/zip:
+          schema:
+            title: S100 Permits ZIP File
+            type: string
+            format: binary
+    BadRequestResponse:
+      description: Bad Request - The request is invalid or one or more of the supplied products or UPNs are invalid.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/errorDescription'
+          example:
+            correlationId: 6c254109-8a0f-4446-8649-721775ba9de2
+            errors:
+            - source: "productType"
+              description: Must be a valid product type.
+            - source: "products[0].productName"
+              description: Must be a maximum of 255 characters.
+            - source: "products[2].editionNumber"
+              description: Must be a natural number i.e. positive number greater than 0
+            - source: "products[7].permitExpiryDate"
+              description: Must be in UTC format YYYY-MM-DD.
+            - source: "userPermits[0].title"
+              description: "Must not contain the characters \\ / : * ? \" < > |."
+            - source: "userPermits[0].upn"
+              description: Must be exactly 46 characters long with a verified checksum.
+
+    UnauthorizedResponse:
+      description: Unauthorised - Either you have not provided a valid token, or your token is not recognised.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content: {}
+    ForbiddenResponse:
+      description: Forbidden - You are not authorised to access this resource.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+    TooManyRequestsResponse:
+      description: Too Many Requests - Too many requests are being sent in a given amount of time.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+    InternalServerErrorResponse:
+      description: Internal Server Error - An error occurred on the server.
+      headers:
+        X-Correlation-ID:
+          $ref: '#/components/headers/X-Correlation-ID'
+        Origin:
+          $ref: '#/components/headers/Origin'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/exceptionDescription'

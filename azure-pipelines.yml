@@ -1,19 +1,209 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
+name: $(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd).$(BuildCounter)
 
+parameters:
+
+  - name: ContinueEvenIfResourcesAreGettingDestroyed
+    displayName: "Continue even if resources are getting destroyed"
+    type: boolean
+    default: false  
+
+  - name: RunStryker
+    displayName: "Run Stryker test mutation"
+    type: boolean
+    default: true
+
+
+    
 trigger:
-- main
+  - main
+  - release/*
+  - develop 
 
-pool:
-  vmImage: ubuntu-latest
+pool: 
+    name: NautilusBuild
+    demands: vs_16 -equals 1 #exclude agents 13 and 14 as code coverage report fails 
 
-steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
+variables:
+  - name: BuildConfiguration
+    value: "release"
+  - name: BuildPlatform
+    value: "any cpu"
+  - name: BuildCounter
+    value: $[counter(format('{0:yyyyMMdd}', pipeline.startTime), 1)]
+  - name: UKHOAssemblyCompany
+    value: "UK Hydrographic Office"
+  - name: UKHOAssemblyVersionPrefix
+    value: "1.0."
+  - name: UKHOAssemblyProduct
+    value: "S-100 Permit Service"
+  - name: UKHOAssemblyCopyright
+    value: "Copyright © UK Hydrographic Office"
+  - name: WindowsPool
+    value: "NautilusBuild"
+  - name: Container
+    value: "ukhydrographicoffice/terraform-azure-powershell-unzip:1.9.2"
+  - name: DeploymentPool
+    value: "Mare Nectaris"
+  - name: DeploymentPoolPE
+    value: "Private Link Deployments (ENG)"
+  - name: DeploymentPoolPD
+    value: "Private Link Deployments (BUS)"
+  - name: snykAbzuOrganizationId
+    value: "aeb7543b-8394-457c-8334-a31493d8910d"
 
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+resources:
+  repositories:
+  - repository: UKHOTemplates
+    type: github
+    name: UKHO/devops-pipelinetemplates
+    endpoint: UKHO
+    ref: refs/heads/main
+
+stages:
+  - stage: RUNSTRKER
+    displayName: "Run Stryker"
+    condition: ${{ eq(parameters.RunStryker, true) }}
+    dependsOn: []
+    jobs:
+      - job: Stryker      
+        workspace:
+          clean: all        
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8.0.x sdk'
+            inputs:
+              packageType: sdk
+              useGlobalJson: true
+              workingDirectory: '$(Build.SourcesDirectory)'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Install Stryker'
+            inputs:
+              command: 'custom'
+              custom: 'tool'
+              arguments: 'install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools'
+
+          - task: Powershell@2
+            displayName: 'Run Stryker Permit Service API UnitTests'
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS API Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service API Mutation Report'
+
+          - task: Powershell@2
+            displayName: "Run Stryker Permit Service Common UnitTests"
+            inputs:
+              workingDirectory: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests'
+              targetType: 'inline'
+              pwsh: true
+              script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+
+          - task: PublishMutationReport@0
+            displayName: 'Publish Strkyer Mutator PS Common Report'
+            inputs:
+              reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
+              reportDisplayName: 'Permit Service Common Mutation Report'
+
+  - stage: BuildTestPublish
+    displayName: "Build, Test and Publish"
+    dependsOn: []
+    jobs:
+      - template: Deployment/templates/build-test-publish.yml
+    
+  - stage: Devdeploy
+    dependsOn:
+    - BuildTestPublish
+    displayName: "Devdeploy (inc terraform, webapp deploy)"    
+    jobs:
+      - template: Deployment/templates/continuous-deployment.yml
+        parameters:
+          AzureDevOpsEnvironment: "S100PG-DEV"
+          ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+          AzureSubscription: "S-100 Permit Generator Dev - A.011.15.5"
+          ShortName: "Dev"
+          AppPool: $(DeploymentPoolPE)
+          Container: ${{variables.Container}}          
+          RunFunctionalTests: true 
+    
+
+  - stage: vNextIATDeploy
+    dependsOn:  Devdeploy
+    displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-VNEXTIAT"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
+        ShortName: "vNextIAT"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}}        
+      
+    
+  
+  - stage: vNextE2EDeploy
+    dependsOn: vNextIATDeploy
+    displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-VNEXTE2E"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator vNext-E2E - A.011.15.5"
+        ShortName: "VNEXTE2E"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}} 
+  
+  - stage: IATDeploy
+    dependsOn:  Devdeploy
+    displayName: "IATdeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-IAT"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator IAT - A.011.15.5"
+        ShortName: "IAT"
+        AppPool: $(DeploymentPoolPE)
+        Container: ${{variables.Container}}
+        RunFunctionalTests: true 
+      
+
+  - stage: PreProdDeploy
+    dependsOn:  IATDeploy
+    displayName: "PreProdDeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-PreProd"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator PreProd - A.011.15.5"
+        ShortName: "PreProd"
+        AppPool: $(DeploymentPoolPD)
+        Container: ${{variables.Container}}
+  
+  - stage: LiveDeploy
+    dependsOn:  PreProdDeploy
+    displayName: "LiveDeploy (inc terraform, webapp deploy)"
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'),startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+    jobs:
+    - template: Deployment/templates/continuous-deployment.yml
+      parameters:
+        AzureDevOpsEnvironment: "S100PG-Live"
+        ContinueEvenIfResourcesAreGettingDestroyed: ${{ parameters.ContinueEvenIfResourcesAreGettingDestroyed }}
+        AzureSubscription: "S-100 Permit Generator Live - A.011.15.5"
+        ShortName: "Live"
+        AppPool: $(DeploymentPoolPD)
+        Container: ${{variables.Container}}
+        RetainPipeline: true
+ 

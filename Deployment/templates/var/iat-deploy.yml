@@ -1,0 +1,24 @@
+variables:
+# Common across all environments.
+- group: "S-100-PG-IAT"
+- group: "S-100-PG-IAT-TF"
+- group: "S-100-PG-IAT-KV"
+
+- name: AzureAdConfiguration.TenantId
+  value: $(EntraID.TenantId)
+- name: "AzureAdConfiguration.ClientId"
+  value: $(EntraID.ApplicationId)
+
+# variable to run functional tests environments.
+- name: "TokenConfiguration.TenantId"
+  value: $(EntraID.TenantId)
+- name: "TokenConfiguration.ClientId"
+  value: $(EntraID.ApplicationId)
+- name: "TokenConfiguration.ClientIdWithAuth"
+  value: $(EntraID.AutoTest.ApplicationId)
+- name: "TokenConfiguration.ClientIdNoAuth"
+  value: $(EntraID.AutoTestNoAuth.ApplicationId)
+- name: "TokenConfiguration.ClientSecret"
+  value: $(TokenConfiguration--ClientSecret)
+- name: "TokenConfiguration.ClientSecretNoAuth"
+  value: $(TokenConfiguration--ClientSecretNoAuth)

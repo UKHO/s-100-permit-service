@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Permit xmlns:S100SE="http://www.iho.int/s100/se/5.2" xmlns:ns2="http://standards.iso.org/iso/19115/-3/gco/1.0" xmlns="http://www.iho.int/s100/se/5.2">
+	<S100SE:header>
+		<S100SE:issueDate>2025-02-24+00:00</S100SE:issueDate>
+		<S100SE:dataServerName>UK Hydrographic Office</S100SE:dataServerName>
+		<S100SE:dataServerIdentifier>GB00</S100SE:dataServerIdentifier>
+		<S100SE:version>5.2.0</S100SE:version>
+		<S100SE:userpermit>EF1C61C926BD9F18F44897CA1A5214BE06F92FF8J0K1L2</S100SE:userpermit>
+	</S100SE:header>
+	<S100SE:products>
+		<S100SE:product id="S-101">
+			<S100SE:datasetPermit>
+				<S100SE:filename>101GB40079ABCDEFG</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:encryptedKey>157C671EC53A022CCEA69DEA5536A779</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+			<S100SE:datasetPermit>
+				<S100SE:filename>101GB40080ABCDEFG</S100SE:filename>
+				<S100SE:editionNumber>2</S100SE:editionNumber>
+				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:encryptedKey>903826CD3CD8A2AF7B816AF8E845AF63</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+		</S100SE:product>
+		<S100SE:product id="S-102">
+			<S100SE:datasetPermit>
+				<S100SE:filename>102US40079ABCDEF</S100SE:filename>
+				<S100SE:editionNumber>1</S100SE:editionNumber>
+				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:encryptedKey>0EB95960AEAB40A8F65F02BDAB61E878</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+		</S100SE:product>
+		<S100SE:product id="S-104">
+			<S100SE:datasetPermit>
+				<S100SE:filename>104EG00_qE4cDLyceTRaG5Tzbw_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>10</S100SE:editionNumber>
+				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:encryptedKey>3C95817EED67CAD98EC65D61E915262E</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+		</S100SE:product>
+		<S100SE:product id="S-111">
+			<S100SE:datasetPermit>
+				<S100SE:filename>111NZ06pbwAj0_h1AApc3dHcL-eyKP9G4GuDepwiEW19QrKA_20190703T00Z</S100SE:filename>
+				<S100SE:editionNumber>7</S100SE:editionNumber>
+				<S100SE:expiry>2026-01-31</S100SE:expiry>
+				<S100SE:encryptedKey>DD491B1B427D30AC6C05A420FA028E7A</S100SE:encryptedKey>
+			</S100SE:datasetPermit>
+		</S100SE:product>
+	</S100SE:products>
+</Permit>

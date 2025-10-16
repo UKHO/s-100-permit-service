@@ -1,0 +1,10 @@
+variables:
+# Common across all environments.
+- group: "S-100-PG-Live"
+- group: "S-100-PG-Live-TF"
+- group: "S-100-PG-Live-KV"
+
+- name: AzureAdConfiguration.TenantId
+  value: $(EntraID.TenantId)
+- name: "AzureAdConfiguration.ClientId"
+  value: $(EntraID.ApplicationId)
