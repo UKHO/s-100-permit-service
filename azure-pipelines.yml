@@ -135,6 +135,7 @@ stages:
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
@@ -145,13 +146,11 @@ stages:
         ShortName: "vNextIAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}        
-      
-    
   
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
       parameters:
@@ -175,8 +174,6 @@ stages:
         ShortName: "IAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}
-        RunFunctionalTests: true 
-      
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy
