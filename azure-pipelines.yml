@@ -135,7 +135,7 @@ stages:
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
-    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
