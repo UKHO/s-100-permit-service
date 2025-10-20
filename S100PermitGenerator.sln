@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34616.47
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B768CB28-7109-49B6-980D-FE2F110A236B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{99FD46A1-B742-4110-B63D-1B560C0E1CC0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitGenerator.API", "src\UKHO.S100PermitGenerator.API\UKHO.S100PermitGenerator.API.csproj", "{D0711664-3CD8-4020-BA37-F66563E77BFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UKHO.S100PermitGenerator.API.Tests", "test\UKHO.S100PermitGenerator.API.Tests\UKHO.S100PermitGenerator.API.Tests.csproj", "{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{94008A94-8470-4343-BA86-AF698D9D8B1F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MaintainManufacturerKey", "tools\MaintainManufacturerKey\MaintainManufacturerKey.csproj", "{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0711664-3CD8-4020-BA37-F66563E77BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0711664-3CD8-4020-BA37-F66563E77BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0711664-3CD8-4020-BA37-F66563E77BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0711664-3CD8-4020-BA37-F66563E77BFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{D0711664-3CD8-4020-BA37-F66563E77BFD} = {B768CB28-7109-49B6-980D-FE2F110A236B}
+		{EBCCAB13-D6AA-4EF9-8137-07B080D7FD34} = {99FD46A1-B742-4110-B63D-1B560C0E1CC0}
+		{DB128B3B-AF23-4368-9AD0-D7A9717F5E0A} = {94008A94-8470-4343-BA86-AF698D9D8B1F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1A236686-85EA-4703-A715-FCBAA6461AAE}
+	EndGlobalSection
+EndGlobal
