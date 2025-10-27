@@ -238,7 +238,7 @@ jobs:
           command: "build"
           projects: |
             **/UKHO.S100PermitService.StubService.csproj
-          arguments: '--configuration $(BuildConfiguration)'
+          arguments: '--configuration $(BuildConfiguration) --no-restore'
 
       - task: DotNetCoreCLI@2
         displayName: "Publish S-100 Permit Service StubService"
