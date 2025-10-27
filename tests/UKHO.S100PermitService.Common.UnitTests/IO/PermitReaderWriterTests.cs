@@ -78,7 +78,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
 
             var result = await _permitReaderWriter.CreatePermitZipAsync(GetPermitDetails());
 
-            Assert.IsNotNull(result);
+            Assert.That(result != null);
 
             var xmlAndSignStrings = ConvertMemoryStreamToXmlAndSignStrings(result);
 

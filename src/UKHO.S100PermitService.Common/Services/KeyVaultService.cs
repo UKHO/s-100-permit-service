@@ -35,14 +35,14 @@ namespace UKHO.S100PermitService.Common.Services
         /// <param name="secretName">secret Name.</param>
         /// <returns>Secret Key.</returns>
         /// <exception cref="PermitServiceException">PermitServiceException exception will be thrown when exception occurred.</exception>
-        public string GetSecretKeys(string secretName)
+        public async Task<string> GetSecretKeys(string secretName)
         {
             try
             {
                 var secretValue = _cacheProvider.GetCacheValue(secretName);
                 if(string.IsNullOrEmpty(secretValue))
                 {
-                    secretValue = GetSetSecretKeyValue(secretName).Value;
+                    secretValue = (await GetSetSecretKeyValue(secretName)).Value;
                 }
                 else
                 {
@@ -94,9 +94,9 @@ namespace UKHO.S100PermitService.Common.Services
         /// </summary>
         /// <param name="secretName">SecretName.</param>
         /// <returns>SecretKeys</returns>
-        private KeyVaultSecret GetSetSecretKeyValue(string secretName)
+        private async Task<KeyVaultSecret> GetSetSecretKeyValue(string secretName)
         {
-            var secretValue = _secretClient.GetSecret(secretName);
+            var secretValue = await _secretClient.GetSecretAsync(secretName);
 
             _cacheProvider.SetCache(secretName, secretValue.Value);
 

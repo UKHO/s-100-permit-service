@@ -32,7 +32,7 @@ namespace UKHO.S100PermitService.Common.Services
             var permitXmlHash = _digitalSignatureProvider.GeneratePermitXmlHash(permitXmlContent);
 
             //Retrieved the data server's private key from the Key Vault.
-            var privateKeySecret = _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
+            var privateKeySecret = await _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
 
             //Retrieved the data server's certificate from the Key Vault.
             var certificateSecret = _keyVaultService.GetCertificate(_dataKeyVaultConfiguration.Value.DsCertificate);

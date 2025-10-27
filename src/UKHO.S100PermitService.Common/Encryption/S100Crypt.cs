@@ -72,7 +72,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                     Title = userPermit.Title
                 };
 
-                var mKey = _keyVaultService.GetSecretKeys(userPermit.Upn[^MIdLength..]);
+                var mKey = await _keyVaultService.GetSecretKeys(userPermit.Upn[^MIdLength..]);
                 upnInfo.DecryptedHardwareId = await _aesEncryption.DecryptAsync(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
 
                 listOfUpnInfo.Add(upnInfo);

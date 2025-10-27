@@ -5,6 +5,7 @@ using Azure.Security.KeyVault.Secrets;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.OpenApi.Models;
@@ -14,6 +15,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using UKHO.Logging.EventHubLogProvider;
 using UKHO.S100PermitService.API.Filters;
+using UKHO.S100PermitService.API.HealthCheck;
 using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Clients;
@@ -77,6 +79,8 @@ namespace UKHO.S100PermitService.API
 
             app.MapControllers();
             app.UseAuthorization();
+
+            app.MapHealthChecks("/health");
 
             app.Run();
         }
@@ -172,7 +176,12 @@ namespace UKHO.S100PermitService.API
             {
                 client.BaseAddress = new Uri(productKeyServiceApiConfiguration.BaseUrl);
                 client.Timeout = TimeSpan.FromMinutes(productKeyServiceApiConfiguration.RequestTimeoutInMinutes);
+
             });
+
+            builder.Services.AddHealthChecks()
+                .AddCheck<ProductKeyServiceHealthCheck>("product-key-service", tags: ["external-dependency"])
+                .AddCheck<KeyVaultSecretsHealthCheck>("key-vault-secrets", tags: ["ready", "external-dependency"]);
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             builder.Services.AddSingleton<IProductKeyServiceAuthTokenProvider, AuthTokenProvider>();

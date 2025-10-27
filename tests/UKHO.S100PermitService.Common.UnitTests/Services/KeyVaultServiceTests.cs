@@ -58,7 +58,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = () => _keyVaultService.GetSecretKeys("pqr");
 
-            result.Should().Throw<PermitServiceException>().WithMessage("No Secrets found in Secret Key Vault, failed with Exception :{Message}");
+            result.Should().ThrowAsync<PermitServiceException>().WithMessage("No Secrets found in Secret Key Vault, failed with Exception :{Message}");
         }
 
         [Test]
@@ -71,7 +71,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = _keyVaultService.GetSecretKeys("abc");
 
-            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustNotHaveHappened();
 
             A.CallTo(_fakeLogger).Where(call =>
             call.Method.Name == "Log"
@@ -85,16 +85,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenSecretKeyPassedWhichIsNotInMemoryCache_ThenFetchSecretsFromKeyVault()
+        public async Task WhenSecretKeyPassedWhichIsNotInMemoryCache_ThenFetchSecretsFromKeyVault()
         {
             var secretKey = "mpn";
             var secretValue = "";
 
             A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
 
-            A.CallTo(() => _fakeSecretClient.GetSecret(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(GetSecret(secretKey, secretValue));
 
-            var result = _keyVaultService.GetSecretKeys(secretKey);
+            var result = await _keyVaultService.GetSecretKeys(secretKey);
 
             A.CallTo(() => _fakeCacheProvider.SetCache(A<string>.Ignored, A<string>.Ignored)).MustHaveHappened();
 

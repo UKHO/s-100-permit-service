@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Events;
@@ -6,15 +7,19 @@ using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
-    public class ProductKeyServiceApiClient : IProductKeyServiceApiClient
+    public class ProductKeyServiceApiClient(ILogger<ProductKeyServiceApiClient> logger, IHttpClientFactory httpClientFactory) : IProductKeyServiceApiClient
     {
-        private readonly ILogger<ProductKeyServiceApiClient> _logger;
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
 
-        public ProductKeyServiceApiClient(ILogger<ProductKeyServiceApiClient> logger, IHttpClientFactory httpClientFactory)
+        public async Task<HealthStatus> GetHealthCheckAsync(CancellationToken cancellationToken = default)
         {
-            _logger = logger;
-            _httpClient = httpClientFactory.CreateClient();
+            var response = await _httpClient.GetAsync("health", cancellationToken);
+
+            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            var productKeyServiceHealthResponse = JsonSerializer.Deserialize<ProductKeyServiceHealthResponse>(content);
+
+            return productKeyServiceHealthResponse.HealthStatus;
         }
 
         /// <summary>
@@ -40,7 +45,7 @@ namespace UKHO.S100PermitService.Common.Clients
             }
             else
             {
-                _logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null.");
+                logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null.");
             }
 
             return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
