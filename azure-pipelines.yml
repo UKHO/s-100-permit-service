@@ -12,8 +12,6 @@ parameters:
     type: boolean
     default: true
 
-
-    
 trigger:
   - main
   - release/*
@@ -131,7 +129,6 @@ stages:
           AppPool: $(DeploymentPoolPE)
           Container: ${{variables.Container}}          
           RunFunctionalTests: true 
-    
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
@@ -145,8 +142,6 @@ stages:
         ShortName: "vNextIAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}        
-      
-    
   
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
@@ -176,7 +171,6 @@ stages:
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}
         RunFunctionalTests: true 
-      
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy
