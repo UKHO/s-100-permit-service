@@ -8,8 +8,7 @@ using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.API.HealthCheck
 {
-    public class ProductKeyServiceHealthCheck(ILogger<ProductKeyServiceHealthCheck> logger,
-            IProductKeyServiceApiClient httpClient) : IHealthCheck
+    public class ProductKeyServiceHealthCheck(IProductKeyServiceApiClient httpClient) : IHealthCheck
     {
 
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
