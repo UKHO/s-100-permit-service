@@ -2,6 +2,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using System.Net;
+using System.Net.Http;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
@@ -48,9 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
@@ -77,9 +76,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "fakeToken", _fakeCorrelationId, CancellationToken.None);
 
@@ -99,9 +96,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], token, _fakeCorrelationId, CancellationToken.None);
 
@@ -122,8 +117,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             var httpRequestMessage = new HttpRequestMessage();
             var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(_fakeHttpClient);
-
             A.CallTo(() => _fakeHttpClient.SendAsync(A<HttpRequestMessage>.Ignored, A<CancellationToken>.Ignored))
                 .Invokes((HttpRequestMessage requestMessage, CancellationToken token) =>
                 {
@@ -135,7 +128,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                                     { new() { ProductName = "test101", Edition = "1", Key = "123456"} }))
                 }));
 
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
