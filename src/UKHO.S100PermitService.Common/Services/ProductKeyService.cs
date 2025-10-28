@@ -54,7 +54,7 @@ namespace UKHO.S100PermitService.Common.Services
             var accessToken = await _productKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(_productKeyServiceApiConfiguration.Value.ClientId);
 
             var httpResponseMessage = await _waitAndRetryPolicy.GetRetryPolicyAsync(_logger, EventIds.RetryHttpClientProductKeyServiceRequest).ExecuteAsync(() =>
-                _productKeyServiceApiClient.GetProductKeysAsync(uri.AbsoluteUri, productKeyServiceRequest, accessToken, correlationId, cancellationToken)
+                _productKeyServiceApiClient.GetProductKeysAsync(uri.PathAndQuery, productKeyServiceRequest, accessToken, correlationId, cancellationToken)
             );
 
             var bodyJson = await httpResponseMessage.Content.ReadAsStringAsync(cancellationToken);

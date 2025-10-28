@@ -7,13 +7,11 @@ using UKHO.S100PermitService.Common.Models.ProductKeyService;
 
 namespace UKHO.S100PermitService.Common.Clients
 {
-    public class ProductKeyServiceApiClient(ILogger<ProductKeyServiceApiClient> logger, IHttpClientFactory httpClientFactory) : IProductKeyServiceApiClient
+    public class ProductKeyServiceApiClient(ILogger<ProductKeyServiceApiClient> logger, HttpClient httpClient) : IProductKeyServiceApiClient
     {
-        private readonly HttpClient _httpClient = httpClientFactory.CreateClient();
-
         public async Task<HealthStatus> GetHealthCheckAsync(CancellationToken cancellationToken = default)
         {
-            var response = await _httpClient.GetAsync("health", cancellationToken);
+            var response = await httpClient.GetAsync("health", cancellationToken);
 
             var content = await response.Content.ReadAsStringAsync(cancellationToken);
 
@@ -48,7 +46,7 @@ namespace UKHO.S100PermitService.Common.Clients
                 logger.LogWarning(EventIds.MissingAccessToken.ToEventId(), "Access token is empty or null.");
             }
 
-            return await _httpClient.SendAsync(httpRequestMessage, cancellationToken);
+            return await httpClient.SendAsync(httpRequestMessage, cancellationToken);
         }
     }
 }
