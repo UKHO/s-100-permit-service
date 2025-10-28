@@ -1,6 +1,4 @@
-﻿using Azure.Core;
-using Azure.Security.KeyVault.Secrets;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
@@ -9,10 +7,10 @@ namespace UKHO.S100PermitService.API.HealthCheck
 {
     public class KeyVaultSecretsHealthCheck : IHealthCheck
     {
-        private readonly KeyVaultSecretClient _secretClient;
+        private readonly ISecretClient _secretClient;
         private readonly string _secretName;
 
-        public KeyVaultSecretsHealthCheck(KeyVaultSecretClient secretClient, IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
+        public KeyVaultSecretsHealthCheck(ISecretClient secretClient, IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
         {
             _secretClient = secretClient;
             _secretName = dataKeyVaultConfiguration.Value.DsPrivateKey;
