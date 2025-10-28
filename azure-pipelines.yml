@@ -58,7 +58,7 @@ resources:
     ref: refs/heads/main
 
 stages:
-  - stage: RUNSTRKER
+  - stage: RUNSTRYKER
     displayName: "Run Stryker"
     condition: ${{ eq(parameters.RunStryker, true) }}
     dependsOn: []
@@ -79,7 +79,7 @@ stages:
             inputs:
               command: 'custom'
               custom: 'tool'
-              arguments: 'install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools'
+              arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --configfile $(Build.SourcesDirectory)/BuildNuget.config
 
           - task: Powershell@2
             displayName: 'Run Stryker Permit Service API UnitTests'
