@@ -283,12 +283,12 @@ jobs:
           packagesDirectory: '$(Build.SourcesDirectory)\src\packages'
 
       - task: DotNetCoreCLI@2
-        displayName: "Publish Functional Test Code "
+        displayName: "Publish Functional Test Code"
         inputs:
           command: "publish"
           publishWebProjects: false
           projects: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests\UKHO.S100PermitService.API.FunctionalTests.csproj'
-          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests'
+          arguments: '--configuration $(BuildConfiguration) --output $(Build.ArtifactStagingDirectory)\UKHO.S100PermitService.API.FunctionalTests --no-restore'
           workingDirectory: '$(Build.SourcesDirectory)\tests\UKHO.S100PermitService.API.FunctionalTests'
           zipAfterPublish: false
           modifyOutputPath: true
