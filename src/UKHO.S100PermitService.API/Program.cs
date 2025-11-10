@@ -77,9 +77,10 @@ namespace UKHO.S100PermitService.API
 
             ConfigureLogging(app);
 
-            app.MapControllers();
+            app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapControllers();
             app.MapHealthChecks("/health");
 
             app.Run();
