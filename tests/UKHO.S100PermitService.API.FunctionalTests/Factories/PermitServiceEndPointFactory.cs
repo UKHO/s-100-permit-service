@@ -14,6 +14,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         private static readonly string _zipFileName = "Permits.zip";
         private static ILogger _logger = NullLogger.Instance;
 
+        public static void InitializeHttpClient(string baseUrl)
+        {
+            _httpClient.Timeout = TimeSpan.FromMinutes(10);
+            _httpClient.BaseAddress = new Uri(baseUrl);
+        }
+
         /// <summary>
         /// This method is used to interact with permits endpoint
         /// </summary>
@@ -22,14 +28,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="payload">Provides the payload</param>
         /// <param name="isUrlValid">Sets the validity of url</param>
         /// <returns>Response of S-100 Permit Service Endpoint</returns>
-        public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? baseUrl, string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
+        public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
         {
             _uri = $"/v1/permits/s100";
             if(!isUrlValid)
             {
                 _uri = $"/permits/s100";
             }
-            _httpClient.BaseAddress = new Uri(baseUrl);
 
             _logger.LogInformation("Calling S-100 Permit Service Endpoint: {uri}", _uri);
             using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
