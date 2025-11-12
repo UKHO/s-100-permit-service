@@ -53,7 +53,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync("./TestData/Payload/validPayload.json");
             _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
 
-            PermitServiceEndPointFactory.InitializeHttpClient(_permitServiceApiConfiguration!.BaseUrl);
+            PermitServiceEndPointFactory.InitializeHttpClient(_permitServiceApiConfiguration!.BaseUrl!);
 
             _logger.LogInformation("Functional test OneTimeSetup completed. BaseUrl={BaseUrl}", _permitServiceApiConfiguration.BaseUrl);
         }
@@ -92,7 +92,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorisedStatusCode401IsReturned()
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorisedStatusCode401IsReturned));
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration.InvalidToken, _payload!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.InvalidToken, _payload!);
             _logger.LogInformation("Response {Status} | Origin:{Origin}", (int)response.StatusCode, GetOrigin(response));
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
             Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
