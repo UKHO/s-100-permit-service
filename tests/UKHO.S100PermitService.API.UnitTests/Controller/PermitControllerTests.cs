@@ -161,7 +161,7 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             ).MustHaveHappenedOnceExactly();
         }
 
-        private PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
+        private static PermitServiceResult GetPermitServiceResult(HttpStatusCode httpStatusCode)
         {
             return httpStatusCode switch
             {
