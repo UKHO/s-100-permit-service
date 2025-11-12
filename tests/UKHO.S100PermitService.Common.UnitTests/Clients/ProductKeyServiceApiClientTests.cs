@@ -1,8 +1,6 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using System.Net;
-using System.Net.Http;
 using System.Text.Json;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
@@ -55,9 +53,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
-            result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
-            deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
-            deSerializedResult![0].Key.Should().Be("123456");
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(deSerializedResult!.Count, Is.GreaterThanOrEqualTo(1));
+            Assert.That(deSerializedResult![0].Key, Is.EqualTo("123456"));
         }
 
         [Test]
@@ -80,7 +78,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "fakeToken", _fakeCorrelationId, CancellationToken.None);
 
-            result.Result.StatusCode.Should().Be(httpStatusCode);
+            Assert.That(result.Result.StatusCode, Is.EqualTo(httpStatusCode));
         }
 
         [Test]
@@ -108,7 +106,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                     ["{OriginalFormat}"].ToString() == "Access token is empty or null."
             ).MustHaveHappenedOnceExactly();
 
-            result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
 
         [Test]
@@ -133,13 +131,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
             var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
-            httpRequestMessage.Headers.Authorization.Parameter.Should().Be("testToken");
+            Assert.That(httpRequestMessage.Headers.Authorization.Parameter, Is.EqualTo("testToken"));
 
-            httpRequestMessage.Headers.Contains(PermitServiceConstants.XCorrelationIdHeaderKey).Should().BeTrue();
-            httpRequestMessage.Headers.GetValues(PermitServiceConstants.XCorrelationIdHeaderKey).Should().Contain(_fakeCorrelationId);
-            result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
-            deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
-            deSerializedResult![0].Key.Should().Be("123456");
+            Assert.That(httpRequestMessage.Headers.Contains(PermitServiceConstants.XCorrelationIdHeaderKey), Is.True);
+            Assert.That(httpRequestMessage.Headers.GetValues(PermitServiceConstants.XCorrelationIdHeaderKey), Is.EquivalentTo(new[] { _fakeCorrelationId }));
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(deSerializedResult!.Count, Is.GreaterThanOrEqualTo(1));
+            Assert.That(deSerializedResult![0].Key, Is.EqualTo("123456"));
         }
     }
 }

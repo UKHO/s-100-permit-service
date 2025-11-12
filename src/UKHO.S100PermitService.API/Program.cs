@@ -205,7 +205,6 @@ namespace UKHO.S100PermitService.API
             builder.Services.AddScoped<IPermitSignGeneratorService, PermitSignGeneratorService>();
             builder.Services.AddScoped<IDigitalSignatureProvider, DigitalSignatureProvider>();
 
-            builder.Services.AddTransient<IProductKeyServiceApiClient, ProductKeyServiceApiClient>();
             builder.Services.AddScoped<IXmlTransformer, XmlTransformer>();
         }
 

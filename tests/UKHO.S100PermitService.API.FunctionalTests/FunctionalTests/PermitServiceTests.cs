@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using FluentAssertions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
@@ -27,7 +26,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         [OneTimeSetUp]
         public async Task OneTimeSetup()
         {
-            // Logger setup (console -> pipeline)
             _loggerFactory = LoggerFactory.Create(builder =>
             {
                 builder
@@ -42,7 +40,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 
             // Pass logger to the endpoint factory
             PermitServiceEndPointFactory.SetLogger(_loggerFactory.CreateLogger("PermitServiceEndPointFactory"));
-
             _logger.LogInformation("Functional test OneTimeSetup starting.");
 
             _authTokenProvider = new AuthTokenProvider();
@@ -56,6 +53,8 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync("./TestData/Payload/validPayload.json");
             _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
 
+            PermitServiceEndPointFactory.InitializeHttpClient(_permitServiceApiConfiguration!.BaseUrl);
+
             _logger.LogInformation("Functional test OneTimeSetup completed. BaseUrl={BaseUrl}", _permitServiceApiConfiguration.BaseUrl);
         }
 
@@ -65,11 +64,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned()
         {
             _logger.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithValidToken_ThenSuccessStatusCode200IsReturned));
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload!);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            response.StatusCode.Should().Be(HttpStatusCode.OK, body);
-            response.Headers.GetValues("Origin").Should().Contain("PermitService");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), body);
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
         }
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
@@ -80,10 +79,10 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithoutRequiredRoleToken_ThenForbiddenStatusCode403IsReturned));
             var noAuthToken = await _authTokenProvider!.GetPermitServiceTokenAsync(_tokenConfiguration!.ClientIdNoAuth!, _tokenConfiguration.ClientSecretNoAuth!);
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, noAuthToken, _payload!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(noAuthToken, _payload!);
             _logger.LogInformation("Response {Status} | Origin:{Origin}", (int)response.StatusCode, GetOrigin(response));
-            response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
-            response.Headers.GetValues("Origin").Should().Contain("PermitService");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Forbidden));
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
         }
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
@@ -93,10 +92,10 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorisedStatusCode401IsReturned()
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithInValidToken_ThenUnauthorisedStatusCode401IsReturned));
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _permitServiceApiConfiguration.InvalidToken, _payload!);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration.InvalidToken, _payload!);
             _logger.LogInformation("Response {Status} | Origin:{Origin}", (int)response.StatusCode, GetOrigin(response));
-            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
-            response.Headers.GetValues("Origin").Should().Contain("PermitService");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
         }
 
         // PBI 203803 : S-100 Permit Service Validations
@@ -111,15 +110,16 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             _logger!.LogInformation("START {TestName} | Payload={Payload}", nameof(WhenICallPermitServiceEndpointWithValidPayload_Then200OKResponseIsReturnedAlongWithPERMITSZip), payload);
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync($"./TestData/Payload/{payload}.json");
             _payload.products!.ForEach(p => p.permitExpiryDate = PermitXmlFactory.UpdateDate());
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload);
             _logger.LogInformation("Response {Status} | Origin:{Origin}", (int)response.StatusCode, GetOrigin(response));
-            response.Headers.GetValues("Origin").Should().Contain("PermitService");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             _logger.LogInformation("ZIP extracted at {Path}", downloadPath);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
             var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
             _logger.LogInformation("Signature Valid={Valid}", isSignatureValid);
-            isSignatureValid.Should().BeTrue();
+            Assert.That(isSignatureValid);
         }
 
         // PBI 203803 : S-100 Permit Service Validations
@@ -129,11 +129,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndpointWithPayloadHavingPastDateAsExpiryDate_Then400BadRequestIsReturned));
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync("./TestData/Payload/payloadWithPastExpiry.json");
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            response.Headers.GetValues("Origin").Should().Contain("PermitService");
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), body);
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
         }
 
         // PBI 203832 : S-100 Permit Service Request and Response
@@ -145,11 +145,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         {
             _logger!.LogInformation("START {TestName} | Payload={Payload}", nameof(WhenICallPermitServiceEndpointButSomeIssueInRequestToPKS_ThenExpectedPKSResponseIsReturnedWithOrigin), payload);
             _payload = await PermitServiceEndPointFactory.LoadPayloadAsync($"./TestData/Payload/{payload}.json");
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            response.StatusCode.Should().Be(expectedStatusCode);
-            response.Headers.GetValues("Origin").Should().Contain("PKS");
+            Assert.That(response.StatusCode, Is.EqualTo(expectedStatusCode), body);
+            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PKS"));
         }
 
         // PBI 203803 : S-100 Permit Service Validations
@@ -157,9 +157,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
         public async Task WhenICallPermitServiceEndPointWithInvalidUrl_Then404NotFoundIsReturned()
         {
             _logger!.LogInformation("START {TestName}", nameof(WhenICallPermitServiceEndPointWithInvalidUrl_Then404NotFoundIsReturned));
-            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_permitServiceApiConfiguration!.BaseUrl, _authToken, _payload!, false);
+            var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload!, false);
             _logger.LogInformation("Response {Status}", (int)response.StatusCode);
-            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
         }
 
         [TearDown]
@@ -191,7 +191,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
 
         private static string Truncate(string? s)
         {
-            if (string.IsNullOrWhiteSpace(s)) return "(empty)";
+            if(string.IsNullOrWhiteSpace(s))
+            {
+                return "(empty)";
+            }
+
             return s.Length <= 250 ? s : s[..250] + "...(truncated)";
         }
     }

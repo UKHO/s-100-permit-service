@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -12,6 +11,7 @@ using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Models;
 using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Services;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.API.UnitTests.Controller
 {
@@ -41,10 +41,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Action nullLogger = () => new PermitController(_fakeHttpContextAccessor, null, _fakePermitService);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+            Assert.That(nullLogger, Throws.ArgumentNullException.With.Property("ParamName").EqualTo("logger"));
 
             Action nullPermitService = () => new PermitController(_fakeHttpContextAccessor, _fakeLogger, null);
-            nullPermitService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitService");
+            Assert.That(nullPermitService, Throws.ArgumentNullException.With.Property("ParamName").EqualTo("permitService"));
         }
 
         [Test]
@@ -84,11 +84,11 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
 
             var result = await _permitController.GenerateS100Permits(permitRequest);
 
-            result.Should().BeOfType<FileStreamResult>();
+            Assert.That(result, Is.InstanceOf<FileStreamResult>());
             var fileStreamResult = (FileStreamResult)result;
-            fileStreamResult.FileDownloadName.Should().Be("Permits.zip");
-            fileStreamResult.FileStream.Length.Should().Be(expectedStream.Length);
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
+            Assert.That(fileStreamResult.FileDownloadName, Is.EqualTo("Permits.zip"));
+            Assert.That(fileStreamResult.FileStream.Length, Is.EqualTo(expectedStream.Length));
+            Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.PermitService));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
@@ -123,14 +123,26 @@ namespace UKHO.S100PermitService.API.UnitTests.Controller
             switch(result)
             {
                 case StatusCodeResult statusCodeResult when statusCodeResult.StatusCode == (int)httpStatusCode:
-                    statusCodeResult.StatusCode.Should().Be((int)httpStatusCode);
-                    _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
+                    Assert.That(statusCodeResult.StatusCode, Is.EqualTo((int)httpStatusCode));
+                    Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.PermitService));
                     break;
 
                 case BadRequestObjectResult badRequestObjectResult when badRequestObjectResult.StatusCode == (int)httpStatusCode: //400: BadRequest
-                    badRequestObjectResult.StatusCode.Should().Be((int)httpStatusCode);
-                    badRequestObjectResult.Value.Should().BeEquivalentTo(new { Errors = new List<ErrorDetail> { new() { Description = "Key not found for ProductName: Product1 and Edition: 1.", Source = "GetProductKey" } } });
-                    _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.ProductKeyService);
+                    Assert.That(badRequestObjectResult.StatusCode, Is.EqualTo((int)httpStatusCode));
+
+                    var expectedErrors = new List<ErrorDetail>
+                                {
+                                    new ErrorDetail
+                                    {
+                                        Description = "Key not found for ProductName: Product1 and Edition: 1.",
+                                        Source = "GetProductKey"
+                                    }
+                                };
+                    var actualErrorsProperty = badRequestObjectResult.Value?.GetType().GetProperty("Errors");
+                    var actualErrors = actualErrorsProperty?.GetValue(badRequestObjectResult.Value) as IEnumerable<ErrorDetail>;
+                    Assert.That(actualErrors, Is.EquivalentTo(expectedErrors));
+
+                    Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.ProductKeyService));
                     break;
             }
 

@@ -1,5 +1,5 @@
-﻿using FluentAssertions;
-using NUnit.Framework;
+﻿using NUnit.Framework;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.StubService.UnitTests.StubData
 {
@@ -14,7 +14,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubData
 
             var jsonFiles = Directory.GetFiles(responseFileDirectoryPath, "*.json");
 
-            jsonFiles.Length.Should().Be(13, "there should be exactly 13 json files in the StubData\\ProductKeyService folder");
+            Assert.That(jsonFiles.Length, Is.EqualTo(13), "there should be exactly 13 json files in the StubData\\ProductKeyService folder");
         }
     }
 }

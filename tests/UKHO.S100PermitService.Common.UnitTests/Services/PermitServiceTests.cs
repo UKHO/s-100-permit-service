@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using FluentValidation.Results;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -50,25 +49,25 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Action nullPermitReaderWriter = () => new PermitService(null, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullPermitReaderWriter.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitReaderWriter");
+            Assert.That(nullPermitReaderWriter, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("permitReaderWriter"));
 
             Action nullLogger = () => new PermitService(_fakePermitReaderWriter, null, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+            Assert.That(nullLogger, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("logger"));
 
             Action nullProductKeyService = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, null, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullProductKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyService");
+            Assert.That(nullProductKeyService, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("productKeyService"));
 
             Action nullIs100Crypt = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, null, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullIs100Crypt.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("s100Crypt");
+            Assert.That(nullIs100Crypt, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("s100Crypt"));
 
             Action nullProductKeyServiceApiConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, null, _fakePermitFileConfiguration, _fakePermitRequestValidator);
-            nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
+            Assert.That(nullProductKeyServiceApiConfiguration, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("productKeyServiceApiConfiguration"));
 
             Action nullPermitFileConfiguration = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, null, _fakePermitRequestValidator);
-            nullPermitFileConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitFileConfiguration");
+            Assert.That(nullPermitFileConfiguration, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("permitFileConfiguration"));
 
             Action nullPermitRequestValidator = () => new PermitService(_fakePermitReaderWriter, _fakeLogger, _fakeProductKeyService, _fakeS100Crypt, _fakeProductKeyServiceApiConfiguration, _fakePermitFileConfiguration, null);
-            nullPermitRequestValidator.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("permitRequestValidator");
+            Assert.That(nullPermitRequestValidator, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("permitRequestValidator"));
         }
 
         [Test]
@@ -101,9 +100,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _permitService.ProcessPermitRequestAsync(GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Value.Length.Should().Be(expectedStream.Length);
-            response.Origin.Should().BeNull();
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(response.Value.Length, Is.EqualTo(expectedStream.Length));
+            Assert.That(response.Origin, Is.Null);
 
             A.CallTo(_fakeLogger).Where(call =>
              call.Method.Name == "Log"
@@ -142,8 +141,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _permitService.ProcessPermitRequestAsync(GetPermitRequestDetails(), _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(httpStatusCode);
-            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
+            Assert.That(response.StatusCode, Is.EqualTo(httpStatusCode));
+            Assert.That(response.Origin, Is.EqualTo(PermitServiceConstants.ProductKeyService));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log" &&
@@ -175,14 +174,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _permitService.ProcessPermitRequestAsync(permitRequest, _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            response.Origin.Should().Be(PermitServiceConstants.PermitService);
+            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+            Assert.That(response.Origin, Is.EqualTo(PermitServiceConstants.PermitService));
 
             var errors = response.ErrorResponse.Errors.ToList();
-            errors.Should().ContainSingle(e => e.Source.Equals("Product[0].PermitExpiryDate"));
-            errors.Should().ContainSingle(e => e.Description.Equals("Must be today or a future date."));
-            errors.Should().ContainSingle(e => e.Source.Equals("UserPermit[1].Upn"));
-            errors.Should().ContainSingle(e => e.Description.Equals("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long"));
+            Assert.That(errors, Has.Exactly(1).Matches<ErrorDetail>(e => e.Source.Equals("Product[0].PermitExpiryDate")));
+            Assert.That(errors, Has.Exactly(1).Matches<ErrorDetail>(e => e.Description.Equals("Must be today or a future date.")));
+            Assert.That(errors, Has.Exactly(1).Matches<ErrorDetail>(e => e.Source.Equals("UserPermit[1].Upn")));
+            Assert.That(errors, Has.Exactly(1).Matches<ErrorDetail>(e => e.Description.Equals("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long")));
 
             A.CallTo(() => _fakeProductKeyService.GetProductKeysAsync(A<List<ProductKeyServiceRequest>>.Ignored, A<string>.Ignored, A<CancellationToken>.Ignored)).MustNotHaveHappened();
 

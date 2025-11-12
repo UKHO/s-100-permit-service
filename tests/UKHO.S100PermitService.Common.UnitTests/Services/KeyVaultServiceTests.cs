@@ -1,7 +1,6 @@
 ﻿using Azure.Security.KeyVault.Certificates;
 using Azure.Security.KeyVault.Secrets;
 using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
@@ -58,7 +57,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var result = () => _keyVaultService.GetSecretKeys("pqr");
 
-            result.Should().ThrowAsync<PermitServiceException>().WithMessage("No Secrets found in Secret Key Vault, failed with Exception :{Message}");
+            Assert.That(result, Throws.TypeOf<PermitServiceException>().With.Message.EqualTo("No Secrets found in Secret Key Vault, failed with Exception :{Message}"));
         }
 
         [Test]
@@ -80,8 +79,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "Secret Key found in Cache."
             ).MustHaveHappenedOnceExactly();
 
-            result.Should().NotBeNull();
-            result.Equals(secretKey);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Result, Is.EqualTo(secretKey));
         }
 
         [Test]
@@ -105,7 +104,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
              && call.GetArgument<IEnumerable<KeyValuePair<string, object>>>(2).ToDictionary(c => c.Key, c => c.Value)["{OriginalFormat}"].ToString() == "New Secret Key added in Cache."
              ).MustHaveHappenedOnceExactly();
 
-            result.Should().Be(secretValue);
+            Assert.That(result, Is.EqualTo(secretValue));
         }
 
         [Test]
