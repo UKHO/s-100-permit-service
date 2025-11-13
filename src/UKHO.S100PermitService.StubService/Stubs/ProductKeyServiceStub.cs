@@ -29,23 +29,8 @@ namespace UKHO.S100PermitService.StubService.Stubs
                 .Given(Request.Create()
                     .WithPath(new WildcardMatcher("/health", true))
                     .UsingGet())
-                .RespondWith(Response.Create()
-                    .WithHeader("Content-Type", "application/json")
-                    .WithBody("""
-                    {
-                        "status": "Healthy",
-                        "totalDuration": "00:00:00.0010000",
-                        "entries": {
-                        "ProductKeyServiceDependency": {
-                            "data": {},
-                            "duration": "00:00:00.0010000",
-                            "status": "Healthy",
-                            "tags": []
-                        }
-                        }
-                    }
-                    """)
-                    .WithStatusCode(HttpStatusCode.OK));
+                    .RespondWith(Response.Create()
+                    .WithCallback(request => CreateResponse(request, "response-200HealthCheck.json", HttpStatusCode.OK)));
 
             server //200
                 .Given(Request.Create()

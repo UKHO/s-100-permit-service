@@ -35,6 +35,9 @@
     <None Update="StubData\ProductKeyService\request-500.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="StubData\ProductKeyService\response-200HealthCheck.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="StubData\ProductKeyService\response-400-data_not_found.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
