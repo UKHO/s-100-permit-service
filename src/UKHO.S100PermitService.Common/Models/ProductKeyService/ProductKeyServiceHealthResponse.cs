@@ -1,10 +1,12 @@
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System.Text.Json.Serialization;
 
 namespace UKHO.S100PermitService.Common.Models.ProductKeyService
 {
     public class ProductKeyServiceHealthResponse
     {
-        public string Status { get; init; } = string.Empty;
+        [JsonPropertyName("status")]
+        public string Status { get; set; }
 
         public HealthStatus HealthStatus
         {

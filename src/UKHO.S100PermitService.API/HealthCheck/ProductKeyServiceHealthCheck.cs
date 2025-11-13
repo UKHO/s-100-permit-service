@@ -10,7 +10,6 @@ namespace UKHO.S100PermitService.API.HealthCheck
 {
     public class ProductKeyServiceHealthCheck(IProductKeyServiceApiClient httpClient) : IHealthCheck
     {
-
         public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
         {
             var result = await httpClient.GetHealthCheckAsync(cancellationToken);
