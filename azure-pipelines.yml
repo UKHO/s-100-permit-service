@@ -170,7 +170,6 @@ stages:
         ShortName: "IAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}
-        RunFunctionalTests: true 
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy
