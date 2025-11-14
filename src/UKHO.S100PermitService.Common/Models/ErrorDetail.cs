@@ -9,7 +9,7 @@ namespace UKHO.S100PermitService.Common.Models
         [JsonPropertyName("description")]
         public string Description { get; set; }
 
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is ErrorDetail other)
             {
