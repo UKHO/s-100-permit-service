@@ -24,6 +24,14 @@ namespace UKHO.S100PermitService.StubService.Stubs
 
         public void ConfigureStub(WireMockServer server)
         {
+            // Health check (GET /health) -> Healthy JSON response
+            server
+                .Given(Request.Create()
+                    .WithPath(new WildcardMatcher("/health", true))
+                    .UsingGet())
+                    .RespondWith(Response.Create()
+                    .WithCallback(request => CreateResponse(request, "response-200HealthCheck.json", HttpStatusCode.OK)));
+
             server //200
                 .Given(Request.Create()
                 .WithPath(new WildcardMatcher(_productKeyServiceConfiguration.Url, true))

@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using System.Reflection;
+﻿using System.Reflection;
 using UKHO.S100PermitService.Common.IO;
 
 namespace UKHO.S100PermitService.Common.UnitTests.IO
@@ -28,7 +27,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
 
             var result = _schemaValidator.ValidateSchema(fakeInvalidPermit, _xsdPath);
 
-            result.Should().Be(false);
+            Assert.That(result, Is.EqualTo(false));
         }
 
         [Test]
@@ -41,7 +40,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
 
             var result = _schemaValidator.ValidateSchema(fakeValidPermit, _xsdPath);
 
-            result.Should().Be(true);
+            Assert.That(result, Is.EqualTo(true));
         }
     }
 }

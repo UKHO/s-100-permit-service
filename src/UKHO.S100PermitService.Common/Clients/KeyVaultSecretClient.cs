@@ -1,4 +1,5 @@
-﻿using Azure.Core;
+﻿using Azure;
+using Azure.Core;
 using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Options;
@@ -24,18 +25,18 @@ namespace UKHO.S100PermitService.Common.Clients
         /// </summary>
         /// <param name="secretName">Secret Key.</param>
         /// <returns>KeyVaultSecret details.</returns>
-        public KeyVaultSecret GetSecret(string secretName)
+        public async Task<KeyVaultSecret> GetSecretAsync(string secretName)
         {
-            return _secretClient.GetSecret(secretName);
+            return await _secretClient.GetSecretAsync(secretName);
         }
 
         /// <summary>
         /// Get resource containing all the properties of the secret except its value
         /// </summary>
         /// <returns>SecretProperties</returns>
-        public IEnumerable<SecretProperties> GetPropertiesOfSecrets()
+        public AsyncPageable<SecretProperties> GetPropertiesOfSecretsAsync()
         {
-            return _secretClient.GetPropertiesOfSecrets();
+            return _secretClient.GetPropertiesOfSecretsAsync();
         }
     }
 }

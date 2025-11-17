@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -7,6 +6,7 @@ using NUnit.Framework;
 using UKHO.S100PermitService.StubService.Configuration;
 using WireMock.Server;
 using WireMock.Settings;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.StubService.UnitTests
 {
@@ -50,9 +50,9 @@ namespace UKHO.S100PermitService.StubService.UnitTests
 
             var isRunning = server.IsStarted;
 
-            isRunning.Should().BeTrue();
+            Assert.That(isRunning, Is.True);
 
-            server.Should().NotBeNull();
+            Assert.That(server, Is.Not.Null);
             server.Stop();
         }
 
@@ -62,8 +62,11 @@ namespace UKHO.S100PermitService.StubService.UnitTests
             var stubConfiguration = _serviceProvider.GetService<IOptions<WireMockServerSettings>>()?.Value;
             var productKeyServiceConfiguration = _serviceProvider.GetService<IOptions<ProductKeyServiceConfiguration>>()?.Value;
 
-            stubConfiguration.Should().NotBeNull();
-            productKeyServiceConfiguration.Should().NotBeNull();
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(stubConfiguration, Is.Not.Null);
+                Assert.That(productKeyServiceConfiguration, Is.Not.Null);
+            }
         }
     }
 }

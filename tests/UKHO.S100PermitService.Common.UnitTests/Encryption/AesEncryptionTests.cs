@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using UKHO.S100PermitService.Common.Encryption;
+﻿using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Exceptions;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Encryption
@@ -22,23 +21,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         {
             var result = await _aesEncryption.DecryptAsync(FakeText, FakeKey);
 
-            result.Should().NotBeNullOrEmpty();
-            result.Should().NotBe(FakeText);
+            Assert.That(result, Is.Not.Null.Or.Empty);
+            Assert.That(result, Is.Not.EqualTo(FakeText));
         }
 
         [Test]
         public async Task WhenInvalidHexStringIsPassed_ThenThrowException()
         {
-            await FluentActions.Invoking(async () => await _aesEncryption.DecryptAsync("123456", FakeKey)).Should().
-                                             ThrowExactlyAsync<AesEncryptionException>().WithMessage("Expected hex string length {HexSize}, but found {HexString Length}.");
-
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.DecryptAsync("123456", FakeKey));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length}."));
         }
 
         [Test]
         public async Task WhenInvalidHexKeyIsPassed_ThenThrowException()
         {
-            await FluentActions.Invoking(async () => await _aesEncryption.DecryptAsync(FakeText, "123456")).Should().
-                                             ThrowExactlyAsync<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.DecryptAsync(FakeText, "123456"));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length}."));
         }
 
         [Test]
@@ -46,22 +44,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         {
             var result = await _aesEncryption.EncryptAsync(FakeText, FakeKey);
 
-            result.Should().NotBeNullOrEmpty();
-            result.Should().NotBe(FakeText);
+            Assert.That(result, Is.Not.Null.Or.Empty);
+            Assert.That(result, Is.Not.EqualTo(FakeText));
         }
 
         [Test]
         public async Task WhenInvalidHexStringIsPassedToEncryption_ThenThrowException()
         {
-            await FluentActions.Invoking(async () => await _aesEncryption.EncryptAsync("123456", FakeKey)).Should().
-                                             ThrowExactlyAsync<AesEncryptionException>().WithMessage("Expected hex string length {HexSize}, but found {HexString Length}.");
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.EncryptAsync("123456", FakeKey));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length}."));
         }
 
         [Test]
         public async Task WhenInvalidHexKeyIsPassedToEncryption_ThenThrowException()
         {
-            await FluentActions.Invoking(async () => await _aesEncryption.EncryptAsync(FakeText, "123456")).Should().
-                                             ThrowExactlyAsync<AesEncryptionException>().WithMessage("Expected hex key length {HexSize}, but found {HexKey Length}.");
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.EncryptAsync(FakeText, "123456"));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length}."));
         }
     }
 }

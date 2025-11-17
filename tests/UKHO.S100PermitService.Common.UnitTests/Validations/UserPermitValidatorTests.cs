@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using FluentValidation.TestHelper;
+﻿using FluentValidation.TestHelper;
 using UKHO.S100PermitService.Common.Models.Request;
 using UKHO.S100PermitService.Common.Validations;
 
@@ -23,8 +22,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var result = _userPermitValidator.TestValidate(userPermits);
 
-            result.IsValid.Should().BeTrue();
-            result.Errors.Should().BeEmpty();
+            Assert.That(result.IsValid, Is.True);
+            Assert.That(result.Errors, Is.Empty);
         }
 
         [Test]

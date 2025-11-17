@@ -2,7 +2,7 @@
 {
     public interface IKeyVaultService
     {
-        string GetSecretKeys(string secretName);
+        Task<string> GetSecretKeys(string secretName);
         byte[] GetCertificate(string certificateName);
     }
 }

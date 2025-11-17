@@ -1,10 +1,10 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
 using UKHO.S100PermitService.StubService.Configuration;
 using UKHO.S100PermitService.StubService.Stubs;
 using UKHO.S100PermitService.StubService.StubSetup;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
 {
@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
         }
 
         [Test]
-        [TestCase(null, "*productKeyServiceConfiguration*")]
+        [TestCase(null, "productKeyServiceConfiguration")]
         public void WhenConstructorCalledWithNullParameter_ThenThrowsArgumentNullException(Type? productKeyServiceConfigType, string expectedMessage)
         {
             var productKeyServiceConfiguration = productKeyServiceConfigType == null ? null : _productKeyServiceConfiguration;
@@ -33,7 +33,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
                 _ = new StubFactory(productKeyServiceConfiguration!);
             };
 
-            act.Should().Throw<ArgumentNullException>().WithMessage(expectedMessage);
+            Assert.That(act, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo(expectedMessage));
         }
 
         [Test]
@@ -41,7 +41,7 @@ namespace UKHO.S100PermitService.StubService.UnitTests.StubSetup
         {
             var result = _stubFactory.CreateProductKeyServiceStub();
 
-            result.Should().BeOfType<ProductKeyServiceStub>();
+            Assert.That(result, Is.InstanceOf<ProductKeyServiceStub>());
         }
     }
 }

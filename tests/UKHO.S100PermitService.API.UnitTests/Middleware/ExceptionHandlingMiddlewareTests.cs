@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,6 +9,7 @@ using UKHO.S100PermitService.API.Middleware;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
+using Assert = NUnit.Framework.Assert;
 
 namespace UKHO.S100PermitService.API.UnitTests.Middleware
 {
@@ -50,10 +50,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
-            _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
+            Assert.That(problemDetails.Extensions["correlationId"].ToString(), Is.EqualTo("fakeCorrelationId"));
+            Assert.That(_fakeHttpContext.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+            Assert.That(_fakeHttpContext.Response.ContentType, Is.EqualTo("application/json; charset=utf-8"));
+            Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.PermitService));
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -79,10 +79,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
-            _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
+            Assert.That(problemDetails.Extensions["correlationId"].ToString(), Is.EqualTo("fakeCorrelationId"));
+            Assert.That(_fakeHttpContext.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+            Assert.That(_fakeHttpContext.Response.ContentType, Is.EqualTo("application/json; charset=utf-8"));
+            Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.PermitService));
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error
@@ -108,10 +108,10 @@ namespace UKHO.S100PermitService.API.UnitTests.Middleware
                 PropertyNameCaseInsensitive = true
             });
 
-            problemDetails.Extensions["correlationId"].ToString().Should().Be("fakeCorrelationId");
-            _fakeHttpContext.Response.StatusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-            _fakeHttpContext.Response.ContentType.Should().Be("application/json; charset=utf-8");
-            _fakeHttpContext.Response.Headers.Should().ContainKey(PermitServiceConstants.OriginHeaderKey).WhoseValue.Should().Equal(PermitServiceConstants.PermitService);
+            Assert.That(problemDetails.Extensions["correlationId"].ToString(), Is.EqualTo("fakeCorrelationId"));
+            Assert.That(_fakeHttpContext.Response.StatusCode, Is.EqualTo((int)HttpStatusCode.InternalServerError));
+            Assert.That(_fakeHttpContext.Response.ContentType, Is.EqualTo("application/json; charset=utf-8"));
+            Assert.That(_fakeHttpContext.Response.Headers, Does.ContainKey(PermitServiceConstants.OriginHeaderKey).WithValue(PermitServiceConstants.PermitService));
 
             A.CallTo(_fakeLogger).Where(call => call.Method.Name == "Log"
             && call.GetArgument<LogLevel>(0) == LogLevel.Error

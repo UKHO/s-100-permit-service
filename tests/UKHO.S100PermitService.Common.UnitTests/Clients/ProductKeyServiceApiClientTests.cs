@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using System.Net;
 using System.Text.Json;
@@ -48,17 +47,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
             var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
 
-            result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
-            deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
-            deSerializedResult![0].Key.Should().Be("123456");
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(deSerializedResult!.Count, Is.GreaterThanOrEqualTo(1));
+            Assert.That(deSerializedResult![0].Key, Is.EqualTo("123456"));
         }
 
         [Test]
@@ -77,13 +74,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], "fakeToken", _fakeCorrelationId, CancellationToken.None);
 
-            result.Result.StatusCode.Should().Be(httpStatusCode);
+            Assert.That(result.Result.StatusCode, Is.EqualTo(httpStatusCode));
         }
 
         [Test]
@@ -99,9 +94,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                 BaseAddress = new Uri("http://test.com")
             };
 
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(httpClient);
-
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, httpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", [], token, _fakeCorrelationId, CancellationToken.None);
 
@@ -113,7 +106,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                     ["{OriginalFormat}"].ToString() == "Access token is empty or null."
             ).MustHaveHappenedOnceExactly();
 
-            result.Result.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.Unauthorized));
         }
 
         [Test]
@@ -121,8 +114,6 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
         {
             var httpRequestMessage = new HttpRequestMessage();
             var productKeyServiceRequestData = new List<ProductKeyServiceRequest>() { new() { ProductName = "test101", Edition = "1" } };
-
-            A.CallTo(() => _fakeHttpClientFactory.CreateClient(A<string>.Ignored)).Returns(_fakeHttpClient);
 
             A.CallTo(() => _fakeHttpClient.SendAsync(A<HttpRequestMessage>.Ignored, A<CancellationToken>.Ignored))
                 .Invokes((HttpRequestMessage requestMessage, CancellationToken token) =>
@@ -135,18 +126,18 @@ namespace UKHO.S100PermitService.Common.UnitTests.Helpers
                                     { new() { ProductName = "test101", Edition = "1", Key = "123456"} }))
                 }));
 
-            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClientFactory);
+            _productKeyServiceApiClient = new ProductKeyServiceApiClient(_fakeLogger, _fakeHttpClient);
 
             var result = _productKeyServiceApiClient.GetProductKeysAsync("http://test.com", productKeyServiceRequestData, "testToken", _fakeCorrelationId, CancellationToken.None);
 
             var deSerializedResult = JsonSerializer.Deserialize<List<ProductKeyServiceResponse>>(result.Result.Content.ReadAsStringAsync().Result);
-            httpRequestMessage.Headers.Authorization.Parameter.Should().Be("testToken");
+            Assert.That(httpRequestMessage.Headers.Authorization.Parameter, Is.EqualTo("testToken"));
 
-            httpRequestMessage.Headers.Contains(PermitServiceConstants.XCorrelationIdHeaderKey).Should().BeTrue();
-            httpRequestMessage.Headers.GetValues(PermitServiceConstants.XCorrelationIdHeaderKey).Should().Contain(_fakeCorrelationId);
-            result.Result.StatusCode.Should().Be(HttpStatusCode.OK);
-            deSerializedResult!.Count.Should().BeGreaterThanOrEqualTo(1);
-            deSerializedResult![0].Key.Should().Be("123456");
+            Assert.That(httpRequestMessage.Headers.Contains(PermitServiceConstants.XCorrelationIdHeaderKey), Is.True);
+            Assert.That(httpRequestMessage.Headers.GetValues(PermitServiceConstants.XCorrelationIdHeaderKey), Is.EquivalentTo(new[] { _fakeCorrelationId }));
+            Assert.That(result.Result.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+            Assert.That(deSerializedResult!.Count, Is.GreaterThanOrEqualTo(1));
+            Assert.That(deSerializedResult![0].Key, Is.EqualTo("123456"));
         }
     }
 }
