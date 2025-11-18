@@ -123,6 +123,8 @@ namespace UKHO.S100PermitService.API
                 loggingBuilder.AddAzureWebAppDiagnostics();
             });
 
+            builder.Services.AddAllElasticApm();
+
             builder.Services.AddHeaderPropagation(options =>
             {
                 options.Headers.Add(PermitServiceConstants.XCorrelationIdHeaderKey);
