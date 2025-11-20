@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Net;
@@ -52,22 +51,22 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Action nullProductKeyServiceLogger = () => new ProductKeyService(null, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
-            nullProductKeyServiceLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+            Assert.That(nullProductKeyServiceLogger, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("logger"));
 
             Action nullProductKeyServiceApiConfiguration = () => new ProductKeyService(_fakeLogger, null, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
-            nullProductKeyServiceApiConfiguration.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiConfiguration");
+            Assert.That(nullProductKeyServiceApiConfiguration, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("productKeyServiceApiConfiguration"));
 
             Action nullProductKeyServiceAuthTokenProvider = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, null, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy, _fakeUriFactory);
-            nullProductKeyServiceAuthTokenProvider.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceAuthTokenProvider");
+            Assert.That(nullProductKeyServiceAuthTokenProvider, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("productKeyServiceAuthTokenProvider"));
 
             Action nullProductKeyServiceApiClient = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, null, _fakeWaitAndRetryPolicy, _fakeUriFactory);
-            nullProductKeyServiceApiClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("productKeyServiceApiClient");
+            Assert.That(nullProductKeyServiceApiClient, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("productKeyServiceApiClient"));
 
             Action nullWaitAndRetryClient = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, null, _fakeUriFactory);
-            nullWaitAndRetryClient.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("waitAndRetryPolicy");
+            Assert.That(nullWaitAndRetryClient, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("waitAndRetryPolicy"));
 
             Action nullUriFactory = () => new ProductKeyService(_fakeLogger, _fakeProductKeyServiceApiConfiguration, _fakeProductKeyServiceAuthTokenProvider, _fakeProductKeyServiceApiClient, _fakeWaitAndRetryPolicy, null);
-            nullUriFactory.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("uriFactory");
+            Assert.That(nullUriFactory, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("uriFactory"));
         }
 
         [Test]
@@ -90,9 +89,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "test101", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-            response.Value.Equals(new List<ProductKeyServiceResponse>() { new() { ProductName = "test101", Edition = "1", Key = "123456" } });
-            response.Origin.Should().BeNull();
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
+                Assert.That(response.Value, Has.Exactly(1)
+                         .Matches<ProductKeyServiceResponse>(p =>
+                             p.ProductName == "test101" &&
+                             p.Edition == "1" &&
+                             p.Key == "123456"));
+                Assert.That(response.Origin, Is.Null);
+            }
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -136,9 +142,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(httpStatusCode);
-            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
-            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(httpStatusCode));
+                Assert.That(response.ErrorResponse.Errors, Has.Exactly(1).Matches<ErrorDetail>(error => error.Source == "GetProductKey" && error.Description == content));
+                Assert.That(response.Origin, Is.EqualTo(PermitServiceConstants.ProductKeyService));
+            }
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -184,17 +193,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                                             {
                                                 ContentType = new MediaTypeHeaderValue("application/json")
                                             }
-                                                                            }
-                                    });
+                                    }
+                                });
 
             A.CallTo(() => _fakeProductKeyServiceAuthTokenProvider.GetManagedIdentityAuthAsync(A<string>.Ignored))
                 .Returns(AccessToken);
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(httpStatusCode);
-            response.ErrorResponse.Errors.Should().ContainSingle(error => error.Source == "GetProductKey" && error.Description == content);
-            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(httpStatusCode));
+                Assert.That(response.ErrorResponse.Errors, Has.Exactly(1).Matches<ErrorDetail>(error => error.Source == "GetProductKey" && error.Description == content));
+                Assert.That(response.Origin, Is.EqualTo(PermitServiceConstants.ProductKeyService));
+            }
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -230,9 +242,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             var response = await _productKeyService.GetProductKeysAsync([new() { ProductName = "InValidProduct", Edition = "1" }], _fakeCorrelationId, CancellationToken.None);
 
-            response.StatusCode.Should().Be(httpStatusCode);
-            response.ErrorResponse.Errors.Should().BeNull();
-            response.Origin.Should().Be(PermitServiceConstants.ProductKeyService);
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(httpStatusCode));
+                Assert.That(response.ErrorResponse.Errors, Is.Null);
+                Assert.That(response.Origin, Is.EqualTo(PermitServiceConstants.ProductKeyService));
+            }
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"

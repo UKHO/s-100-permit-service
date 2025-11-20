@@ -4,7 +4,7 @@ using UKHO.S100PermitService.API.FunctionalTests.Configuration;
 
 namespace UKHO.S100PermitService.API.FunctionalTests
 {
-    public class TestBase
+    public abstract class TestBase
     {
         private readonly ServiceProvider? _serviceProvider;
 

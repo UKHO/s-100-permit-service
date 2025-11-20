@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using FluentValidation.Results;
 using FluentValidation.TestHelper;
 using UKHO.S100PermitService.Common.Models.Request;
@@ -46,8 +45,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var validationResult = permitRequestValidator.TestValidate(permitRequest);
 
-            validationResult.IsValid.Should().BeTrue();
-            validationResult.Errors.Should().BeEmpty();
+            Assert.That(validationResult.IsValid, Is.True);
+            Assert.That(validationResult.Errors, Is.Empty);
         }
 
         [Test]
@@ -57,12 +56,12 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var validationResult = permitRequestValidator.TestValidate(permitRequest);
 
-            validationResult.IsValid.Should().BeFalse();
-            validationResult.Errors.Should().NotBeEmpty();
-            validationResult.Errors[0].ErrorMessage.Should().Be("Must be today or a future date.");
-            validationResult.Errors[0].PropertyName.Should().Be("Products[0].PermitExpiryDate");
-            validationResult.Errors[2].ErrorMessage.Should().Be("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long");
-            validationResult.Errors[2].PropertyName.Should().Be("UserPermits[1].Upn");
+            Assert.That(validationResult.IsValid, Is.False);
+            Assert.That(validationResult.Errors, Is.Not.Empty);
+            Assert.That(validationResult.Errors[0].ErrorMessage, Is.EqualTo("Must be today or a future date."));
+            Assert.That(validationResult.Errors[0].PropertyName, Is.EqualTo("Products[0].PermitExpiryDate"));
+            Assert.That(validationResult.Errors[2].ErrorMessage, Is.EqualTo("Invalid UPN found for: FakeTitle2. UPN must be 46 characters long"));
+            Assert.That(validationResult.Errors[2].PropertyName, Is.EqualTo("UserPermits[1].Upn"));
         }
 
         private static PermitRequest GetPermitRequests()

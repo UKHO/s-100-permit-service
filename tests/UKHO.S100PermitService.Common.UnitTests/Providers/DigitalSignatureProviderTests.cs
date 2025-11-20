@@ -142,7 +142,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
 
             Assert.Multiple(() =>
             {
-                Assert.NotNull(result);
+                Assert.That(result != null);
                 Assert.That(result.Filename, Does.Contain(PermitServiceConstants.PermitXmlFileName));
                 Assert.That(result.Certificate.SchemeAdministrator.Id, Does.Contain("TestIssuer"));
                 Assert.That(result.Certificate.CertificateMetadata.Id, Does.Contain("TestSubject"));

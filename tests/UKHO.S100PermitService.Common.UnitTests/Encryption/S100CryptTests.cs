@@ -1,5 +1,4 @@
 ﻿using FakeItEasy;
-using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Encryption;
 using UKHO.S100PermitService.Common.Events;
@@ -33,13 +32,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
             Action nullAesEncryption = () => new S100Crypt(null, _fakeKeyVaultService, _fakeLogger);
-            nullAesEncryption.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("aesEncryption");
+            Assert.That(nullAesEncryption, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("aesEncryption"));
 
             Action nullDataKeyService = () => new S100Crypt(_fakeAesEncryption, null, _fakeLogger);
-            nullDataKeyService.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("keyVaultService");
+            Assert.That(nullDataKeyService, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("keyVaultService"));
 
             Action nullLogger = () => new S100Crypt(_fakeAesEncryption, _fakeKeyVaultService, null);
-            nullLogger.Should().ThrowExactly<ArgumentNullException>().And.ParamName.Should().Be("logger");
+            Assert.That(nullLogger, Throws.TypeOf<ArgumentNullException>().With.Property("ParamName").EqualTo("logger"));
         }
 
         [Test]
@@ -53,9 +52,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             var result = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(GetProductKeyServiceResponse(), FakeHardwareId);
 
-            result.Should().NotBeNull();
-            result.FirstOrDefault().DecryptedKey.Should().Be(test101ProductKey);
-            result.LastOrDefault().DecryptedKey.Should().Be(test102ProductKey);
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.FirstOrDefault().DecryptedKey, Is.EqualTo(test101ProductKey));
+            Assert.That(result.LastOrDefault().DecryptedKey, Is.EqualTo(test102ProductKey));
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -114,7 +113,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             var result = await _s100Crypt.CreateEncryptedKeyAsync(FakeKey, FakeHardwareId);
 
-            Assert.True(result.Equals(FakeEncryptedKey));
+            Assert.That(result.Equals(FakeEncryptedKey));
         }
 
         private List<ProductKeyServiceResponse> GetProductKeyServiceResponse()

@@ -57,7 +57,7 @@ namespace UKHO.S100PermitService.Common.Providers
         {
             _logger.LogInformation(EventIds.GetNewAccessTokenStarted.ToEventId(), "Generating new access token to call external endpoint started.");
 
-            var accessToken = await _tokenCredential.GetTokenAsync(new TokenRequestContext(scopes: new string[] { resource + "/.default" }) { }, new CancellationToken());
+            var accessToken = await _tokenCredential.GetTokenAsync(new TokenRequestContext(scopes: [resource + "/.default"]) { }, new CancellationToken());
 
             _logger.LogInformation(EventIds.GetNewAccessTokenCompleted.ToEventId(), "New access token to call external endpoint generated successfully.");
 

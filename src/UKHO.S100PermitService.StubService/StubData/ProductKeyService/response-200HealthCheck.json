@@ -1,0 +1,12 @@
+{
+  "status": "Healthy",
+  "totalDuration": "00:00:00.0010000",
+  "entries": {
+    "ProductKeyServiceDependency": {
+      "data": {},
+      "duration": "00:00:00.0010000",
+      "status": "Healthy",
+      "tags": []
+    }
+  }
+}

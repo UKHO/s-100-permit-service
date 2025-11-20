@@ -14,6 +14,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         private static readonly string _zipFileName = "Permits.zip";
         private static ILogger _logger = NullLogger.Instance;
 
+        public static void InitializeHttpClient(string baseUrl)
+        {
+            _httpClient.Timeout = TimeSpan.FromMinutes(10);
+            _httpClient.BaseAddress = new Uri(baseUrl);
+        }
+
         /// <summary>
         /// This method is used to interact with permits endpoint
         /// </summary>
@@ -22,12 +28,12 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="payload">Provides the payload</param>
         /// <param name="isUrlValid">Sets the validity of url</param>
         /// <returns>Response of S-100 Permit Service Endpoint</returns>
-        public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? baseUrl, string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
+        public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
         {
-            _uri = $"{baseUrl}/v1/permits/s100";
+            _uri = $"/v1/permits/s100";
             if(!isUrlValid)
             {
-                _uri = $"{baseUrl}/permits/s100";
+                _uri = $"/permits/s100";
             }
 
             _logger.LogInformation("Calling S-100 Permit Service Endpoint: {uri}", _uri);
@@ -36,7 +42,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             _logger.LogInformation("Request Payload: {payloadJson}", payloadJson);
             httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
             if(!string.IsNullOrEmpty(accessToken))
-            {
+            {   
                 httpRequestMessage.Headers.Add("Authorization", "Bearer " + accessToken);
             }
             return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);

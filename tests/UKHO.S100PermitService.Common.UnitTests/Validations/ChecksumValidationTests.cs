@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using UKHO.S100PermitService.Common.Validations;
+﻿using UKHO.S100PermitService.Common.Validations;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Validations
 {
@@ -13,7 +12,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var result = ChecksumValidation.IsValid(Upn);
 
-            result.Should().BeTrue();
+            Assert.That(result);
         }
 
         [Test]
@@ -23,7 +22,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Validations
 
             var result = ChecksumValidation.IsValid(UpnInvalidChecksum);
 
-            result.Should().BeFalse();
+            Assert.That(!result);
         }
     }
 }

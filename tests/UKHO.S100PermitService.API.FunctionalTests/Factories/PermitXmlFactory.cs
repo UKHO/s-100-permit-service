@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using System.Security.Cryptography.X509Certificates;
+﻿using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography;
 using System.Xml;
 using System.Xml.Linq;
@@ -7,10 +6,11 @@ using Azure.Identity;
 using Azure.Security.KeyVault.Secrets;
 using UKHO.S100PermitService.Common;
 using UKHO.S100PermitService.Common.Extensions;
+using NUnit.Framework;
 
 namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 {
-    public class PermitXmlFactory
+    public static class PermitXmlFactory
     {
         /// <summary>
         /// This method is used to verify the zip file structure and the PERMIT.XML file contents
@@ -28,15 +28,15 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 var folderName = Path.GetFileName(folder);
                 foreach(var invalidCharacter in invalidChars!)
                 {
-                    (folderName.Contains(invalidCharacter)).Should().BeFalse();
+                    Assert.That(folderName, Does.Not.Contain(invalidCharacter));
                 }
                 var permitFile = File.Exists(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName));
-                permitFile.Should().Be(true);
+                Assert.That(permitFile, Is.True);
                 permitHeadersValues[4] = userPermitNumbers[folderName];
 
                 VerifyPermitHeaderValues(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName), permitHeadersValues);
-                VerifyPermitProductValues(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName), Path.Combine($"./TestData/{permitFolderName}/", folderName, PermitServiceConstants.PermitXmlFileName)).Should().BeTrue();
-                VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName)).Should().BeFalse();
+                Assert.That(VerifyPermitProductValues(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName), Path.Combine($"./TestData/{permitFolderName}/", folderName, PermitServiceConstants.PermitXmlFileName)), Is.True);
+                Assert.That(VerifyDuplicateFileNameNotPresentInPermitXml(Path.Combine(folder, PermitServiceConstants.PermitXmlFileName)), Is.False);
             }
         }
 
@@ -54,9 +54,9 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             {
                 if(i != 0)
                 {
-                    allElements.ToArray().ElementAt(i + 2).Value.Should().Be(permitHeadersValues[i]);
+                    Assert.That(allElements.ElementAt(i + 2).Value, Is.EqualTo(permitHeadersValues[i]));
                 }
-                allElements.ToArray().ElementAt(i + 2).Value.Should().ContainEquivalentOf(permitHeadersValues[i]);
+                Assert.That(allElements.ElementAt(i + 2).Value, Does.Contain(permitHeadersValues[i]));
             }
         }
 

@@ -12,8 +12,6 @@ parameters:
     type: boolean
     default: true
 
-
-    
 trigger:
   - main
   - release/*
@@ -60,7 +58,7 @@ resources:
     ref: refs/heads/main
 
 stages:
-  - stage: RUNSTRKER
+  - stage: RUNSTRYKER
     displayName: "Run Stryker"
     condition: ${{ eq(parameters.RunStryker, true) }}
     dependsOn: []
@@ -81,7 +79,7 @@ stages:
             inputs:
               command: 'custom'
               custom: 'tool'
-              arguments: 'install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools'
+              arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --configfile $(Build.SourcesDirectory)/BuildNuget.config
 
           - task: Powershell@2
             displayName: 'Run Stryker Permit Service API UnitTests'
@@ -131,10 +129,10 @@ stages:
           AppPool: $(DeploymentPoolPE)
           Container: ${{variables.Container}}          
           RunFunctionalTests: true 
-    
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
+    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))
     displayName: "vNext IATdeploy (inc terraform, webapp deploy)"    
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
@@ -145,13 +143,11 @@ stages:
         ShortName: "vNextIAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}        
-      
-    
   
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'),startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/'),startsWith(variables['Build.SourceBranch'], 'refs/heads/feature/')))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
       parameters:
@@ -175,8 +171,6 @@ stages:
         ShortName: "IAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}
-        RunFunctionalTests: true 
-      
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy

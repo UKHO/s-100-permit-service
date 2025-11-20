@@ -1,5 +1,4 @@
-﻿using FluentAssertions;
-using UKHO.S100PermitService.Common.Factories;
+﻿using UKHO.S100PermitService.Common.Factories;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Factories
 {
@@ -22,7 +21,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Factories
 
             var result = _uriFactory.CreateUri(BaseUrl, endpointFormat, args);
 
-            result.Should().Be(expectedUri);
+            Assert.That(result, Is.EqualTo(expectedUri));
         }
     }
 }
