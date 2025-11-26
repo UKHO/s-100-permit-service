@@ -128,7 +128,8 @@ stages:
           ShortName: "Dev"
           AppPool: $(DeploymentPoolPE)
           Container: ${{variables.Container}}          
-          RunFunctionalTests: true 
+          RunFunctionalTests: true
+          DeployStubApp: true
 
   - stage: vNextIATDeploy
     dependsOn:  Devdeploy
