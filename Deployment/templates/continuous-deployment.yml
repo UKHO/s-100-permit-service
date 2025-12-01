@@ -20,7 +20,14 @@ parameters:
     default: false
   - name: DeployStubApp
     type: boolean
-    default: false
+    default: false    
+  - name: RunAddsTests
+    type: string
+    default: 'skip'
+    values:
+    - 'skip'
+    - 'vNextIAT'
+    - 'IAT'
 
 jobs:
   - deployment: ${{ parameters.ShortName }}DeployTerraform
@@ -149,3 +156,11 @@ jobs:
         - template: retain-pipelinerun/retain-pipelinerun.yml@UKHOTemplates
           parameters:
             DaysValid: 365
+
+  - ${{ if ne(parameters.RunAddsTests, 'skip') }}:
+    - template:  template.yml@TriggerADDSAutoTestsPipeline
+      parameters:
+        serviceConnection: 'addse2eauto Test - A.011.13'
+        environment: ${{ parameters.RunAddsTests }}
+        dependsOn:
+        - ${{ upper(parameters.ShortName) }}DeployApp
