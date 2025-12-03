@@ -14,7 +14,7 @@ resource "azurerm_windows_web_app" "webapp_service" {
   service_plan_id               = azurerm_service_plan.app_service_plan.id
   public_network_access_enabled = false
   tags                          = var.tags
-
+  
   site_config {
     application_stack {    
       current_stack  = "dotnet"
@@ -35,6 +35,42 @@ resource "azurerm_windows_web_app" "webapp_service" {
   }
 
   https_only = true
+}
+
+resource "azurerm_windows_web_app_slot" "staging" {
+  name                          = "staging"
+  app_service_id                = azurerm_windows_web_app.webapp_service.id
+  tags                          = azurerm_windows_web_app.webapp_service.tags 
+  public_network_access_enabled = false
+  
+  auth_settings {
+    enabled = false
+  }
+
+  site_config {
+    application_stack {    
+      current_stack  = "dotnet"
+      dotnet_version = "v8.0"
+    }
+    always_on  = true
+    ftps_state = "Disabled"
+  }
+
+  app_settings = azurerm_windows_web_app.webapp_service.app_settings
+  
+  identity {
+    type = "SystemAssigned"
+  }
+
+  lifecycle {
+    ignore_changes = [ virtual_network_subnet_id ]
+  }
+
+  https_only = azurerm_windows_web_app.webapp_service.https_only
+  
+  depends_on = [
+    azurerm_windows_web_app.webapp_service
+  ]
 }
 
 resource "azurerm_windows_web_app" "stub_webapp_service" {  
@@ -65,4 +101,10 @@ resource "azurerm_windows_web_app" "stub_webapp_service" {
 resource "azurerm_app_service_virtual_network_swift_connection" "webapp_vnet_integration" {
   app_service_id = azurerm_windows_web_app.webapp_service.id
   subnet_id      = var.subnet_id
+}
+
+resource "azurerm_app_service_slot_virtual_network_swift_connection" "slot_vnet_integration" {
+  app_service_id = azurerm_windows_web_app.webapp_service.id
+  subnet_id      = var.subnet_id
+  slot_name      = azurerm_windows_web_app_slot.staging.name
 }

@@ -53,6 +53,7 @@ module "webapp_service" {
   kv_read_access_list = merge(
     {
       "webapp_service" = module.webapp_service.web_app_object_id
+      "webapp_slot"    = module.webapp_service.slot_principal_id
     },
     local.env_name == "dev" ? {
       "autotest_service" = var.autotest_object_id
