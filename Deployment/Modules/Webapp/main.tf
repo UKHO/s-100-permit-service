@@ -42,11 +42,7 @@ resource "azurerm_windows_web_app_slot" "staging" {
   app_service_id                = azurerm_windows_web_app.webapp_service.id
   tags                          = azurerm_windows_web_app.webapp_service.tags 
   public_network_access_enabled = false
-  
-  auth_settings {
-    enabled = false
-  }
-
+    
   site_config {
     application_stack {    
       current_stack  = "dotnet"
