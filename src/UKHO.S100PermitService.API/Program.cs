@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
-using Microsoft.Identity.Client.Platforms.Features.DesktopOs.Kerberos;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
@@ -119,7 +118,7 @@ namespace UKHO.S100PermitService.API
                                  .MinimumLevel.Information()
                                  .MinimumLevel.Override("UKHO", LogEventLevel.Debug)
                                  .CreateLogger(), dispose: true);
-#endif               
+#endif
                 loggingBuilder.AddAzureWebAppDiagnostics();
             });
 
