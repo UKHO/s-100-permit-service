@@ -56,6 +56,11 @@ resources:
     name: UKHO/devops-pipelinetemplates
     endpoint: UKHO
     ref: refs/heads/main
+  - repository: TriggerADDSAutoTestsPipeline
+    type: github
+    endpoint: ukho
+    name: ukho/devops-trigger-adds-autotest-pipeline
+    ref: refs/heads/main 
 
 stages:
   - stage: RUNSTRYKER
@@ -143,7 +148,8 @@ stages:
         AzureSubscription: "S-100 Permit Generator vNext-IAT - A.011.15.5"
         ShortName: "vNextIAT"
         AppPool: $(DeploymentPoolPE)
-        Container: ${{variables.Container}}        
+        Container: ${{variables.Container}}
+        RunAddsTests: 'vNextIAT'
   
   - stage: vNextE2EDeploy
     dependsOn: vNextIATDeploy
@@ -172,6 +178,7 @@ stages:
         ShortName: "IAT"
         AppPool: $(DeploymentPoolPE)
         Container: ${{variables.Container}}
+        RunAddsTests: 'IAT'
 
   - stage: PreProdDeploy
     dependsOn:  IATDeploy
