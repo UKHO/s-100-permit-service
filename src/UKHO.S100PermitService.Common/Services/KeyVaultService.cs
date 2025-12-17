@@ -1,5 +1,6 @@
 ﻿using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
@@ -129,9 +130,10 @@ namespace UKHO.S100PermitService.Common.Services
         private async Task<byte[]> GetCertificateValueFromSecretAsync(string secretName)
         {
             var secretValue = await _secretClient.GetSecretAsync(secretName + "Secret");
-            var value = secretValue.Value;
+            var value = ParseCertificateBytes(secretValue.Value);
+            _cacheProvider.SetCertificateCache(secretName, value);
 
-            return ParseCertificateBytes(value);
+            return value;
         }
 
         private static byte[] ParseCertificateBytes(string value)
@@ -143,7 +145,7 @@ namespace UKHO.S100PermitService.Common.Services
                 var certEnd = value.IndexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".Length;
                 var certPem = value[certStart..certEnd];
                 
-                var cert = System.Security.Cryptography.X509Certificates.X509Certificate2.CreateFromPem(certPem);
+                var cert = X509Certificate2.CreateFromPem(certPem);
                 return cert.RawData;
             }
 

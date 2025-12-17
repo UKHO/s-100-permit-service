@@ -2,6 +2,8 @@
 using Azure.Security.KeyVault.Secrets;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
@@ -50,7 +52,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             });
         }
 
-            [Test]
+        [Test]
         public void WhenNoSecretsInMemoryCacheOrKeyVault_ThenThrowException()
         {
             A.CallTo(() => _fakeCacheProvider.GetCacheValue(A<string>.Ignored)).Returns(string.Empty);
@@ -127,17 +129,52 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         }
 
         [Test]
-        public void WhenCertificateIsNotInCache_ThenFetchesFromKeyVaultAndCachesIt()
+        public void WhenCertificateIsNotInCache_ThenFetchesFromKeyVaultAndCachesItbase64ValueCert()
         {
-            var keyVaultCertificate = A.Fake<KeyVaultCertificate>();
+            // Create some fake certificate bytes
+            var fakeCertBytes = new byte[] { 1, 2, 3, 4, 5 };
+            var base64Value = Convert.ToBase64String(fakeCertBytes);
 
             A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
-            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Returns(keyVaultCertificate);
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", base64Value));
 
             _keyVaultService.GetCertificate(CertificateName);
 
-            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).MustHaveHappenedOnceExactly();
-            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(CertificateName, null)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(A<string>.Ignored, A<byte[]>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenCertificateIsNotInCache_ThenFetchesFromKeyVaultAndCachesItWithAHexSecret()
+        {
+            var fakeCertBytes = new byte[] { 1, 2, 3, 4, 5 };
+            var hexValue = Convert.ToHexString(fakeCertBytes);
+
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", hexValue));
+
+            _keyVaultService.GetCertificate(CertificateName);
+
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(A<string>.Ignored, A<byte[]>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenCertificateIsNotInCache_ThenFetchesFromKeyVaultAndCachesItWithAPemCertificate()
+        {
+            // Generate a self-signed certificate at runtime for testing
+            using var ecdsa = ECDsa.Create(ECCurve.NamedCurves.nistP384);
+            var request = new CertificateRequest("CN=TestCert", ecdsa, HashAlgorithmName.SHA384);
+            using var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(1));
+            var pemCertificate = cert.ExportCertificatePem();
+
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", pemCertificate));
+
+            _keyVaultService.GetCertificate(CertificateName);
+
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(A<string>.Ignored, A<byte[]>.Ignored)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
