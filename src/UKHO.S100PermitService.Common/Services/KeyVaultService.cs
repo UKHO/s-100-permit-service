@@ -129,7 +129,7 @@ namespace UKHO.S100PermitService.Common.Services
 
         private async Task<byte[]> GetCertificateValueFromSecretAsync(string secretName)
         {
-            var secretValue = await _secretClient.GetSecretAsync(secretName + "Secret");
+            var secretValue = await _secretClient.GetSecretAsync(secretName);
             var value = ParseCertificateBytes(secretValue.Value);
             _cacheProvider.SetCertificateCache(secretName, value);
 
