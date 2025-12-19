@@ -23,7 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeDigitalSignatureProvider = A.Fake<IDigitalSignatureProvider>();
             _fakeKeyVaultService = A.Fake<IKeyVaultService>();
-            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration() { ServiceUri = "http://localhost:5000", DsPrivateKey = "test-data-server-private-key", DsCertificate = "test-data-server" });
+            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration() { ServiceUri = "http://localhost:5000", DsPrivateKey = "test-data-server-private-key", DsCertificateSecret = "test-data-server" });
             _fakeXmlTransformer = A.Fake<IXmlTransformer>();
             _permitSignGeneratorService = new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer);
         }

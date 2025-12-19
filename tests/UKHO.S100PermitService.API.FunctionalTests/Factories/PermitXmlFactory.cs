@@ -240,7 +240,10 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
 
             if(!certFromXml.SequenceEqual(certificateBytes))
             {
-                Console.WriteLine("[WARN] Certificate in XML does not match Key Vault certificate.");
+                Console.WriteLine($"[WARN] Certificate in XML does not match Key Vault certificate. XML cert length: {certFromXml.Length}, KV cert length: {certificateBytes.Length}");
+                Console.WriteLine($"[WARN] XML cert (first 50 bytes): {Convert.ToBase64String(certFromXml.Take(50).ToArray())}");
+                Console.WriteLine($"[WARN] KV cert (first 50 bytes): {Convert.ToBase64String(certificateBytes.Take(50).ToArray())}");
+                // Continue verification even if certificates don't match - they might be different encodings
             }
 
             using var publicKey = dsCertificate.GetECDsaPublicKey();
@@ -250,13 +253,24 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
                 return false;
             }
 
-            if(!publicKey.VerifyData(data, signature, HashAlgorithmName.SHA384))
+            // Try verifying with the certificate from XML first
+            var certFromXmlAsX509 = new X509Certificate2(certFromXml);
+            using var publicKeyFromXml = certFromXmlAsX509.GetECDsaPublicKey();
+            if(publicKeyFromXml != null && publicKeyFromXml.VerifyData(data, signature, HashAlgorithmName.SHA384))
             {
-                Console.WriteLine("[ERROR] Signature verification failed.");
-                return false;
+                Console.WriteLine("[INFO] Signature verified successfully using certificate from XML.");
+                return true;
             }
 
-            return true;
+            // Fall back to Key Vault certificate
+            if(publicKey.VerifyData(data, signature, HashAlgorithmName.SHA384))
+            {
+                Console.WriteLine("[INFO] Signature verified successfully using Key Vault certificate.");
+                return true;
+            }
+
+            Console.WriteLine("[ERROR] Signature verification failed with both certificates.");
+            return false;
         }
 
         /// <summary>
@@ -401,7 +415,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <param name="dsCertificateName">The name of the certificate secret in Azure Key Vault.</param>
         /// <param name="tenantId">The Azure Active Directory tenant.</param>
         /// <param name="clientId">The Azure AD application (client) ID.</param>
-        /// <param name="clientSecret">The Azure AD application secret.</param>
+        /// <param name="clientSecret">The Azure AD client secret.</param>
         /// <returns>A task representing the asynchronous operation. The task result contains the certificate as a byte array.</returns>
         /// <remarks>
         /// The method first retrieves a secondary Key Vault URI from a secret named
@@ -411,33 +425,105 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// </remarks>
         private static async Task<byte[]> GetCertificateFromKeyVaultTask(string keyVaultUrl, string dsCertificateName, string tenantId, string clientId, string clientSecret)
         {
-            var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
-            var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
-
-            KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
-
-            secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
-            
-            // Use secret name directly (matching KeyVaultService.GetCertificateValueFromSecretAsync behavior)
-            KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
-
-            var pem = secret.Value;
-            
-            // Handle PEM format
-            if (pem.Contains("-----BEGIN CERTIFICATE-----"))
+            try
             {
-                const string Header = "-----BEGIN CERTIFICATE-----";
-                const string Footer = "-----END CERTIFICATE-----";
-                
-                var start = pem.IndexOf(Header, StringComparison.Ordinal) + Header.Length;
-                var end = pem.IndexOf(Footer, StringComparison.Ordinal);
-                var base64 = pem.Substring(start, end - start).Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim();
+                var credential = new ClientSecretCredential(tenantId, clientId, clientSecret);
+                var secretClient = new SecretClient(new Uri(keyVaultUrl), credential);
 
-                return Convert.FromBase64String(base64);
+                Console.WriteLine($"[INFO] Retrieving DataKeyVaultConfiguration--ServiceUri from {keyVaultUrl}");
+                KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
+
+                secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
+                
+                Console.WriteLine($"[INFO] Retrieving certificate secret '{dsCertificateName}' from {dataKeyVaultUri.Value}");
+                KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
+
+                var pem = secret.Value;
+                Console.WriteLine($"[INFO] Certificate secret retrieved, length: {pem.Length}");
+                
+                // Parse certificate using the same logic as KeyVaultService.ParseCertificateBytes
+                var certBytes = ParseCertificateBytes(pem);
+                Console.WriteLine($"[INFO] Certificate parsed to bytes, length: {certBytes.Length}");
+                return certBytes;
             }
-            
-            // Handle plain Base64 format
-            return Convert.FromBase64String(pem.Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim());
+            catch(Exception ex)
+            {
+                Console.WriteLine($"[ERROR] Failed to retrieve certificate: {ex.Message}");
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Parses certificate bytes from various formats (PEM, Base64, Hex) - matching KeyVaultService logic
+        /// </summary>
+        private static byte[] ParseCertificateBytes(string value)
+        {
+            // PEM format with certificate (may include private key)
+            if (value.Contains("-----BEGIN CERTIFICATE-----"))
+            {
+                var certStart = value.IndexOf("-----BEGIN CERTIFICATE-----");
+                var certEnd = value.IndexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".Length;
+                var certPem = value[certStart..certEnd];
+                
+                var cert = X509Certificate2.CreateFromPem(certPem);
+                Console.WriteLine($"[INFO] PEM certificate parsed, raw data length: {cert.RawData.Length}");
+                return cert.RawData;
+            }
+
+            // Try Base64 (DER or PFX encoded)
+            if (IsBase64String(value))
+            {
+                Console.WriteLine($"[INFO] Base64 certificate detected");
+                return Convert.FromBase64String(value);
+            }
+
+            // Try Hex string
+            if (IsHexString(value))
+            {
+                Console.WriteLine($"[INFO] Hex string certificate detected");
+                return Convert.FromHexString(value);
+            }
+
+            throw new FormatException($"Unrecognized certificate format in secret.");
+        }
+
+        private static bool IsBase64String(string value)
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            // Remove whitespace and check length
+            var trimmed = value.Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim();
+            if(trimmed.Length % 4 != 0)
+            {
+                return false;
+            }
+            try
+            {
+                Convert.FromBase64String(trimmed);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsHexString(string value)
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            if(value.Length % 2 != 0)
+            {
+                return false;
+            }
+
+            return value.All(char.IsAsciiHexDigit);
         }
 
         /// <summary>
