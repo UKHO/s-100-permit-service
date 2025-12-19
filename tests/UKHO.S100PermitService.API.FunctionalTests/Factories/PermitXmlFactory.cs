@@ -398,7 +398,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// Retrieves a PEM-encoded X.509 certificate from Azure Key Vault and returns it as a byte array.
         /// </summary>
         /// <param name="keyVaultUrl">The URI of the initial Azure Key Vault that contains the configuration secret.</param>
-        /// <param name="dsCertificateName">The name of the secret containing the PEM-formatted certificate.</param>
+        /// <param name="dsCertificateName">The name of the certificate secret in Azure Key Vault.</param>
         /// <param name="tenantId">The Azure Active Directory tenant.</param>
         /// <param name="clientId">The Azure AD application (client) ID.</param>
         /// <param name="clientSecret">The Azure AD application secret.</param>
@@ -417,17 +417,27 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
             KeyVaultSecret dataKeyVaultUri = await secretClient.GetSecretAsync("DataKeyVaultConfiguration--ServiceUri");
 
             secretClient = new SecretClient(new Uri(dataKeyVaultUri.Value), credential);
+            
+            // Use secret name directly (matching KeyVaultService.GetCertificateValueFromSecretAsync behavior)
             KeyVaultSecret secret = await secretClient.GetSecretAsync(dsCertificateName);
 
-            const string Header = "-----BEGIN CERTIFICATE-----";
-            const string Footer = "-----END CERTIFICATE-----";
-
             var pem = secret.Value;
-            var start = pem.IndexOf(Header, StringComparison.Ordinal) + Header.Length;
-            var end = pem.IndexOf(Footer, StringComparison.Ordinal);
-            var base64 = pem.Substring(start, end - start).Replace("\r", "").Replace("\n", "").Trim();
+            
+            // Handle PEM format
+            if (pem.Contains("-----BEGIN CERTIFICATE-----"))
+            {
+                const string Header = "-----BEGIN CERTIFICATE-----";
+                const string Footer = "-----END CERTIFICATE-----";
+                
+                var start = pem.IndexOf(Header, StringComparison.Ordinal) + Header.Length;
+                var end = pem.IndexOf(Footer, StringComparison.Ordinal);
+                var base64 = pem.Substring(start, end - start).Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim();
 
-            return Convert.FromBase64String(base64);
+                return Convert.FromBase64String(base64);
+            }
+            
+            // Handle plain Base64 format
+            return Convert.FromBase64String(pem.Replace("\r", "").Replace("\n", "").Replace(" ", "").Trim());
         }
 
         /// <summary>
