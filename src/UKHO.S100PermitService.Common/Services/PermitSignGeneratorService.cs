@@ -35,7 +35,7 @@ namespace UKHO.S100PermitService.Common.Services
             var privateKeySecret = await _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
 
             //Retrieved the data server's certificate from the Key Vault.
-            var certificateSecret = _keyVaultService.GetCertificate(_dataKeyVaultConfiguration.Value.DsCertificate);
+            var certificateSecret = _keyVaultService.GetCertificate(_dataKeyVaultConfiguration.Value.DsCertificateSecret);
 
             var certificate = new X509Certificate2(certificateSecret);
 
