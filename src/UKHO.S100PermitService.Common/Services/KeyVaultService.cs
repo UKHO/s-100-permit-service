@@ -1,31 +1,21 @@
 ﻿using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
 
 namespace UKHO.S100PermitService.Common.Services
 {
-    public class KeyVaultService : IKeyVaultService
+    public class KeyVaultService(ILogger<KeyVaultService> logger,
+                                  ICacheProvider cacheProvider,
+                                  ISecretClient secretClient,
+                                  ICertificateClient certificateSecretClient,
+                                  IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration) : IKeyVaultService
     {
-        private readonly ILogger<KeyVaultService> _logger;
-        private readonly ICacheProvider _cacheProvider;
-        private readonly ISecretClient _secretClient;
-        private readonly ICertificateClient _certificateSecretClient;
-
-        public KeyVaultService(ILogger<KeyVaultService> logger,
-                                      ICacheProvider cacheProvider,
-                                      ISecretClient secretClient,
-                                      ICertificateClient certificateSecretClient)
-        {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
-            _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
-            _certificateSecretClient = certificateSecretClient ?? throw new ArgumentNullException(nameof(certificateSecretClient));
-        }
-
         /// <summary>
         /// Get the secret keys associated with the requested data.
         /// </summary>
@@ -40,14 +30,14 @@ namespace UKHO.S100PermitService.Common.Services
         {
             try
             {
-                var secretValue = _cacheProvider.GetCacheValue(secretName);
+                var secretValue = cacheProvider.GetCacheValue(secretName);
                 if(string.IsNullOrEmpty(secretValue))
                 {
                     secretValue = (await GetSetSecretKeyValue(secretName)).Value;
                 }
                 else
                 {
-                    _logger.LogInformation(EventIds.SecretKeyFoundInCache.ToEventId(), "Secret Key found in Cache.");
+                    logger.LogInformation(EventIds.SecretKeyFoundInCache.ToEventId(), "Secret Key found in Cache.");
                 }
 
                 return secretValue;
@@ -72,19 +62,21 @@ namespace UKHO.S100PermitService.Common.Services
         {
             try
             {
-                var certValue = _cacheProvider.GetCertificateCacheValue(certificateName);
+                var certValue = cacheProvider.GetCertificateCacheValue(certificateName);
                 if(certValue.Length == 0)
                 {
-                    // While the IHO certificate is incompatible with the certificate section in the keyvault,
-                    // we will store it as a string in the secrets sections. This method will remain here in case
-                    // the certificate is updated and we can use the certificate section.
-                    //certValue = GetSetCertificateValue(certificateName);
-
-                    certValue = GetCertificateValueFromSecretAsync(certificateName).Result;
+                    if(dataKeyVaultConfiguration.Value.UseSecretStringForCert)
+                    { 
+                        certValue = GetCertificateValueFromSecretAsync(certificateName).Result; 
+                    }
+                    else
+                    {
+                        certValue = GetSetCertificateValue(certificateName);
+                    }
                 }
                 else
                 {
-                    _logger.LogInformation(EventIds.CertificateFoundInCache.ToEventId(), "Certificate found in Cache.");
+                    logger.LogInformation(EventIds.CertificateFoundInCache.ToEventId(), "Certificate found in Cache.");
                 }
 
                 return certValue;
@@ -102,11 +94,11 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>SecretKeys</returns>
         private async Task<KeyVaultSecret> GetSetSecretKeyValue(string secretName)
         {
-            var secretValue = await _secretClient.GetSecretAsync(secretName);
+            var secretValue = await secretClient.GetSecretAsync(secretName);
 
-            _cacheProvider.SetCache(secretName, secretValue.Value);
+            cacheProvider.SetCache(secretName, secretValue.Value);
 
-            _logger.LogInformation(EventIds.AddingNewSecretKeyInCache.ToEventId(), "New Secret Key added in Cache.");
+            logger.LogInformation(EventIds.AddingNewSecretKeyInCache.ToEventId(), "New Secret Key added in Cache.");
 
             return secretValue;
         }
@@ -118,20 +110,20 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>The certificate as a byte array.</returns>
         private byte[] GetSetCertificateValue(string secretName)
         {
-            var secretValue = _certificateSecretClient.GetCertificate(secretName);
+            var secretValue = certificateSecretClient.GetCertificate(secretName);
 
-            _cacheProvider.SetCertificateCache(secretName, secretValue.Cer);
+            cacheProvider.SetCertificateCache(secretName, secretValue.Cer);
 
-            _logger.LogInformation(EventIds.AddingNewCertificateInCache.ToEventId(), "New Certificate added in Cache.");
+            logger.LogInformation(EventIds.AddingNewCertificateInCache.ToEventId(), "New Certificate added in Cache.");
 
             return secretValue.Cer;
         }
 
         private async Task<byte[]> GetCertificateValueFromSecretAsync(string secretName)
         {
-            var secretValue = await _secretClient.GetSecretAsync(secretName);
+            var secretValue = await secretClient.GetSecretAsync(secretName);
             var value = ParseCertificateBytes(secretValue.Value);
-            _cacheProvider.SetCertificateCache(secretName, value);
+            cacheProvider.SetCertificateCache(secretName, value);
 
             return value;
         }
@@ -139,24 +131,24 @@ namespace UKHO.S100PermitService.Common.Services
         private static byte[] ParseCertificateBytes(string value)
         {
             // PEM format with certificate (may include private key)
-            if (value.Contains("-----BEGIN CERTIFICATE-----"))
+            if(value.Contains("-----BEGIN CERTIFICATE-----"))
             {
                 var certStart = value.IndexOf("-----BEGIN CERTIFICATE-----");
                 var certEnd = value.IndexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".Length;
                 var certPem = value[certStart..certEnd];
-                
+
                 var cert = X509Certificate2.CreateFromPem(certPem);
                 return cert.RawData;
             }
 
             // Try Base64 (DER or PFX encoded)
-            if (IsBase64String(value))
+            if(IsBase64String(value))
             {
                 return Convert.FromBase64String(value);
             }
 
             // Try Hex string
-            if (IsHexString(value))
+            if(IsHexString(value))
             {
                 return Convert.FromHexString(value);
             }
