@@ -2,9 +2,11 @@
 using Azure.Security.KeyVault.Secrets;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -21,6 +23,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ICertificateClient _fakeCertificateSecretClient;
         private IKeyVaultService _keyVaultService;
         private const string CertificateName = "testCertificate";
+        private IOptions<DataKeyVaultConfiguration> _fakeDataKeyVaultConfig;
 
         [SetUp]
         public void Setup()
@@ -29,8 +32,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             _fakeCacheProvider = A.Fake<ICacheProvider>();
             _fakeSecretClient = A.Fake<ISecretClient>();
             _fakeCertificateSecretClient = A.Fake<ICertificateClient>();
+            _fakeDataKeyVaultConfig = A.Fake<IOptions<DataKeyVaultConfiguration>>();
 
-            _keyVaultService = new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient);
+            _keyVaultService = new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig);
         }
 
         [Test]
@@ -38,17 +42,20 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             Assert.Multiple(() =>
             {
-                Assert.That(() => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient),
+                Assert.That(() => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient),
+                Assert.That(() => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'cacheProvider')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient),
+                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'secretClient')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null),
+                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null, _fakeDataKeyVaultConfig),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'certificateSecretClient')"));
+
+                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, null),
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'dataKeyVaultConfig')"));
             });
         }
 
@@ -135,6 +142,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var fakeCertBytes = new byte[] { 1, 2, 3, 4, 5 };
             var base64Value = Convert.ToBase64String(fakeCertBytes);
 
+            var config = new DataKeyVaultConfiguration { UseSecretStringForCert = true };
+            A.CallTo(() => _fakeDataKeyVaultConfig.Value).Returns(config);
             A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
             A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", base64Value));
 
@@ -150,6 +159,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             var fakeCertBytes = new byte[] { 1, 2, 3, 4, 5 };
             var hexValue = Convert.ToHexString(fakeCertBytes);
 
+            var config = new DataKeyVaultConfiguration { UseSecretStringForCert = true };
+            A.CallTo(() => _fakeDataKeyVaultConfig.Value).Returns(config);
             A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
             A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", hexValue));
 
@@ -168,6 +179,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             using var cert = request.CreateSelfSigned(DateTimeOffset.UtcNow, DateTimeOffset.UtcNow.AddYears(1));
             var pemCertificate = cert.ExportCertificatePem();
 
+            var config = new DataKeyVaultConfiguration { UseSecretStringForCert = true };
+            A.CallTo(() => _fakeDataKeyVaultConfig.Value).Returns(config);
             A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
             A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).Returns(new KeyVaultSecret("test", pemCertificate));
 
@@ -175,6 +188,24 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
 
             A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustHaveHappenedOnceExactly();
             A.CallTo(() => _fakeCacheProvider.SetCertificateCache(A<string>.Ignored, A<byte[]>.Ignored)).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public void WhenCertificateIsNotInCache_AndUseSecretStringForCertIsFalse_ThenFetchesFromCertificateClient()
+        {
+            var fakeCertBytes = new byte[] { 1, 2, 3, 4, 5 };
+
+            var config = new DataKeyVaultConfiguration { UseSecretStringForCert = false };
+            A.CallTo(() => _fakeDataKeyVaultConfig.Value).Returns(config);
+            A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns([]);
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Returns(fakeCertBytes);
+
+            var result = _keyVaultService.GetCertificate(CertificateName);
+
+            Assert.That(result, Is.EqualTo(fakeCertBytes));
+            A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).MustHaveHappenedOnceExactly();
+            A.CallTo(() => _fakeSecretClient.GetSecretAsync(A<string>.Ignored)).MustNotHaveHappened();
+            A.CallTo(() => _fakeCacheProvider.SetCertificateCache(CertificateName, fakeCertBytes)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
