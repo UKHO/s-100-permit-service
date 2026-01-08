@@ -42,12 +42,12 @@ namespace UKHO.S100PermitService.Common.Services
             try
             {
                 //Generate the hash of the permit XML content.
-                _logger.LogInformation(EventIds.PermitHashGenerationStarted.ToEventId(), "Permit hash generation started.");
+                _logger.LogDebug(EventIds.PermitHashGenerationStarted.ToEventId(), "Permit hash generation started.");
                 var permitXmlHash = _digitalSignatureProvider.GeneratePermitXmlHash(permitXmlContent);
                 _logger.LogInformation(EventIds.PermitHashGenerationCompleted.ToEventId(), "Permit hash successfully generated.");
 
                 //Retrieved the data server's private key from the Key Vault.
-                _logger.LogInformation("Retrieving data server private key from Key Vault.");
+                _logger.LogDebug("Retrieving data server private key from Key Vault.");
                 var privateKeySecret = await _keyVaultService.GetSecretKeys(_dataKeyVaultConfiguration.Value.DsPrivateKey);
 
                 //Retrieved the data server's certificate from the Key Vault.
@@ -61,17 +61,16 @@ namespace UKHO.S100PermitService.Common.Services
 
                 var certificateSecret = _keyVaultService.GetCertificate(kvValue);
                 var certificate = new X509Certificate2(certificateSecret);
-                _logger.LogInformation("Certificate loaded. Subject: {Subject}", certificate.Subject);
 
                 //Sign the hash using the private key in ECDsa format and hash of the permit XML content.
-                _logger.LogInformation("Signing permit hash with private key.");
+                _logger.LogDebug("Signing permit hash with private key.");
                 var signatureBase64 = _digitalSignatureProvider.SignHashWithPrivateKey(privateKeySecret, permitXmlHash);
 
                 // Create a StandaloneDigitalSignature object that encapsulates the certificate and the base64-encoded signature.
                 var signature = _digitalSignatureProvider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
 
                 // Serialize the StandaloneDigitalSignature object to its XML representation.
-                _logger.LogInformation("Serializing digital signature to XML.");
+                _logger.LogDebug("Serializing digital signature to XML.");
                 var signatureXml = await _xmlTransformer.SerializeToXml(signature);
 
                 _logger.LogInformation(EventIds.PermitSignCreationCompleted.ToEventId(), "Permit sign creation completed.");
