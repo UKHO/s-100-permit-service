@@ -14,6 +14,11 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
     [TestFixture]
     public class PermitSignGeneratorServiceTests
     {
+        private const string TestServiceUri = "http://localhost:5000";
+        private const string TestPrivateKeyName = "test-data-server-private-key";
+        private const string TestCertificateName = "test-data-server-cert";
+        private const string TestCertificateSecretName = "test-data-server";
+
         private IDigitalSignatureProvider _fakeDigitalSignatureProvider;
         private IKeyVaultService _fakeKeyVaultService;
         private IOptions<DataKeyVaultConfiguration> _fakeDataKeyVaultConfiguration;
@@ -26,7 +31,14 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeDigitalSignatureProvider = A.Fake<IDigitalSignatureProvider>();
             _fakeKeyVaultService = A.Fake<IKeyVaultService>();
-            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration() { ServiceUri = "http://localhost:5000", DsPrivateKey = "test-data-server-private-key", DsCertificate = "test-data-server-cert", DsCertificateSecret = "test-data-server", UseSecretStringForCert = false });
+            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration() 
+            { 
+                ServiceUri = TestServiceUri, 
+                DsPrivateKey = TestPrivateKeyName, 
+                DsCertificate = TestCertificateName, 
+                DsCertificateSecret = TestCertificateSecretName, 
+                UseSecretStringForCert = false 
+            });
             _fakeXmlTransformer = A.Fake<IXmlTransformer>();
             _fakeLogger = A.Fake<ILogger<PermitSignGeneratorService>>();
             _permitSignGeneratorService = new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, _fakeLogger);
@@ -70,7 +82,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeDigitalSignatureProvider.GeneratePermitXmlHash(PermitXmlContent)).Returns(hash);
             A.CallTo(() => _fakeKeyVaultService.GetSecretKeys(_fakeDataKeyVaultConfiguration.Value.DsPrivateKey)).Returns(PrivateKeySecret);
             A.CallTo(() => _fakeKeyVaultService.GetCertificate(A<string>.Ignored)).Returns(certificateBytes);
-            A.CallTo(() => _fakeDigitalSignatureProvider.SignHashWithPrivateKey(PrivateKeySecret,hash)).Returns(Signature);
+            A.CallTo(() => _fakeDigitalSignatureProvider.SignHashWithPrivateKey(PrivateKeySecret, hash)).Returns(Signature);
             A.CallTo(() => _fakeDigitalSignatureProvider.CreateStandaloneDigitalSignature(A<X509Certificate2>.Ignored, A<string>.Ignored)).Returns(new StandaloneDigitalSignature());
             A.CallTo(() => _fakeXmlTransformer.SerializeToXml(A<StandaloneDigitalSignature>.Ignored)).Returns(XmlContent);
 
