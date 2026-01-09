@@ -152,10 +152,9 @@ stages:
         RunAddsTests: 'vNextIAT'
   
   - stage: vNextE2EDeploy
-    dependsOn: Devdeploy
+    dependsOn: vNextIATDeploy
     displayName: "vNextE2Edeploy (inc terraform, webapp deploy)"    
-    condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/develop'), startsWith(variables['Build.SourceBranch'], 'refs/heads/dev/')))
-    # condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/develop'))
     jobs:
     - template: Deployment/templates/continuous-deployment.yml
       parameters:
