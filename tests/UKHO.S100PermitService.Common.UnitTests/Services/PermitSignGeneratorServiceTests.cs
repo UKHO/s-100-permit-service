@@ -17,7 +17,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private const string TestServiceUri = "http://localhost:5000";
         private const string TestPrivateKeyName = "test-data-server-private-key";
         private const string TestCertificateName = "test-data-server-cert";
-        private const string TestCertificateSecretName = "test-data-server";
+        private const string TestCertificateNameKVS = "test-data-server";
 
         private IDigitalSignatureProvider _fakeDigitalSignatureProvider;
         private IKeyVaultService _fakeKeyVaultService;
@@ -36,7 +36,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
                 ServiceUri = TestServiceUri, 
                 DsPrivateKey = TestPrivateKeyName, 
                 DsCertificate = TestCertificateName, 
-                DsCertificateSecret = TestCertificateSecretName, 
+                DsCertificateSecret = TestCertificateNameKVS, 
                 UseSecretStringForCert = false 
             });
             _fakeXmlTransformer = A.Fake<IXmlTransformer>();
