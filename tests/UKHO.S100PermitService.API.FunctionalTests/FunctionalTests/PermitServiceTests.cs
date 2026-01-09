@@ -120,7 +120,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             _logger.LogInformation("ZIP extracted at {Path}", downloadPath);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
-            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
+            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificateSecret!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
             _logger.LogInformation("Signature Valid={Valid}", isSignatureValid);
             Assert.That(isSignatureValid);
         }

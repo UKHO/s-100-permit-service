@@ -3,6 +3,8 @@
     public class DataKeyVaultConfiguration
     {
         public string? DsCertificate { get; set; }
-        
+
+        public string? DsCertificateSecret { get; set; }
+
     }
 }

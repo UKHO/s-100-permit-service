@@ -23,10 +23,11 @@ namespace UKHO.S100PermitService.Common.Clients
         /// Get certificate stored in key vault.
         /// </summary>
         /// <param name="certificateName">Certificate name.</param>
-        /// <returns>KeyVaultCertificate details.</returns>
-        public KeyVaultCertificate GetCertificate(string certificateName)
+        /// <returns>Certificate as a byte array.</returns>
+        public byte[] GetCertificate(string certificateName)
         {
-            return _certificateClient.GetCertificate(certificateName);
+            var response = _certificateClient.GetCertificate(certificateName);
+            return response.Value.Cer;
         }
     }
 }
