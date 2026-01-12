@@ -8,5 +8,7 @@ namespace UKHO.S100PermitService.Common.Configuration
         public string ServiceUri { get; set; }
         public string DsPrivateKey { get; set; }
         public string DsCertificate { get; set; }
+        public string DsCertificateSecret { get; set; }
+        public bool UseSecretStringForCert { get; set; }
     }
 }
