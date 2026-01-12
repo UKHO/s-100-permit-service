@@ -6,7 +6,7 @@ namespace UKHO.S100PermitService.Common.Models.ProductKeyService
     public class ProductKeyServiceHealthResponse
     {
         [JsonPropertyName("status")]
-        public string Status { get; set; }
+        public string Status { get; set; } = string.Empty;
 
         public HealthStatus HealthStatus
         {
