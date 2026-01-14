@@ -144,9 +144,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             {
                 Assert.That(result != null);
                 Assert.That(result.Filename, Does.Contain(PermitServiceConstants.PermitXmlFileName));
-                Assert.That(result.Certificate.SchemeAdministrator.Id, Does.Contain("TestIssuer"));
+                Assert.That(result.Certificate.SchemeAdministrator.Id, Does.Contain("IHO"));
                 Assert.That(result.Certificate.CertificateMetadata.Id, Does.Contain("TestSubject"));
-                Assert.That(result.Certificate.CertificateMetadata.Issuer, Does.Contain("TestIssuer"));
+                Assert.That(result.Certificate.CertificateMetadata.Issuer, Does.Contain("IHO"));
                 Assert.That(result.Certificate.CertificateMetadata.Value, Does.Contain(Convert.ToBase64String(certificate.RawData)));
                 Assert.That(result.DigitalSignatureInfo.Id, Does.Contain(PermitServiceConstants.DigitalSignatureId));
                 Assert.That(result.DigitalSignatureInfo.CertificateRef, Does.Contain("TestSubject"));

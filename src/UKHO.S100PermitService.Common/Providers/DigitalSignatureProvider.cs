@@ -94,12 +94,12 @@ namespace UKHO.S100PermitService.Common.Providers
                 {
                     SchemeAdministrator = new SchemeAdministrator
                     {
-                        Id = issuer
+                        Id = "IHO"
                     },
                     CertificateMetadata = new CertificateMetadata
                     {
                         Id = certificateDsId,
-                        Issuer = issuer,
+                        Issuer = "IHO",
                         Value = certificateValue
                     }
                 },
