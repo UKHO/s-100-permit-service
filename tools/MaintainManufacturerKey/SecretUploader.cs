@@ -1,6 +1,7 @@
 ﻿using Azure.Security.KeyVault.Secrets;
 using Azure;
 using Azure.Identity;
+using Serilog;
 
 namespace MaintainManufacturerKey
 {
@@ -10,27 +11,32 @@ namespace MaintainManufacturerKey
 
         public SecretUploader(string keyVaultUrl)
         {
-            _client = new SecretClient(new Uri(keyVaultUrl), new DefaultAzureCredential());
+            _client = new SecretClient(
+                new Uri(keyVaultUrl),
+                new DefaultAzureCredential(new DefaultAzureCredentialOptions
+                {
+                    ExcludeInteractiveBrowserCredential = false,
+                }));
         }
 
-        public async Task InsertSecretAsync(string name, string value)
+        public async Task InsertSecretAsync(string name, string value, ICollection<SecretChangeRecord> existingValues)
         {
             try
             {
-                // TODO - this is horrible! Find a nicer way of doing this?
+                var originalValue = await _client.GetSecretAsync(name);
 
-                await _client.GetSecretAsync(name);
-                throw new InvalidOperationException($"Secret '{name}' already exists.");
+                // If the secret already exists and has a different value, add it to the list of existing values
+                // because we will need to verify the changed values
+                if(!originalValue.Value.Value.Equals(value))
+                {
+                    existingValues.Add(new SecretChangeRecord(name, originalValue.Value.Value, value));
+                }
             }
-            catch (RequestFailedException ex) when (ex.Status == 404)
+            catch(RequestFailedException ex) when(ex.Status == 404)
             {
+                Log.Debug("Creating secret {SecretName}", name);
                 await _client.SetSecretAsync(name, value);
             }
-        }
-
-        public async Task UpsertSecretAsync(string name, string value)
-        {
-            await _client.SetSecretAsync(name, value);
         }
     }
 }
