@@ -38,7 +38,7 @@ namespace MaintainManufacturerKey
                 .CreateLogger();
 
             // Enable Azure SDK HTTP request/response logging if configured
-            using AzureEventSourceListener? listener = settings.EventSourceLogging 
+            using var listener = settings.EventSourceLogging 
                 ? AzureEventSourceListener.CreateConsoleLogger() 
                 : null;
 
@@ -182,16 +182,8 @@ namespace MaintainManufacturerKey
         }
         private static Options? PromptForOptions()
         {
-            Console.Write("Select Operation (insert/upsert). Default operation is insert (press Enter to use default): ");
-            var operation = Insert;
-            var input = Console.ReadLine();
-            if(!string.IsNullOrEmpty(input))
-            {
-                operation = input;
-            }
-
             Console.Write("Enter path to the Excel or CSV file or leave blank to use appsettings.json value: ");
-            input = Console.ReadLine()?.Trim().Trim('"');
+            var input = Console.ReadLine()?.Trim().Trim('"');
             if(!string.IsNullOrWhiteSpace(input))
             {
                 filePath = input;
@@ -199,7 +191,6 @@ namespace MaintainManufacturerKey
 
             return new Options
             {
-                Operation = operation,
                 FilePath = filePath
             };
         }
