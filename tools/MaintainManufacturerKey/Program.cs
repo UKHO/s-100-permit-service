@@ -1,5 +1,4 @@
 ﻿using Azure.Core.Diagnostics;
-using Azure.Security.KeyVault.Secrets;
 using CommandLine;
 using MaintainManufacturerKey.Configuration;
 using Microsoft.Extensions.Configuration;
@@ -9,7 +8,6 @@ namespace MaintainManufacturerKey
 {
     internal static class Program
     {
-        private const string Insert = "insert";
         private const string AppSettingsFile = "appsettings.json";
         private static string kvUrl = string.Empty;
 
@@ -111,7 +109,7 @@ namespace MaintainManufacturerKey
             var reader = new KeyListReader();
             var data = reader.ReadFile(filePath);
 
-            Log.Information("Starting {Operation} operation for {RecordCount} records...", Insert, data.Count());
+            Log.Information("Starting {Operation} operation for {RecordCount} records...", "Insert", data.Count());
 
             List<SecretChangeRecord> alreadyExistingSecrets = [];
 
