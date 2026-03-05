@@ -10,7 +10,6 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
     public static class PermitServiceEndPointFactory
     {
         private static readonly HttpClient _httpClient = new();
-        private static string? _uri;
         private static readonly string _zipFileName = "Permits.zip";
         private static ILogger _logger = NullLogger.Instance;
 
@@ -30,22 +29,21 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <returns>Response of S-100 Permit Service Endpoint</returns>
         public static async Task<HttpResponseMessage> PermitServiceEndPointAsync(string? accessToken, RequestBodyModel payload, bool isUrlValid = true)
         {
-            _uri = $"/v1/permits/s100";
-            if(!isUrlValid)
-            {
-                _uri = $"/permits/s100";
-            }
+            var uri = isUrlValid ? "/v1/permits/s100" : "/permits/s100";
 
-            _logger.LogInformation("Calling S-100 Permit Service Endpoint: {uri}", _uri);
-            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, _uri);
+            _logger.LogInformation("Calling S-100 Permit Service Endpoint: {uri}", uri);
+            using var httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, uri);
+
             var payloadJson = JsonConvert.SerializeObject(payload);
             _logger.LogInformation("Request Payload: {payloadJson}", payloadJson);
             httpRequestMessage.Content = new StringContent(payloadJson, Encoding.UTF8, "application/json");
-            if(!string.IsNullOrEmpty(accessToken))
-            {   
-                httpRequestMessage.Headers.Add("Authorization", "Bearer " + accessToken);
+
+            if (!string.IsNullOrEmpty(accessToken))
+            {
+                httpRequestMessage.Headers.TryAddWithoutValidation("Authorization", "Bearer " + accessToken);
             }
-            return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None);
+
+            return await _httpClient.SendAsync(httpRequestMessage, CancellationToken.None).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -55,25 +53,33 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <returns>The path of the location where PERMIT.ZIP is downloaded and extracted</returns>
         public static async Task<string> DownloadZipFileAsync(HttpResponseMessage response)
         {
-            var tempFilePath = Path.Combine(Path.GetTempPath(), "temp");
-            if(!Directory.Exists(tempFilePath))
-            {
-                Directory.CreateDirectory(tempFilePath);
-            }
+            var tempRoot = Path.Combine(Path.GetTempPath(), "temp");
+            Directory.CreateDirectory(tempRoot);
 
-            if(response.IsSuccessStatusCode)
-            {
-                var stream = await response.Content.ReadAsStreamAsync();
-                await using FileStream outputFileStream = new(Path.Combine(tempFilePath, _zipFileName), FileMode.Create);
-                await stream.CopyToAsync(outputFileStream);
-            }
-            else
+            if (!response.IsSuccessStatusCode)
             {
                 Console.WriteLine($"Failed to save response as zip due to: {response.StatusCode}");
+                // Still return a deterministic path for callers; no extraction.
+                return tempRoot;
             }
 
-            var zipPath = Path.Combine(tempFilePath, _zipFileName);
-            var extractPath = Path.Combine(tempFilePath, RenameFolder(zipPath));
+            // Save response stream to a zip file
+            var zipPath = Path.Combine(tempRoot, _zipFileName);
+            await using (var outputFileStream = new FileStream(zipPath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                var stream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
+                await stream.CopyToAsync(outputFileStream).ConfigureAwait(false);
+            }
+
+            // Extract to a folder named after the zip (without extension)
+            var extractPath = Path.Combine(tempRoot, Path.GetFileNameWithoutExtension(zipPath));
+
+            // Ensure clean extraction directory
+            if (Directory.Exists(extractPath))
+            {
+                Directory.Delete(extractPath, recursive: true);
+            }
+
             ZipFile.ExtractToDirectory(zipPath, extractPath);
             return extractPath;
         }
@@ -85,12 +91,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <returns>The filename after renaming</returns>
         public static string RenameFolder(string pathInput)
         {
-            var fileName = Path.GetFileName(pathInput);
-            if(fileName.Contains(".zip"))
-            {
-                fileName = fileName.Replace(".zip", "");
-            }
-            return fileName;
+            return Path.GetFileNameWithoutExtension(pathInput);
         }
 
         /// <summary>
@@ -100,16 +101,13 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// <returns>The payload after reading as Request Body</returns>
         public static async Task<RequestBodyModel> LoadPayloadAsync(string filePath)
         {
-            using(var reader = new StreamReader(filePath))
-            {
-                var payload = await reader.ReadToEndAsync();
-                return JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
-            }
+            var payload = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
+            return JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
         }
 
         public static void SetLogger(ILogger logger)
         {
-            _logger = logger;
+            _logger = logger ?? NullLogger.Instance;
         }
     }
 }

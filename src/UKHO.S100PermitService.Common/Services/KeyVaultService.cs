@@ -1,6 +1,9 @@
 ﻿using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
+using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -13,16 +16,25 @@ namespace UKHO.S100PermitService.Common.Services
         private readonly ICacheProvider _cacheProvider;
         private readonly ISecretClient _secretClient;
         private readonly ICertificateClient _certificateSecretClient;
+        private readonly IOptions<DataKeyVaultConfiguration> _dataKeyVaultConfiguration;
 
         public KeyVaultService(ILogger<KeyVaultService> logger,
-                                      ICacheProvider cacheProvider,
-                                      ISecretClient secretClient,
-                                      ICertificateClient certificateSecretClient)
+                              ICacheProvider cacheProvider,
+                              ISecretClient secretClient,
+                              ICertificateClient certificateSecretClient,
+                              IOptions<DataKeyVaultConfiguration> dataKeyVaultConfiguration)
         {
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _cacheProvider = cacheProvider ?? throw new ArgumentNullException(nameof(cacheProvider));
-            _secretClient = secretClient ?? throw new ArgumentNullException(nameof(secretClient));
-            _certificateSecretClient = certificateSecretClient ?? throw new ArgumentNullException(nameof(certificateSecretClient));
+            ArgumentNullException.ThrowIfNull(logger, nameof(logger));
+            ArgumentNullException.ThrowIfNull(cacheProvider, nameof(cacheProvider));
+            ArgumentNullException.ThrowIfNull(secretClient, nameof(secretClient));
+            ArgumentNullException.ThrowIfNull(certificateSecretClient, nameof(certificateSecretClient));
+            ArgumentNullException.ThrowIfNull(dataKeyVaultConfiguration, "dataKeyVaultConfig");
+
+            _logger = logger;
+            _cacheProvider = cacheProvider;
+            _secretClient = secretClient;
+            _certificateSecretClient = certificateSecretClient;
+            _dataKeyVaultConfiguration = dataKeyVaultConfiguration;
         }
 
         /// <summary>
@@ -74,7 +86,14 @@ namespace UKHO.S100PermitService.Common.Services
                 var certValue = _cacheProvider.GetCertificateCacheValue(certificateName);
                 if(certValue.Length == 0)
                 {
-                    certValue = GetSetCertificateValue(certificateName);
+                    if(_dataKeyVaultConfiguration.Value.UseSecretStringForCert)
+                    { 
+                        certValue = GetCertificateValueFromSecretAsync(certificateName).Result; 
+                    }
+                    else
+                    {
+                        certValue = GetSetCertificateValue(certificateName);
+                    }
                 }
                 else
                 {
@@ -112,13 +131,89 @@ namespace UKHO.S100PermitService.Common.Services
         /// <returns>The certificate as a byte array.</returns>
         private byte[] GetSetCertificateValue(string secretName)
         {
-            var secretValue = _certificateSecretClient.GetCertificate(secretName);
+            var certValue = _certificateSecretClient.GetCertificate(secretName);
 
-            _cacheProvider.SetCertificateCache(secretName, secretValue.Cer);
+            _cacheProvider.SetCertificateCache(secretName, certValue);
 
             _logger.LogInformation(EventIds.AddingNewCertificateInCache.ToEventId(), "New Certificate added in Cache.");
 
-            return secretValue.Cer;
+            return certValue;
+        }
+
+        private async Task<byte[]> GetCertificateValueFromSecretAsync(string secretName)
+        {
+            var secretValue = await _secretClient.GetSecretAsync(secretName);
+            var value = ParseCertificateBytes(secretValue.Value);
+            _cacheProvider.SetCertificateCache(secretName, value);
+
+            return value;
+        }
+
+        private static byte[] ParseCertificateBytes(string value)
+        {
+            // PEM format with certificate (may include private key)
+            if(value.Contains("-----BEGIN CERTIFICATE-----"))
+            {
+                var certStart = value.IndexOf("-----BEGIN CERTIFICATE-----");
+                var certEnd = value.IndexOf("-----END CERTIFICATE-----") + "-----END CERTIFICATE-----".Length;
+                var certPem = value[certStart..certEnd];
+
+                var cert = X509Certificate2.CreateFromPem(certPem);
+                return cert.RawData;
+            }
+
+            // Try Base64 (DER or PFX encoded)
+            if(IsBase64String(value))
+            {
+                return Convert.FromBase64String(value);
+            }
+
+            // Try Hex string
+            if(IsHexString(value))
+            {
+                return Convert.FromHexString(value);
+            }
+
+            throw new FormatException($"Unrecognized certificate format in secret.");
+        }
+
+        private static bool IsBase64String(string value)
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            // Remove whitespace and check length
+            var trimmed = value.Replace("\r", "").Replace("\n", "").Trim();
+            if(trimmed.Length % 4 != 0)
+            {
+                return false;
+            }
+            try
+            {
+                Convert.FromBase64String(trimmed);
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static bool IsHexString(string value)
+        {
+            if(string.IsNullOrWhiteSpace(value))
+            {
+                return false;
+            }
+
+            if(value.Length % 2 != 0)
+            {
+                return false;
+            }
+
+            return value.All(char.IsAsciiHexDigit);
         }
     }
 }

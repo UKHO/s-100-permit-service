@@ -26,16 +26,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public async Task WhenInvalidHexStringIsPassed_ThenThrowException()
+        public void WhenInvalidHexStringIsPassed_ThenThrowException()
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.DecryptAsync("123456", FakeKey));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(async () => await _aesEncryption.DecryptAsync("123456", FakeKey));
             Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length}."));
         }
 
         [Test]
-        public async Task WhenInvalidHexKeyIsPassed_ThenThrowException()
+        public void WhenInvalidHexKeyIsPassed_ThenThrowException()  
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.DecryptAsync(FakeText, "123456"));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(async () => await _aesEncryption.DecryptAsync(FakeText, "123456"));
             Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length}."));
         }
 
@@ -49,16 +49,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         }
 
         [Test]
-        public async Task WhenInvalidHexStringIsPassedToEncryption_ThenThrowException()
+        public void WhenInvalidHexStringIsPassedToEncryption_ThenThrowException()
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.EncryptAsync("123456", FakeKey));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(async () => await _aesEncryption.EncryptAsync("123456", FakeKey));
             Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length}."));
         }
 
         [Test]
-        public async Task WhenInvalidHexKeyIsPassedToEncryption_ThenThrowException()
+        public void WhenInvalidHexKeyIsPassedToEncryption_ThenThrowException()
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>(() => _aesEncryption.EncryptAsync(FakeText, "123456"));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>(async () => await _aesEncryption.EncryptAsync(FakeText, "123456"));
             Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length}."));
         }
     }

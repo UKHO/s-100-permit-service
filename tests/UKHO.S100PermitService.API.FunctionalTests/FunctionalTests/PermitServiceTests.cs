@@ -67,8 +67,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload!);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), body);
-            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK), body);
+                Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
+            }
         }
 
         // PBI 201014 : Change GET method to POST method and the request model for Permits Endpoint - /v1/permits/s100
@@ -117,7 +120,7 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var downloadPath = await PermitServiceEndPointFactory.DownloadZipFileAsync(response);
             _logger.LogInformation("ZIP extracted at {Path}", downloadPath);
             PermitXmlFactory.VerifyPermitsZipStructureAndPermitXmlContents(downloadPath, _permitServiceApiConfiguration!.InvalidChars, _permitServiceApiConfiguration!.PermitHeaders!, _permitServiceApiConfiguration!.UserPermitNumbers!, comparePermitFolderName);
-            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificate!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
+            var isSignatureValid = await PermitXmlFactory.VerifySignatureTask(downloadPath, _keyVaultConfiguration!.ServiceUri!, _dataKeyVaultConfiguration!.DsCertificateSecret!, _tokenConfiguration!.TenantId!, _tokenConfiguration!.ClientIdWithAuth!, _tokenConfiguration!.ClientSecret!);
             _logger.LogInformation("Signature Valid={Valid}", isSignatureValid);
             Assert.That(isSignatureValid);
         }
@@ -132,8 +135,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), body);
-            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest), body);
+                Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PermitService"));
+            }
         }
 
         // PBI 203832 : S-100 Permit Service Request and Response
@@ -148,8 +154,11 @@ namespace UKHO.S100PermitService.API.FunctionalTests.FunctionalTests
             var response = await PermitServiceEndPointFactory.PermitServiceEndPointAsync(_authToken, _payload);
             var body = await response.Content.ReadAsStringAsync();
             _logger.LogInformation("Response {Status} | Origin:{Origin} | BodySnippet:{Body}", (int)response.StatusCode, GetOrigin(response), Truncate(body));
-            Assert.That(response.StatusCode, Is.EqualTo(expectedStatusCode), body);
-            Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PKS"));
+            using(Assert.EnterMultipleScope())
+            {
+                Assert.That(response.StatusCode, Is.EqualTo(expectedStatusCode), body);
+                Assert.That(response.Headers.GetValues("Origin"), Does.Contain("PKS"));
+            }
         }
 
         // PBI 203803 : S-100 Permit Service Validations
