@@ -98,11 +98,27 @@ namespace UKHO.S100PermitService.API.FunctionalTests.Factories
         /// This method is used to load the payload from the file
         /// </summary>
         /// <param name="filePath"></param>
+        /// <param name="useDynamicDates">If true, replaces all permitExpiryDate values with DateTime.Now.AddYears(1) for non-past-date tests</param>
         /// <returns>The payload after reading as Request Body</returns>
-        public static async Task<RequestBodyModel> LoadPayloadAsync(string filePath)
+        public static async Task<RequestBodyModel> LoadPayloadAsync(string filePath, bool useDynamicDates = true)
         {
             var payload = await File.ReadAllTextAsync(filePath).ConfigureAwait(false);
-            return JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
+            var requestBody = JsonConvert.DeserializeObject<RequestBodyModel>(payload)!;
+
+            // Dynamically set future dates to avoid hardcoded dates becoming stale
+            if (useDynamicDates && !filePath.Contains("payloadWithPastExpiry", StringComparison.OrdinalIgnoreCase))
+            {
+                var futureDate = DateTime.Now.AddYears(1).ToString("yyyy-MM-dd");
+                if (requestBody.products != null)
+                {
+                    foreach (var product in requestBody.products)
+                    {
+                        product.permitExpiryDate = futureDate;
+                    }
+                }
+            }
+
+            return requestBody;
         }
 
         public static void SetLogger(ILogger logger)
