@@ -1,12 +1,15 @@
 ﻿using System.Text;
 using ExcelDataReader;
+using Serilog;
 
 namespace MaintainManufacturerKey
 {
-    internal class KeyListReader
+    internal static class KeyListReader
     {
-        public IEnumerable<(string ManufacturerId, string ManufacturerKey)> ReadFile(string filePath)
+        public static IEnumerable<(string ManufacturerId, string ManufacturerKey)> ReadFile(string filePath)
         {
+            Log.Information("Reading file from disk: {FilePath}", Path.GetFullPath(filePath));
+
             var extension = Path.GetExtension(filePath).ToLowerInvariant();
 
             if (extension == ".csv")
@@ -41,7 +44,7 @@ namespace MaintainManufacturerKey
 
             var config = new ExcelReaderConfiguration
             {
-                AutodetectSeparators = new[] { ',', ';' },
+                AutodetectSeparators = [',', ';'],
                 FallbackEncoding = Encoding.UTF8
             };
 
@@ -56,6 +59,7 @@ namespace MaintainManufacturerKey
         private static void ReadRows(IExcelDataReader reader, List<(string, string)> results)
         {
             var headerRead = false;
+            var rowCount = 0;
 
             while (reader.Read())
             {
@@ -71,8 +75,11 @@ namespace MaintainManufacturerKey
                 if (!string.IsNullOrWhiteSpace(manufacturerId) && !string.IsNullOrWhiteSpace(manufacturerKey))
                 {
                     results.Add((manufacturerId, manufacturerKey));
+                    rowCount++;
                 }
             }
+
+            Log.Debug("Read {RowCount} data rows from file", rowCount);
         }
     }
 }
