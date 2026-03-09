@@ -30,14 +30,54 @@ namespace MaintainManufacturerKey
                 if(!originalValue.Value.Value.Equals(value))
                 {
                     existingValues.Add(new SecretChangeRecord(name, originalValue.Value.Value, value));
+                    Log.Debug("Updating secret {SecretName}", name);
+                    await _client.SetSecretAsync(name, value);
+                }
+                else
+                {
+                    Log.Debug("Secret {SecretName} already has the correct value, skipping", name);
                 }
             }
             catch(RequestFailedException ex) when(ex.Status == 404)
             {
-                Log.Debug("Creating secret {SecretName}", name);
+                // Secret doesn't exist, try to create it
+                try
+                {
+                    Log.Debug("Creating secret {SecretName}", name);
+                    await _client.SetSecretAsync(name, value);
+
+                    // Track newly created secrets with empty OldValue so they can be deleted during undo
+                    existingValues.Add(new SecretChangeRecord(name, string.Empty, value));
+                }
+                catch (RequestFailedException createEx) when (createEx.Status == 409 && 
+                    createEx.Message.Contains("ObjectIsDeletedButRecoverable"))
+                {
+                    // Secret is soft-deleted, recover it first
+                    Log.Warning("Secret {SecretName} is in deleted state. Recovering and updating...", name);
+
+                    var recoveryOperation = await _client.StartRecoverDeletedSecretAsync(name);
+                    await recoveryOperation.WaitForCompletionAsync();
+
+                    Log.Information("Recovered deleted secret {SecretName}, now updating value", name);
+                    await _client.SetSecretAsync(name, value);
+
+                    // Track as a new creation since it was previously deleted
+                    existingValues.Add(new SecretChangeRecord(name, string.Empty, value));
+                }
+            }
+            catch (RequestFailedException ex) when (ex.Status == 409 && 
+                ex.Message.Contains("ObjectIsDeletedButRecoverable"))
+            {
+                // Secret is soft-deleted, recover it first
+                Log.Warning("Secret {SecretName} is in deleted state. Recovering and updating...", name);
+
+                var recoveryOperation = await _client.StartRecoverDeletedSecretAsync(name);
+                await recoveryOperation.WaitForCompletionAsync();
+
+                Log.Information("Recovered deleted secret {SecretName}, now updating value", name);
                 await _client.SetSecretAsync(name, value);
 
-                // Track newly created secrets with empty OldValue so they can be deleted during undo
+                // Track as a new creation since it was previously deleted
                 existingValues.Add(new SecretChangeRecord(name, string.Empty, value));
             }
         }
