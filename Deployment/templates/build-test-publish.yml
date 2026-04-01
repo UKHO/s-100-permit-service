@@ -1,13 +1,21 @@
+parameters:
+  - name: SnykOnlyFailIfFixable
+    type: boolean
+    default: false
+  - name: SnykPassOnIssues
+    type: boolean
+    default: false
+
 jobs:
   - job: Snyk
     displayName: Run Snyk security scans
     pool: $(WindowsPool)
-    condition: eq('${{ parameters.Snyk }}', false)      
     steps:
       - task: UseDotNet@2
         displayName: Use .NET SDK $(SdkVersion)
         inputs:
-          packageType: sdk             
+          packageType: sdk
+          version: $(SdkVersion)
 
       - task: DotNetCoreCLI@2
         displayName: .NET - NuGet restore
@@ -24,19 +32,21 @@ jobs:
         displayName: Snyk SAST scan
         condition: succeededOrFailed()
         inputs:
-          failOnIssues: true
+          failOnIssues: ${{ not(parameters.SnykPassOnIssues) }}
           failOnThreshold: high
           organization: $(snykAbzuOrganizationId)
           serviceConnectionEndpoint: Snyk
           codeSeverityThreshold: low
           testType: code
           monitorwhen: never
+          ${{ if eq(parameters.SnykOnlyFailIfFixable, true) }}:
+            additionalArguments: --fail-on=all
 
       - task: UkhoSnykScanTask@0
         displayName: Snyk SCA scan
         condition: succeededOrFailed()
         inputs:
-          failOnIssues: true
+          failOnIssues: ${{ not(parameters.SnykPassOnIssues) }}
           failOnThreshold: high
           organization: $(snykAbzuOrganizationId)
           serviceConnectionEndpoint: Snyk
@@ -44,21 +54,24 @@ jobs:
           testType: app
           monitorwhen: never
           severityThreshold: low
-          additionalArguments: --all-projects
+          ${{ if eq(parameters.SnykOnlyFailIfFixable, true) }}:
+            additionalArguments: --all-projects --fail-on=all
+          ${{ else }}:
+            additionalArguments: --all-projects
 
       - task: UkhoSnykScanTask@0
         displayName: Snyk Iac scan
         condition: succeededOrFailed()
         inputs:
-          failOnIssues: true
+          failOnIssues: ${{ not(parameters.SnykPassOnIssues) }}
           failOnThreshold: high
           organization: $(snykAbzuOrganizationId)
           serviceConnectionEndpoint: Snyk
-          codeSeverityThreshold: low
+          severityThreshold: low
           testType: iac
           monitorwhen: never
-          severityThreshold: low
-          workingDirectory: '$(Build.SourcesDirectory)/Deployment'
+          ${{ if eq(parameters.SnykOnlyFailIfFixable, true) }}:
+            additionalArguments: --fail-on=all
 
   - job: UnitTestsAndCodeCoverage
     workspace:
@@ -66,11 +79,10 @@ jobs:
     displayName: "Dotnet Test and Publish Code Coverage"
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
-          packagetype: sdk
-          useglobaljson: true
-          workingdirectory: '$(build.sourcesdirectory)\src'
+          packageType: sdk
+          version: $(SdkVersion)
 
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore test projects only"
@@ -134,11 +146,10 @@ jobs:
           arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.API\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for non test projects only"
@@ -214,11 +225,10 @@ jobs:
           arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.StubService\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$(UKHOAssemblyProduct) StubService"'
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for s-100 permit service StubService project"
@@ -263,11 +273,10 @@ jobs:
     steps:
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for non test projects only"
