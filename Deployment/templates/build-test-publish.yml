@@ -14,7 +14,8 @@ jobs:
       - task: UseDotNet@2
         displayName: Use .NET SDK $(SdkVersion)
         inputs:
-          packageType: sdk             
+          packageType: sdk
+          version: $(SdkVersion)
 
       - task: DotNetCoreCLI@2
         displayName: .NET - NuGet restore
@@ -78,11 +79,10 @@ jobs:
     displayName: "Dotnet Test and Publish Code Coverage"
     steps:
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
-          packagetype: sdk
-          useglobaljson: true
-          workingdirectory: '$(build.sourcesdirectory)\src'
+          packageType: sdk
+          version: $(SdkVersion)
 
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore test projects only"
@@ -146,11 +146,10 @@ jobs:
           arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.API\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$env:UKHOAssemblyProduct"'
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for non test projects only"
@@ -226,11 +225,10 @@ jobs:
           arguments: '-buildNumber "$(Build.BuildNumber)" -solutionDirectory "$(Build.SourcesDirectory)\src\UKHO.S100PermitService.StubService\" -UKHOAssemblyCompany "$env:UKHOAssemblyCompany" -UKHOAssemblyCopyright "$(UKHOAssemblyCopyright)" -UKHOAssemblyVersionPrefix "$env:UKHOAssemblyVersionPrefix" -UKHOAssemblyProduct "$(UKHOAssemblyProduct) StubService"'
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for s-100 permit service StubService project"
@@ -275,11 +273,10 @@ jobs:
     steps:
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 8.0.x sdk'
+        displayName: Use .NET SDK $(SdkVersion)
         inputs:
           packageType: sdk
-          useGlobalJson: true
-          workingDirectory: '$(Build.SourcesDirectory)\src'
+          version: $(SdkVersion)
           
       - task: DotNetCoreCLI@2
         displayName: ".Net Core - NuGet restore for non test projects only"

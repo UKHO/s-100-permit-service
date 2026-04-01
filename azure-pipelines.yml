@@ -56,6 +56,8 @@ variables:
     value: "Private Link Deployments (ENG)"
   - name: DeploymentPoolPD
     value: "Private Link Deployments (BUS)"
+  - name: SdkVersion
+    value: "8.0.x"
   - name: snykAbzuOrganizationId
     value: "aeb7543b-8394-457c-8334-a31493d8910d"
 
@@ -77,17 +79,19 @@ stages:
     displayName: "Run Stryker"
     condition: ${{ eq(parameters.RunStryker, true) }}
     dependsOn: []
+    variables:
+      - name: StrykerDotNetVersion
+        value: 8.0.x
     jobs:
       - job: Stryker      
         workspace:
           clean: all        
         steps:
           - task: UseDotNet@2
-            displayName: 'Use .NET 8.0.x sdk'
+            displayName: 'Use .NET SDK for Stryker'
             inputs:
               packageType: sdk
-              useGlobalJson: true
-              workingDirectory: '$(Build.SourcesDirectory)'
+              version: $(StrykerDotNetVersion)
 
           - task: DotNetCoreCLI@2
             displayName: 'Install Stryker'
