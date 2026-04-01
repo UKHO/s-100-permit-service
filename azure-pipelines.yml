@@ -12,6 +12,16 @@ parameters:
     type: boolean
     default: true
 
+  - name: SnykOnlyFailIfFixable
+    displayName: "Snyk - fail only if an issue has an available fix"
+    type: boolean
+    default: false
+
+  - name: SnykPassOnIssues
+    displayName: "Snyk - don't fail if issues found"
+    type: boolean
+    default: false
+
 trigger:
   - main
   - release/*
@@ -94,7 +104,7 @@ stages:
               pwsh: true
               script: $(Agent.BuildDirectory)/tools/dotnet-stryker
 
-          - task: PublishMutationReport@0
+          - task: PublishMutationReport@2
             displayName: 'Publish Strkyer Mutator PS API Report'
             inputs:
               reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.API.UnitTests/**/mutation-report.html'
@@ -108,7 +118,7 @@ stages:
               pwsh: true
               script: $(Agent.BuildDirectory)/tools/dotnet-stryker
 
-          - task: PublishMutationReport@0
+          - task: PublishMutationReport@2
             displayName: 'Publish Strkyer Mutator PS Common Report'
             inputs:
               reportPattern: '$(Build.SourcesDirectory)/tests/UKHO.S100PermitService.Common.UnitTests/**/mutation-report.html'
@@ -119,6 +129,9 @@ stages:
     dependsOn: []
     jobs:
       - template: Deployment/templates/build-test-publish.yml
+        parameters:
+          SnykOnlyFailIfFixable: ${{ parameters.SnykOnlyFailIfFixable }}
+          SnykPassOnIssues: ${{ parameters.SnykPassOnIssues }}
     
   - stage: Devdeploy
     dependsOn:
