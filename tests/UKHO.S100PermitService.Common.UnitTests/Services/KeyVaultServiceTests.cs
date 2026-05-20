@@ -1,10 +1,9 @@
-﻿using Azure.Security.KeyVault.Certificates;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using Azure.Security.KeyVault.Secrets;
 using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using UKHO.S100PermitService.Common.Clients;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Events;
@@ -21,7 +20,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         private ICacheProvider _fakeCacheProvider;
         private ISecretClient _fakeSecretClient;
         private ICertificateClient _fakeCertificateSecretClient;
-        private IKeyVaultService _keyVaultService;
+        private KeyVaultService _keyVaultService;
         private const string CertificateName = "testCertificate";
         private IOptions<DataKeyVaultConfiguration> _fakeDataKeyVaultConfig;
 
@@ -40,23 +39,23 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenConstructorIsCalledWithNullDependencies_ThenShouldThrowArgumentNullException()
         {
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
-                Assert.That(() => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
+                Assert.That((Func<KeyVaultService>)(() => new KeyVaultService(null, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
+                Assert.That((Func<KeyVaultService>)(() => new KeyVaultService(_fakeLogger, null, _fakeSecretClient, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'cacheProvider')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig),
+                Assert.That((Func<KeyVaultService>)(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, null, _fakeCertificateSecretClient, _fakeDataKeyVaultConfig)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'secretClient')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null, _fakeDataKeyVaultConfig),
+                Assert.That((Func<KeyVaultService>)(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, null, _fakeDataKeyVaultConfig)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'certificateSecretClient')"));
 
-                Assert.That(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, null),
+                Assert.That((Func<KeyVaultService>)(() => new KeyVaultService(_fakeLogger, _fakeCacheProvider, _fakeSecretClient, _fakeCertificateSecretClient, null)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'dataKeyVaultConfig')"));
-            });
+            }
         }
 
         [Test]
@@ -214,7 +213,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             A.CallTo(() => _fakeCacheProvider.GetCertificateCacheValue(CertificateName))!.Returns(null);
             A.CallTo(() => _fakeCertificateSecretClient.GetCertificate(CertificateName)).Throws(new Exception("KeyVault failure"));
 
-            var ex = Assert.Throws<PermitServiceException>(() => _keyVaultService.GetCertificate(CertificateName));
+            var ex = Assert.Throws<PermitServiceException>((Action)(() => _keyVaultService.GetCertificate(CertificateName)));
 
             Assert.That(ex.Message, Is.EqualTo("No Certificate found in Certificate Key Vault, failed with Exception :{Message}"));
         }
