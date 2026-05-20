@@ -1,8 +1,8 @@
-﻿using FakeItEasy;
+﻿using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using FakeItEasy;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
 using UKHO.S100PermitService.Common.Configuration;
 using UKHO.S100PermitService.Common.Models.PermitSign;
 using UKHO.S100PermitService.Common.Providers;
@@ -31,13 +31,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         {
             _fakeDigitalSignatureProvider = A.Fake<IDigitalSignatureProvider>();
             _fakeKeyVaultService = A.Fake<IKeyVaultService>();
-            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration() 
-            { 
-                ServiceUri = TestServiceUri, 
-                DsPrivateKey = TestPrivateKeyName, 
-                DsCertificate = TestCertificateName, 
-                DsCertificateSecret = TestCertificateNameKVS, 
-                UseSecretStringForCert = false 
+            _fakeDataKeyVaultConfiguration = Options.Create(new DataKeyVaultConfiguration()
+            {
+                ServiceUri = TestServiceUri,
+                DsPrivateKey = TestPrivateKeyName,
+                DsCertificate = TestCertificateName,
+                DsCertificateSecret = TestCertificateNameKVS,
+                UseSecretStringForCert = false
             });
             _fakeXmlTransformer = A.Fake<IXmlTransformer>();
             _fakeLogger = A.Fake<ILogger<PermitSignGeneratorService>>();
@@ -47,23 +47,23 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
         [Test]
         public void WhenConstructorIsCalledWithNullDependency_ThenShouldThrowArgumentNullException()
         {
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
-                Assert.That(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, _fakeLogger),
+                Assert.That((Func<PermitSignGeneratorService>)(() => new PermitSignGeneratorService(null, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, _fakeLogger)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'digitalSignatureProvider')"));
 
-                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, _fakeLogger),
+                Assert.That((Func<PermitSignGeneratorService>)(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, null, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, _fakeLogger)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'keyVaultService')"));
 
-                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null, _fakeXmlTransformer, _fakeLogger),
+                Assert.That((Func<PermitSignGeneratorService>)(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, null, _fakeXmlTransformer, _fakeLogger)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'dataKeyVaultConfiguration')"));
 
-                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, null, _fakeLogger),
+                Assert.That((Func<PermitSignGeneratorService>)(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, null, _fakeLogger)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'xmlTransformer')"));
 
-                Assert.That(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, null),
+                Assert.That((Func<PermitSignGeneratorService>)(() => new PermitSignGeneratorService(_fakeDigitalSignatureProvider, _fakeKeyVaultService, _fakeDataKeyVaultConfiguration, _fakeXmlTransformer, null)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
-            });
+            }
         }
 
         [Test]
@@ -74,7 +74,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Services
             const string Signature = "testBase64signature";
             const string PrivateKeySecret = "testPrivateKeySecret";
             const string XmlContent = "testXmlContent";
-            
+
             // Create a real self-signed certificate for testing
             var certificate = CreateSelfSignedCertificate("CN=TestSubject", "CN=TestIssuer");
             var certificateBytes = certificate.Export(X509ContentType.Cert);
