@@ -5,7 +5,6 @@ using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.IO;
 using UKHO.S100PermitService.Common.Models.Permits;
 using UKHO.S100PermitService.Common.Models.PermitSign;
-using UKHO.S100PermitService.Common.Providers;
 using UKHO.S100PermitService.Common.Transformers;
 
 namespace UKHO.S100PermitService.Common.UnitTests.Transformers
@@ -28,10 +27,10 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
         [Test]
         public void WhenParameterIsNull_ThenConstructorThrowsArgumentNullException()
         {
-            var nullLogger = Assert.Throws<ArgumentNullException>(() => new XmlTransformer(null, _fakeSchemaValidator));
+            var nullLogger = Assert.Throws<ArgumentNullException>((Action)(() => new XmlTransformer(null, _fakeSchemaValidator)));
             Assert.That(nullLogger.ParamName, Is.EqualTo("logger"));
 
-            var nullSchemaValidator = Assert.Throws<ArgumentNullException>(() => new XmlTransformer(_fakeLogger, null));
+            var nullSchemaValidator = Assert.Throws<ArgumentNullException>((Action)(() => new XmlTransformer(_fakeLogger, null)));
             Assert.That(nullSchemaValidator.ParamName, Is.EqualTo("schemaValidator"));
         }
 
@@ -44,11 +43,13 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
 
             var result = await _xmlTransformer.SerializeToXml(GetValidDigitalSignature());
 
-            string Normalize(string xml) => xml.Replace("\r", "").Replace("\n", "").Replace("  ", "").Trim();
+            static string Normalize(string xml) => xml.Replace("\r", "").Replace("\n", "").Replace("  ", "").Trim();
 
-            Assert.That(result, Is.Not.Null.And.Not.Empty.And.Not.EqualTo(string.Empty));
-
-            Assert.That(Normalize(result), Is.EqualTo(Normalize(expected)));
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(result, Is.Not.Null.And.Not.Empty.And.Not.EqualTo(string.Empty));
+                Assert.That(Normalize(result), Is.EqualTo(Normalize(expected)));
+            }
 
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>._, A<string>._)).MustHaveHappenedOnceExactly();
 
@@ -74,7 +75,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            var ex = Assert.ThrowsAsync<PermitServiceException>(async () => await _xmlTransformer.SerializeToXml(GetInValidDigitalSignature()));
+            var ex = Assert.ThrowsAsync<PermitServiceException>((Func<Task>)(async () => await _xmlTransformer.SerializeToXml(GetInValidDigitalSignature())));
 
             Assert.That(ex, Is.Not.Null);
             Assert.That(ex.Message, Is.EqualTo("Invalid permit xml schema."));
@@ -93,7 +94,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
         {
             A.CallTo(() => _fakeSchemaValidator.ValidateSchema(A<string>.Ignored, A<string>.Ignored)).Returns(false);
 
-            var ex = Assert.ThrowsAsync<PermitServiceException>(async () => await _xmlTransformer.SerializeToXml(GetInvalidValidPermit()));
+            var ex = Assert.ThrowsAsync<PermitServiceException>((Func<Task>)(async () => await _xmlTransformer.SerializeToXml(GetInvalidValidPermit())));
 
             Assert.That(ex, Is.Not.Null);
             Assert.That(ex.Message, Is.EqualTo("Invalid permit xml schema."));
@@ -107,7 +108,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             ).MustHaveHappenedOnceExactly();
         }
 
-        private StandaloneDigitalSignature GetValidDigitalSignature()
+        private static StandaloneDigitalSignature GetValidDigitalSignature()
         {
             return new StandaloneDigitalSignature()
             {
@@ -126,7 +127,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             };
         }
 
-        private StandaloneDigitalSignature GetInValidDigitalSignature()
+        private static StandaloneDigitalSignature GetInValidDigitalSignature()
         {
             return new StandaloneDigitalSignature()
             {
@@ -145,7 +146,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             };
         }
 
-        private Permit GetInvalidValidPermit()
+        private static Permit GetInvalidValidPermit()
         {
             var product = new Products()
             {
@@ -170,7 +171,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Transformers
             };
         }
 
-        private string GetExpectedPermitSignString()
+        private static string GetExpectedPermitSignString()
         {
             var expectedResult = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>";
             expectedResult += "<S100SE:StandaloneDigitalSignature xmlns:S100SE=\"http://www.iho.int/s100/se/5.2\" xmlns:ns2=\"http://standards.iso.org/iso/19115/-3/gco/1.0\" xmlns=\"http://www.iho.int/s100/se/5.2\">";
