@@ -1,8 +1,8 @@
-﻿using FakeItEasy;
-using Microsoft.Extensions.Logging;
+﻿using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Security.Cryptography;
 using System.Text;
+using FakeItEasy;
+using Microsoft.Extensions.Logging;
 using UKHO.S100PermitService.Common.Events;
 using UKHO.S100PermitService.Common.Exceptions;
 using UKHO.S100PermitService.Common.Providers;
@@ -25,7 +25,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [Test]
         public void WhenConstructorIsCalledWithNullLogger_ThenShouldThrowArgumentNullException()
         {
-            Assert.That(() => new DigitalSignatureProvider(null),
+            Assert.That((Func<DigitalSignatureProvider>)(() => new DigitalSignatureProvider(null)),
                 Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
         }
 
@@ -38,8 +38,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             var result1 = _digitalSignatureProvider.GeneratePermitXmlHash(content1);
             var result2 = _digitalSignatureProvider.GeneratePermitXmlHash(content2);
 
-            Assert.That(result1.Length, Is.EqualTo(result2.Length), "The hash lengths for both inputs should be the same.");
-            Assert.That(result1.Length, Is.EqualTo(SHA384.HashSizeInBytes), "The hash length should be 48 bytes.");
+            Assert.That(result1, Has.Length.EqualTo(result2.Length), "The hash lengths for both inputs should be the same.");
+            Assert.That(result1, Has.Length.EqualTo(SHA384.HashSizeInBytes), "The hash length should be 48 bytes.");
 
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
@@ -59,7 +59,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         [Test]
         public void WhenGeneratePermitXmlHashHasNullContent_ThenShouldThrowPermitServiceException()
         {
-            var exception = Assert.Throws<PermitServiceException>(() => _digitalSignatureProvider.GeneratePermitXmlHash(null));
+            var exception = Assert.Throws<PermitServiceException>((Action)(() => _digitalSignatureProvider.GeneratePermitXmlHash(null)));
             Assert.That(exception.Message, Does.Contain("Permit hash generation failed with Exception"));
             A.CallTo(_fakeLogger).Where(call =>
                  call.Method.Name == "Log"
@@ -80,16 +80,16 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
 
             var signature = _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, hashContent);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
                 Assert.That(signature, Is.Not.Null, "The returned signature should not be null.");
                 Assert.That(signature, Is.Not.Empty, "The returned signature should not be empty.");
-                Assert.DoesNotThrow(() => Convert.FromBase64String(signature), "The signature should be a valid Base64-encoded string.");
+                Assert.DoesNotThrow((Action)(() => Convert.FromBase64String(signature)), "The signature should be a valid Base64-encoded string.");
 
                 var derSignature = Convert.FromBase64String(signature);
 
                 Assert.That(derSignature[0], Is.EqualTo(0x30), "DER signature should start with ASN.1 SEQUENCE (0x30).");
-                Assert.That(derSignature.Length, Is.GreaterThan(2), "DER signature should have a valid length.");
+                Assert.That(derSignature, Has.Length.GreaterThan(2), "DER signature should have a valid length.");
 
                 var sequenceLength = derSignature[1];
                 Assert.That(sequenceLength, Is.EqualTo(derSignature.Length - 2), "The SEQUENCE length should match the actual length of the DER signature.");
@@ -104,7 +104,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                 var sLength = derSignature[sStartIndex + 1];
                 Assert.That(sLength, Is.GreaterThan(0), "The length of s should be greater than 0.");
                 Assert.That(sStartIndex + 2 + sLength, Is.EqualTo(derSignature.Length), "The s component should fit exactly within the DER signature.");
-            });
+            }
         }
 
         [Test]
@@ -114,8 +114,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
         {
             var hashContent = new byte[] { 1, 2, 3, 4, 5 };
 
-            var exception = Assert.Throws<PermitServiceException>(() =>
-                _digitalSignatureProvider.SignHashWithPrivateKey(privateKey, hashContent));
+            var exception = Assert.Throws<PermitServiceException>((Action)(() =>
+                _digitalSignatureProvider.SignHashWithPrivateKey(privateKey, hashContent)));
             Assert.That(exception.Message, Does.Contain("An error occurred while signing the hash with the private key with exception: {Message}"));
         }
 
@@ -127,8 +127,8 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
             var validBase64PrivateKey = Convert.ToBase64String(privateKeyData);
             byte[]? nullHashContent = null;
 
-            var exception = Assert.Throws<PermitServiceException>(() =>
-                _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, nullHashContent));
+            var exception = Assert.Throws<PermitServiceException>((Action)(() =>
+                _digitalSignatureProvider.SignHashWithPrivateKey(validBase64PrivateKey, nullHashContent)));
             Assert.That(exception.Message, Does.Contain("An error occurred while signing the hash with the private key with exception: {Message}"));
         }
 
@@ -140,9 +140,9 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
 
             var result = _digitalSignatureProvider.CreateStandaloneDigitalSignature(certificate, signatureBase64);
 
-            Assert.Multiple(() =>
+            using (Assert.EnterMultipleScope())
             {
-                Assert.That(result != null);
+                Assert.That(result, Is.Not.Null);
                 Assert.That(result.Filename, Does.Contain(PermitServiceConstants.PermitXmlFileName));
                 Assert.That(result.Certificate.SchemeAdministrator.Id, Does.Contain("IHO"));
                 Assert.That(result.Certificate.CertificateMetadata.Id, Does.Contain("TestSubject"));
@@ -151,7 +151,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Providers
                 Assert.That(result.DigitalSignatureInfo.Id, Does.Contain(PermitServiceConstants.DigitalSignatureId));
                 Assert.That(result.DigitalSignatureInfo.CertificateRef, Does.Contain("TestSubject"));
                 Assert.That(result.DigitalSignatureInfo.Value, Does.Contain(signatureBase64));
-            });
+            }
             A.CallTo(_fakeLogger).Where(call =>
                 call.Method.Name == "Log"
                 && call.GetArgument<LogLevel>(0) == LogLevel.Information
