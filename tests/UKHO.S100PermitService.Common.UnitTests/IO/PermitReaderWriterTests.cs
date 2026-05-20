@@ -49,7 +49,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.IO
             using (Assert.EnterMultipleScope())
             {
                 Assert.That((Func<PermitReaderWriter>)(() => new PermitReaderWriter(null, _fakePermitSignGeneratorService, _fakeXmlTransformer)),
-                Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
+                    Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'logger')"));
 
                 Assert.That((Func<PermitReaderWriter>)(() => new PermitReaderWriter(_fakeLogger, null, _fakeXmlTransformer)),
                     Throws.ArgumentNullException.With.Message.EqualTo("Value cannot be null. (Parameter 'permitSignGeneratorService')"));
