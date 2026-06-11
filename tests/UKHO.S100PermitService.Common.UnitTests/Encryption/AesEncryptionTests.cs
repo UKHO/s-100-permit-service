@@ -8,6 +8,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
     {
         private const string FakeText = "00112233445566778899AABBCCDDEEFF";
         private const string FakeKey = "000102030405060708090A0B0C0D0E0F";
+        private const string ProductName = "TestProduct";
         private AesEncryption _aesEncryption;
 
         [SetUp]
@@ -19,7 +20,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public async Task WhenProvidedValidData_ThenSuccessfullyReturnsDecryptedData()
         {
-            var result = await _aesEncryption.DecryptAsync(FakeText, FakeKey);
+            var result = await _aesEncryption.DecryptAsync(FakeText, FakeKey, ProductName);
 
             Assert.That(result, Is.Not.Null.And.Not.Empty);
             Assert.That(result, Is.Not.EqualTo(FakeText));
@@ -28,15 +29,15 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
         [Test]
         public void WhenInvalidHexStringIsPassed_ThenThrowException()
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>((Func<Task>)(async () => await _aesEncryption.DecryptAsync("123456", FakeKey)));
-            Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length}."));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>((Func<Task>)(async () => await _aesEncryption.DecryptAsync("123456", FakeKey, ProductName)));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex string length {HexSize}, but found {HexString Length} for product {ProductName}."));
         }
 
         [Test]
         public void WhenInvalidHexKeyIsPassed_ThenThrowException()
         {
-            var ex = Assert.ThrowsAsync<AesEncryptionException>((Func<Task>)(async () => await _aesEncryption.DecryptAsync(FakeText, "123456")));
-            Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length}."));
+            var ex = Assert.ThrowsAsync<AesEncryptionException>((Func<Task>)(async () => await _aesEncryption.DecryptAsync(FakeText, "123456", ProductName)));
+            Assert.That(ex.Message, Is.EqualTo("Expected hex key length {HexSize}, but found {HexKey Length} for product {ProductName}."));
         }
 
         [Test]

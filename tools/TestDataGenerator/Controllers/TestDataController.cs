@@ -53,7 +53,7 @@ namespace TestDataGenerator.Controllers
         [HttpGet("ExtractHwIdFromUPN")]
         public virtual async Task<IActionResult> ExtractHwIdFromUPN(string upn, string mKey)
         {
-            var decryptedHardwareId = await _aesEncryption.DecryptAsync(upn[..EncryptedHardwareIdLength], mKey);
+            var decryptedHardwareId = await _aesEncryption.DecryptAsync(upn[..EncryptedHardwareIdLength], mKey, null);
 
             await Task.CompletedTask;
 
@@ -63,7 +63,7 @@ namespace TestDataGenerator.Controllers
         [HttpGet("DecryptProductKey")]
         public virtual async Task<IActionResult> DecryptProductKey(string productKey)
         {
-            var decryptedProductKey = await _aesEncryption.DecryptAsync(productKey, _configuration["HardwareId"]);
+            var decryptedProductKey = await _aesEncryption.DecryptAsync(productKey, _configuration["HardwareId"], null);
 
             await Task.CompletedTask;
 

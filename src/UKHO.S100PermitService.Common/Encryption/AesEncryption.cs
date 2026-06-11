@@ -20,18 +20,19 @@ namespace UKHO.S100PermitService.Common.Encryption
         /// </remarks>
         /// <param name="hexString">Data to be decrypt.</param>
         /// <param name="keyHexEncoded">Secret Key.</param>
+        /// <param name="productName">Name of the product.</param>
         /// <returns>Decrypted data.</returns>
         /// <exception cref="AesEncryptionException">AesEncryptionException exception will be thrown when length validation fails.</exception>
-        public async Task<string> DecryptAsync(string hexString, string keyHexEncoded)
+        public async Task<string> DecryptAsync(string hexString, string keyHexEncoded, string productName)
         {
             if(hexString.Length != HexSize)
             {
-                throw new AesEncryptionException(EventIds.HexStringLengthError.ToEventId(), "Expected hex string length {HexSize}, but found {HexString Length}.", HexSize, hexString.Length);
+                throw new AesEncryptionException(EventIds.HexStringLengthError.ToEventId(), "Expected hex string length {HexSize}, but found {HexString Length} for product {ProductName}.", HexSize, hexString.Length, productName);
             }
 
             if(keyHexEncoded.Length != HexSize)
             {
-                throw new AesEncryptionException(EventIds.HexKeyLengthError.ToEventId(), "Expected hex key length {HexSize}, but found {HexKey Length}.", HexSize, keyHexEncoded.Length);
+                throw new AesEncryptionException(EventIds.HexKeyLengthError.ToEventId(), "Expected hex key length {HexSize}, but found {HexKey Length} for product {ProductName}.", HexSize, keyHexEncoded.Length, productName);
             }
 
             using var aes = CreateAes(keyHexEncoded);

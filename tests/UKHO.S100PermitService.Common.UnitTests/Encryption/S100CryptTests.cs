@@ -47,7 +47,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
             var test101ProductKey = "20191817161514131211109876543210";
             var test102ProductKey = "36353433323130292827262524232221";
 
-            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored))
+            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored))
                                              .Returns(test101ProductKey).Once().Then.Returns(test102ProductKey);
 
             var result = await _s100Crypt.GetDecryptedKeysFromProductKeysAsync(GetProductKeyServiceResponse(), FakeHardwareId);
@@ -80,7 +80,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
 
             A.CallTo(() => _fakeKeyVaultService.GetSecretKeys(A<string>.Ignored)).Returns(FakeMKey);
 
-            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
+            A.CallTo(() => _fakeAesEncryption.DecryptAsync(A<string>.Ignored, A<string>.Ignored, A<string>.Ignored)).Returns(FakeDecryptedHardwareId);
 
             var result = await _s100Crypt.GetDecryptedHardwareIdFromUserPermitAsync(GetUserPermitServiceResponse());
 

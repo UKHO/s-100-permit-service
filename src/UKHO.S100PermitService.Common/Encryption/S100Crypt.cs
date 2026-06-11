@@ -42,7 +42,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                     ProductName = productKeyServiceResponse.ProductName,
                     Edition = productKeyServiceResponse.Edition,
                     Key = productKeyServiceResponse.Key,
-                    DecryptedKey = await _aesEncryption.DecryptAsync(productKeyServiceResponse.Key, hardwareId)
+                    DecryptedKey = await _aesEncryption.DecryptAsync(productKeyServiceResponse.Key, hardwareId, productKeyServiceResponse.ProductName)
                 });
             }
 
@@ -73,7 +73,7 @@ namespace UKHO.S100PermitService.Common.Encryption
                 };
 
                 var mKey = await _keyVaultService.GetSecretKeys(userPermit.Upn[^MIdLength..]);
-                upnInfo.DecryptedHardwareId = await _aesEncryption.DecryptAsync(userPermit.Upn[..EncryptedHardwareIdLength], mKey);
+                upnInfo.DecryptedHardwareId = await _aesEncryption.DecryptAsync(userPermit.Upn[..EncryptedHardwareIdLength], mKey, "n/a");
 
                 listOfUpnInfo.Add(upnInfo);
             }
