@@ -248,6 +248,11 @@
         /// <summary>
         /// 840049 - Xml Serialization completed.
         /// </summary>
-        XmlSerializationCompleted = 840049
+        XmlSerializationCompleted = 840049,
+
+        /// <summary>
+        /// 840050 - Decryption of product keys failed due to invalid product keys received from Product Key Service.
+        /// </summary>
+        DecryptInvalidProductKeys = 840050,
     }
 }

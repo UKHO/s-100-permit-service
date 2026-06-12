@@ -34,6 +34,18 @@ namespace UKHO.S100PermitService.Common.Encryption
         {
             _logger.LogInformation(EventIds.DecryptProductKeysStarted.ToEventId(), "Decryption of product keys started.");
 
+            var text = string.Empty;
+
+            foreach (var productKeyServiceResponse in productKeyServiceResponses)
+            {
+                if (productKeyServiceResponse.Key.Length != 32)
+                {
+                    text += productKeyServiceResponse.ProductName + "|" + productKeyServiceResponse.Edition + ";";
+                }
+            }
+
+            _logger.LogInformation(EventIds.DecryptInvalidProductKeys.ToEventId(), "Invalid product keys: {InvalidProductKeys}", text);
+
             var productKeys = new List<ProductKey>();
             foreach(var productKeyServiceResponse in productKeyServiceResponses)
             {

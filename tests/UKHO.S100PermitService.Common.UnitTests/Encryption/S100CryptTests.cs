@@ -129,7 +129,7 @@ namespace UKHO.S100PermitService.Common.UnitTests.Encryption
                 new()
                 {
                     Edition = "1",
-                    Key = "21222324252627282930313233343536",
+                    Key = "212223242526272829303132333435365",
                     ProductName = "test102"
                 }
             ];
